@@ -13,11 +13,11 @@ fn main() -> Result<()> {
     let graph = parser::parse(&dot);
     //println!("graph: {:?}", graph);
 
-    let mut repl = Repl::new(Context { graph: &graph, center: &graph.nodes[0] ,depth: 1 })
+    let mut repl = Repl::new(Context { graph: graph.clone(), center: graph.nodes[0].clone() ,depth: 1 })
         .with_name("dot-viewer")
         .with_version("dev")
         .add_command(
-            Command::new("Show", command::show)
+            Command::new("show", command::show)
                 .with_help("Show graph centered at current node"),
         )
         .add_command(

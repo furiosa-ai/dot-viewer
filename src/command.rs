@@ -19,13 +19,11 @@ pub fn show(_args: HashMap<String, Value>, context: &mut Context) -> Result<Opti
 
 pub fn goto(args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
     let graph = &context.graph;
-    let depth = &context.depth;
-
     let node = format!("{}", args["node"]);
 
     if graph.contains(&node) {
-        let edgemap = EdgeMap::new(graph);
-        Ok(Some(edgemap.render(&Node::new(&node), *depth)))
+        context.center = Node::new(&node);
+        show(HashMap::new(), context)
     } else {
         Err(ViewerError::GotoError(node))
     }
