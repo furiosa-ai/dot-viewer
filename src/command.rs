@@ -31,6 +31,5 @@ pub fn goto(args: HashMap<String, Value>, context: &mut Context) -> Result<Optio
 
 pub fn depth(args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
     context.depth = args["depth"].convert()?;
-
-    Ok(Some(format!("change depth to, {}", args["depth"])))
+    show(HashMap::new(), context)
 }

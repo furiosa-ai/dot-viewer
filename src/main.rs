@@ -9,7 +9,7 @@ use crate::context::Context;
 use repl_rs::{ Command, Parameter, Result, Repl };
 
 fn main() -> Result<()> {
-    let dot = fs::read_to_string("rand.dot").expect("no such file");
+    let dot = fs::read_to_string("graph.dot").expect("no such file");
     let graph = parser::parse(&dot);
     //println!("graph: {:?}", graph);
 
