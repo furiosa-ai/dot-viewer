@@ -37,6 +37,30 @@ pub fn export(args: HashMap<String, Value>, context: &mut Context) -> Result<Opt
     }
 }
 
+pub fn render(_args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
+    let graph = &context.graph;
+    let center = &context.center;
+    let depth_limit = context.depth;
+
+    let file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open("tmp.dot");
+    match file {
+        Ok(mut file) => {
+            let center_graph = graph.center_graph(center, depth_limit); 
+            match file.write_all(center_graph.graph.to_dot().as_bytes()) {
+                Ok(_) => {
+                    std::process::Command::new("xdot")
+                        .arg("./tmp.dot")
+                        .spawn()
+                        .expect("failed to execute process");
+                    Ok(Some(String::from("Launched xdot")))
+                },
+                Err(_) => Err(ViewerError::ExportError(String::from("Cannot write to file tmp.dot")))
+            }
+        },
+        Err(_) => Err(ViewerError::ExportError(String::from("Cannot open file tmp.dot")))
+    }
+}
+
 pub fn goto(args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
     let graph = &context.graph;
     let node = format!("{}", args["node"]);

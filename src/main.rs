@@ -12,7 +12,7 @@ fn main() -> Result<()> {
     let dot = fs::read_to_string("graph.dot").expect("no such file");
     let graph = parser::parse(&dot);
     //println!("graph: {:?}", graph);
-
+    
     let mut repl = Repl::new(Context { graph: graph.clone(), center: graph.nodes.first().unwrap().clone() ,depth: 1 })
         .with_name("dot-viewer")
         .with_version("dev")
@@ -24,6 +24,10 @@ fn main() -> Result<()> {
             Command::new("export", command::export)
                 .with_parameter(Parameter::new("filename").set_required(true)?)?
                 .with_help("Export graph centered at current node to dot"),
+        )
+        .add_command(
+            Command::new("render", command::render)
+                .with_help("Render graph centered at current node with xdot"),
         )
         .add_command(
             Command::new("goto", command::goto)
