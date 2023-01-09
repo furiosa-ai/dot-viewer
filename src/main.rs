@@ -22,6 +22,7 @@ fn main() -> Result<()> {
         )
         .add_command(
             Command::new("export", command::export)
+                .with_parameter(Parameter::new("filename").set_required(true)?)?
                 .with_help("Export graph centered at current node to dot"),
         )
         .add_command(

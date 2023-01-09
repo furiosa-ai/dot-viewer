@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io::Write;
 use crate::context::Context;
 use crate::error::ViewerError;
 use crate::graph::Node;
@@ -17,13 +18,23 @@ pub fn show(_args: HashMap<String, Value>, context: &mut Context) -> Result<Opti
     )))
 }
 
-pub fn export(_args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
+pub fn export(args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
     let graph = &context.graph;
     let center = &context.center;
     let depth_limit = context.depth;
+    let filename = format!("{}", args["filename"]);
 
-    let center_graph = graph.center_graph(center, depth_limit); 
-    Ok(Some(center_graph.graph.to_dot()))
+    let file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open(filename.clone());
+    match file {
+        Ok(mut file) => {
+            let center_graph = graph.center_graph(center, depth_limit); 
+            match file.write_all(center_graph.graph.to_dot().as_bytes()) {
+                Ok(_) => Ok(Some(format!("CenterGraph written to {}", filename))),
+                Err(_) => Err(ViewerError::ExportError(format!("Cannot write to file {}", filename)))
+            }
+        },
+        Err(_) => Err(ViewerError::ExportError(format!("Cannot open file {}", filename)))
+    }
 }
 
 pub fn goto(args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {

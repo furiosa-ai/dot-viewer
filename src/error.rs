@@ -3,6 +3,7 @@ use std::fmt;
 #[derive(Debug)]
 pub enum ViewerError {
     ReplError(repl_rs::Error),
+    ExportError(String),
     GotoError(String),
 }
 
@@ -16,6 +17,7 @@ impl fmt::Display for ViewerError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             ViewerError::ReplError(e) => write!(f, "{}", e),
+            ViewerError::ExportError(e) => write!(f, "{}", e),
             ViewerError::GotoError(s) => write!(f, "No Such Node: {}", s),
         }
     }
