@@ -9,11 +9,12 @@ use crate::context::Context;
 use repl_rs::{ Command, Parameter, Result, Repl };
 
 fn main() -> Result<()> {
+    // parse graph.dot in current directory
     let dot = fs::read_to_string("graph.dot").expect("no such file");
     let graph = parser::parse(&dot);
-    //println!("graph: {:?}", graph);
     
-    let mut repl = Repl::new(Context { graph: graph.clone(), center: graph.nodes.first().unwrap().clone() ,depth: 1 })
+    // define repl commands
+    let mut repl = Repl::new(Context { graph: graph.clone(), center: graph.nodes.first().unwrap().clone() ,depth_limit: 1 })
         .with_name("dot-viewer")
         .with_version("dev")
         .add_command(
@@ -40,5 +41,6 @@ fn main() -> Result<()> {
                 .with_help("Set visualization depth"),
         );
 
+    // run repl
     repl.run()
 }

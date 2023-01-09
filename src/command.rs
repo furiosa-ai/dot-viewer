@@ -5,10 +5,11 @@ use crate::error::ViewerError;
 use crate::graph::Node;
 use repl_rs::{ Value, Convert };
 
+// print current CenterGraph to console
 pub fn show(_args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
     let graph = &context.graph;
     let center = &context.center;
-    let depth_limit = context.depth;
+    let depth_limit = context.depth_limit;
 
     let center_graph = graph.center_graph(center, depth_limit); 
     Ok(Some(format!(
@@ -18,10 +19,11 @@ pub fn show(_args: HashMap<String, Value>, context: &mut Context) -> Result<Opti
     )))
 }
 
+// export current CenterGraph to dot to providned filename
 pub fn export(args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
     let graph = &context.graph;
     let center = &context.center;
-    let depth_limit = context.depth;
+    let depth_limit = context.depth_limit;
     let filename = format!("{}", args["filename"]);
 
     let file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open(filename.clone());
@@ -37,10 +39,12 @@ pub fn export(args: HashMap<String, Value>, context: &mut Context) -> Result<Opt
     }
 }
 
+// render current CenterGraph by xdot
+// TODO prevent launching multiple processes of xdot
 pub fn render(_args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
     let graph = &context.graph;
     let center = &context.center;
-    let depth_limit = context.depth;
+    let depth_limit = context.depth_limit;
 
     let file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open("tmp.dot");
     match file {
@@ -61,6 +65,7 @@ pub fn render(_args: HashMap<String, Value>, context: &mut Context) -> Result<Op
     }
 }
 
+// change center node
 pub fn goto(args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
     let graph = &context.graph;
     let node = format!("{}", args["node"]);
@@ -73,7 +78,8 @@ pub fn goto(args: HashMap<String, Value>, context: &mut Context) -> Result<Optio
     }
 }
 
+// change depth limit
 pub fn depth(args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
-    context.depth = args["depth"].convert()?;
+    context.depth_limit = args["depth"].convert()?;
     show(HashMap::new(), context)
 }

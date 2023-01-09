@@ -1,13 +1,14 @@
 use crate::graph::{ Graph, Node };
 
+// TODO hold CenterGraph in Context to prevent redundant computation on each repl
 pub struct Context {
     pub graph: Graph,
     pub center: Node,
-    pub depth: u8,
+    pub depth_limit: u8,
 }
 
 impl Context {
     pub fn to_string(&self) -> String {
-        format!("center : {}\ndepth: {}\n", &self.center.id, self.depth)
+        format!("center : {}\ndepth: {}\n", &self.center.id, self.depth_limit)
     }
 }

@@ -3,8 +3,8 @@ use std::collections::{ BTreeMap, BTreeSet };
 #[derive(Debug, Clone)]
 pub struct Graph {
     pub nodes: BTreeSet<Node>,
-    pub forward: EdgeMap,
-    pub backward: EdgeMap,
+    pub forward: EdgeMap, // from => [tos]
+    pub backward: EdgeMap, // to => [froms]
 }
 
 impl Graph {
@@ -27,6 +27,7 @@ impl Graph {
         self.nodes.contains(&Node::new(node))
     }
 
+    // Build CenterGraph out of current graph provided center and depth limit
     pub fn center_graph(&self, center: &Node, depth_limit: u8) -> CenterGraph {
         let prevs = self.backward.search(center, depth_limit);
         let nexts = self.forward.search(center, depth_limit);
@@ -56,7 +57,7 @@ impl Graph {
 pub struct CenterGraph {
     pub graph: Graph,
     pub center: Node,
-    pub vicinity: Vec<(Node, i8)>,
+    pub vicinity: Vec<(Node, i8)>, // closeness of a node with respect to the center node
 }
 
 impl CenterGraph {
@@ -67,7 +68,7 @@ impl CenterGraph {
 
     pub fn merge(prevs: CenterGraph, nexts: CenterGraph) -> CenterGraph {
         if prevs.center != nexts.center {
-            panic!();
+            panic!("two graphs do not share center");
         }
 
         let graph = Graph::merge(&prevs.center, &prevs.graph, &nexts.graph);
