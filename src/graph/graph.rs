@@ -126,9 +126,9 @@ impl Node {
     pub fn to_dot(&self) -> String {
         let mut dot = String::from("");
 
-        dot.push_str("\"");
+        //dot.push_str("\"");
         dot.push_str(&self.id);
-        dot.push_str("\"");
+        //dot.push_str("\"");
         dot.push_str(" [shape=box]");
         
         dot 
@@ -243,13 +243,11 @@ impl EdgeMap {
 
         for (from, tos) in &self.direction {
             for to in tos {
-                dot.push_str("\t\"");
+                dot.push_str("\t");
                 dot.push_str(&from.id);
-                dot.push_str("\"");
                 dot.push_str(" -> ");
-                dot.push_str("\"");
                 dot.push_str(&to.id);
-                dot.push_str("\"\n");
+                dot.push_str("\n");
             }
         }
 
