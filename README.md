@@ -15,7 +15,7 @@ $ xdot *.dot
 ### Launch dot-viewer with,
 
 ```
-cargo run -- examples/small.dot
+$ cargo run -- examples/small.dot
 ```
 
 ### REPL commands
