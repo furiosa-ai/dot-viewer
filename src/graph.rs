@@ -12,9 +12,12 @@ impl Graph {
         Graph { nodes, forward: EdgeMap::forward(&edges), backward: EdgeMap::backward(&edges) }
     }
 
-    pub fn merge(prevs: &Graph, nexts: &Graph) -> Graph {
+    pub fn merge(center: &Node, prevs: &Graph, nexts: &Graph) -> Graph {
+        let mut nodes: BTreeSet<Node> = prevs.clone().nodes.union(&nexts.nodes).cloned().collect();
+        nodes.insert(center.clone());
+
         Graph {
-            nodes: prevs.clone().nodes.union(&nexts.nodes).cloned().collect(),
+            nodes,
             forward: EdgeMap::merge(&prevs.backward, &nexts.forward),
             backward: EdgeMap::merge(&prevs.forward, &nexts.backward)
         }
@@ -67,7 +70,7 @@ impl CenterGraph {
             panic!();
         }
 
-        let graph = Graph::merge(&prevs.graph, &nexts.graph);
+        let graph = Graph::merge(&prevs.center, &prevs.graph, &nexts.graph);
 
         let vicinity = [
             prevs.vicinity
@@ -222,7 +225,7 @@ impl EdgeMap {
             }
             if depth < depth_limit {
                 for (next, _) in nexts {
-                    edges.push(Edge::new(start.clone(), next.clone()));
+                    edges.push(Edge::new(node.clone(), next.clone()));
                 }
             }
         }
