@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use dot_parser::{ ast, canonical };
 use crate::graph::{ Graph, Node, Edge };
 
@@ -26,5 +27,5 @@ fn parse_canonical(canonical: canonical::Graph<(&str, &str)>) -> Graph {
         })
         .collect();
 
-    Graph::new(nodes, edges)
+    Graph::new(BTreeSet::from_iter(nodes), edges)
 }

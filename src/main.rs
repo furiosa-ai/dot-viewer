@@ -13,7 +13,7 @@ fn main() -> Result<()> {
     let graph = parser::parse(&dot);
     //println!("graph: {:?}", graph);
 
-    let mut repl = Repl::new(Context { graph: graph.clone(), center: graph.nodes[0].clone() ,depth: 1 })
+    let mut repl = Repl::new(Context { graph: graph.clone(), center: graph.nodes.first().unwrap().clone() ,depth: 1 })
         .with_name("dot-viewer")
         .with_version("dev")
         .add_command(

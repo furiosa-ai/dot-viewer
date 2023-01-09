@@ -1,18 +1,18 @@
 use std::collections::HashMap;
 use crate::context::Context;
 use crate::error::ViewerError;
-use crate::graph::{ Node, EdgeMap };
+use crate::graph::Node;
 use repl_rs::{ Value, Convert };
 
 pub fn show(_args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
     let graph = &context.graph;
     let center = &context.center;
-    let depth = &context.depth;
+    let depth_limit = context.depth;
 
-    let edgemap = EdgeMap::new(graph);
+    let center_graph = graph.center_graph(center, depth_limit); 
     Ok(Some(format!(
         "{}\n{}",
-        edgemap.render(center, *depth),
+        center_graph.to_console(),
         context.to_string()
     )))
 }
