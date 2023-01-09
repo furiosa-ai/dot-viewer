@@ -4,13 +4,17 @@ mod command;
 mod context;
 mod error;
 
+use std::env;
 use std::fs;
 use crate::context::Context;
 use repl_rs::{ Command, Parameter, Result, Repl };
 
 fn main() -> Result<()> {
+    let args: Vec<String> = env::args().collect();
+    let filename = &args[1];
+
     // parse graph.dot in current directory
-    let dot = fs::read_to_string("graph.dot").expect("no such file");
+    let dot = fs::read_to_string(filename).expect("no such file");
     let graph = parser::parse(&dot);
     
     // define repl commands
