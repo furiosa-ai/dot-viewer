@@ -30,6 +30,23 @@ impl Graph {
 
         CenterGraph::merge(prevs, nexts)
     }
+
+    pub fn to_dot(&self) -> String {
+        let mut dot = String::from("");
+        dot.push_str("digraph G {\n");
+
+        for node in &self.nodes {
+            dot.push_str("\t");
+            dot.push_str(&node.to_dot());
+            dot.push_str("\n");
+        }
+
+        dot.push_str(&self.forward.to_dot());
+
+        dot.push_str("}");
+
+        dot
+    }
 } 
 
 #[derive(Debug, Clone)]
@@ -100,6 +117,17 @@ pub struct Node {
 impl Node {
     pub fn new(id: &str) -> Node {
         Node { id: String::from(id) }
+    }
+
+    pub fn to_dot(&self) -> String {
+        let mut dot = String::from("");
+
+        dot.push_str("\"");
+        dot.push_str(&self.id);
+        dot.push_str("\"");
+        dot.push_str(" [shape=box]");
+        
+        dot 
     }
 }
 
@@ -204,5 +232,23 @@ impl EdgeMap {
             start.clone(),
             vicinity
         )
+    }
+
+    pub fn to_dot(&self) -> String {
+        let mut dot = String::from("");
+
+        for (from, tos) in &self.direction {
+            for to in tos {
+                dot.push_str("\t\"");
+                dot.push_str(&from.id);
+                dot.push_str("\"");
+                dot.push_str(" -> ");
+                dot.push_str("\"");
+                dot.push_str(&to.id);
+                dot.push_str("\"\n");
+            }
+        }
+
+        dot
     }
 }

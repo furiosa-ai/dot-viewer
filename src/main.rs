@@ -21,6 +21,10 @@ fn main() -> Result<()> {
                 .with_help("Show graph centered at current node"),
         )
         .add_command(
+            Command::new("export", command::export)
+                .with_help("Export graph centered at current node to dot"),
+        )
+        .add_command(
             Command::new("goto", command::goto)
                 .with_parameter(Parameter::new("node").set_required(true)?)?
                 .with_help("Go to a node in graph"),

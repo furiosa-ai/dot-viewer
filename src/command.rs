@@ -17,6 +17,15 @@ pub fn show(_args: HashMap<String, Value>, context: &mut Context) -> Result<Opti
     )))
 }
 
+pub fn export(_args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
+    let graph = &context.graph;
+    let center = &context.center;
+    let depth_limit = context.depth;
+
+    let center_graph = graph.center_graph(center, depth_limit); 
+    Ok(Some(center_graph.graph.to_dot()))
+}
+
 pub fn goto(args: HashMap<String, Value>, context: &mut Context) -> Result<Option<String>, ViewerError> {
     let graph = &context.graph;
     let node = format!("{}", args["node"]);
