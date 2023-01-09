@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 use dot_parser::{ ast, canonical };
-use crate::graph::{ Graph, Node, Edge };
+use crate::graph::graph::{ Graph, Node, Edge };
 
 pub fn parse(dot: &str) -> Graph {
     let ast = ast::Graph::read_dot(dot).expect("parse error");

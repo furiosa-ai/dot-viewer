@@ -1,4 +1,4 @@
-use crate::graph::{ Graph, Node };
+use crate::graph::graph::{ Graph, Node };
 
 // TODO hold CenterGraph in Context to prevent redundant computation on each repl
 pub struct Context {

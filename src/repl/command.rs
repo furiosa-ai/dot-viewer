@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::io::Write;
-use crate::context::Context;
-use crate::error::ViewerError;
-use crate::graph::Node;
+use crate::repl::context::Context;
+use crate::repl::error::ViewerError;
+use crate::graph::graph::Node;
 use repl_rs::{ Value, Convert };
 
 // print current CenterGraph to console
