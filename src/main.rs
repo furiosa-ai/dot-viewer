@@ -18,7 +18,7 @@ fn main() -> Result<()> {
     let graph = parser::parse(&dot);
     
     // define repl commands
-    let mut repl = Repl::new(Context { graph: graph.clone(), center: graph.nodes.first().unwrap().clone() ,depth_limit: 1 })
+    let mut repl = Repl::new(Context { filename: filename.clone(), graph: graph.clone(), center: graph.nodes.first().unwrap().clone() ,depth_limit: 1 })
         .with_name("dot-viewer")
         .with_version("dev")
         .add_command(
@@ -32,7 +32,8 @@ fn main() -> Result<()> {
         )
         .add_command(
             Command::new("render", command::render)
-                .with_help("Render graph centered at current node with xdot"),
+                .with_parameter(Parameter::new("all").set_required(false)?)?
+                .with_help("Render graph centered at current node with xdot, or complete graph given \"all\" option"),
         )
         .add_command(
             Command::new("goto", command::goto)
