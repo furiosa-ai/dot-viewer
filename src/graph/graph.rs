@@ -28,7 +28,7 @@ impl Graph {
     }
 
     // Build CenterGraph out of current graph provided center and depth limit
-    pub fn center_graph(&self, center: &Node, depth_limit: u8) -> CenterGraph {
+    pub fn centergraph(&self, center: &Node, depth_limit: u8) -> CenterGraph {
         let prevs = self.backward.search(center, depth_limit);
         let nexts = self.forward.search(center, depth_limit);
 
@@ -58,16 +58,17 @@ pub struct CenterGraph {
     pub graph: Graph,
     pub center: Node,
     pub vicinity: Vec<(Node, i8)>, // closeness of a node with respect to the center node
+    pub depth_limit: u8,
 }
 
 impl CenterGraph {
-    pub fn new(graph: Graph, center: Node, mut vicinity: Vec<(Node, i8)>) -> CenterGraph {
+    pub fn new(graph: Graph, center: Node, mut vicinity: Vec<(Node, i8)>, depth_limit: u8) -> CenterGraph {
         vicinity.sort_by(|&(_, a), &(_, b)| a.cmp(&b));
-        CenterGraph { graph, center, vicinity }
+        CenterGraph { graph, center, vicinity, depth_limit }
     }
 
     pub fn merge(prevs: CenterGraph, nexts: CenterGraph) -> CenterGraph {
-        if prevs.center != nexts.center {
+        if prevs.center != nexts.center || prevs.depth_limit != nexts.depth_limit {
             panic!("two graphs do not share center");
         }
 
@@ -81,7 +82,7 @@ impl CenterGraph {
             nexts.vicinity
         ].concat();
 
-        CenterGraph::new(graph, prevs.center, vicinity)
+        CenterGraph::new(graph, prevs.center, vicinity, prevs.depth_limit)
     }
 
     pub fn to_console(&self) -> String {
@@ -234,7 +235,8 @@ impl EdgeMap {
         CenterGraph::new(
             Graph::new(nodes, edges),
             start.clone(),
-            vicinity
+            vicinity,
+            depth_limit
         )
     }
 

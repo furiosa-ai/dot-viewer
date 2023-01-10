@@ -11,12 +11,11 @@ fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     let filename = &args[1];
 
-    // parse graph.dot in current directory
     let dot = fs::read_to_string(filename).expect("no such file");
     let graph = parser::parse(&dot);
 
     let mut repl = Editor::<()>::new()?;
-    let mut context = repl::context::Context { filename: filename.clone(), graph: graph.clone(), center: graph.nodes.first().unwrap().clone(), depth_limit: 1 };
+    let mut context = repl::context::Context { filename: filename.clone(), graph: graph.clone(), centergraph: graph.centergraph(graph.nodes.first().unwrap(), 1) };
     loop {
         let line = repl.readline(">> ");
         match line {

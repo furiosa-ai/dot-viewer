@@ -1,16 +1,14 @@
-use crate::graph::graph::{ Graph, Node };
+use crate::graph::graph::{ Graph, CenterGraph };
 
 // TODO hold CenterGraph in Context to prevent redundant computation on each repl
-// TODO center and depth_limit can be replaced with centergraph
 pub struct Context {
     pub filename: String,
     pub graph: Graph,
-    pub center: Node,
-    pub depth_limit: u8,
+    pub centergraph: CenterGraph,
 }
 
 impl Context {
     pub fn to_string(&self) -> String {
-        format!("center : {}\ndepth: {}\n", &self.center.id, self.depth_limit)
+        format!("center : {}\ndepth: {}\n", &self.centergraph.center.id, self.centergraph.depth_limit)
     }
 }
