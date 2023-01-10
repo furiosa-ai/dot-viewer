@@ -19,11 +19,7 @@ pub fn open(filename: &str, context: &mut Context) -> String {
 
 // print current CenterGraph to console
 pub fn show(context: &mut Context) -> String {
-    let graph = &context.graph;
-    let center = &context.centergraph.center;
-    let depth_limit = context.centergraph.depth_limit;
-
-    let centergraph = graph.centergraph(center, depth_limit); 
+    let centergraph = &context.centergraph; 
     format!(
         "{}\n{}",
         centergraph.to_console(),
@@ -33,14 +29,10 @@ pub fn show(context: &mut Context) -> String {
 
 // export current CenterGraph to dot to providned filename
 pub fn export(filename: &str, context: &mut Context) -> String {
-    let graph = &context.graph;
-    let center = &context.centergraph.center;
-    let depth_limit = context.centergraph.depth_limit;
-
     let file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open(filename.clone());
     match file {
         Ok(mut file) => {
-            let centergraph = graph.centergraph(center, depth_limit); 
+            let centergraph = &context.centergraph; 
             match file.write_all(centergraph.graph.to_dot().as_bytes()) {
                 Ok(_) => format!("CenterGraph written to {}", filename),
                 Err(_) => panic!("Cannot write to file {}", filename)
@@ -53,14 +45,10 @@ pub fn export(filename: &str, context: &mut Context) -> String {
 // render current CenterGraph by xdot
 // TODO prevent launching multiple processes of xdot
 pub fn render(context: &mut Context) -> String { 
-    let graph = &context.graph;
-    let center = &context.centergraph.center;
-    let depth_limit = context.centergraph.depth_limit;
-
     let file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open("tmp.dot");
     match file {
         Ok(mut file) => {
-            let centergraph = graph.centergraph(center, depth_limit); 
+            let centergraph = &context.centergraph; 
             match file.write_all(centergraph.graph.to_dot().as_bytes()) {
                 Ok(_) => {
                     std::process::Command::new("xdot")

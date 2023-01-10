@@ -1,6 +1,5 @@
 use crate::graph::graph::{ Graph, CenterGraph };
 
-// TODO hold CenterGraph in Context to prevent redundant computation on each repl
 pub struct Context {
     pub filename: String,
     pub graph: Graph,
