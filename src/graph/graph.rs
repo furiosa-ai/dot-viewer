@@ -118,7 +118,7 @@ impl CenterGraph {
         console.push_str("------------------------\n");
         console.push_str(&format!("| {: ^15} |\n", &self.center.id));
         console.push_str("------------------------\n");
-        console.push_str("\\/ nexts \\/\n\n");
+        console.push_str("\n\\/ nexts \\/\n\n");
 
         let nexts: Vec<(Node, i8)> = self.vicinity
             .iter()

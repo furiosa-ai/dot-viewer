@@ -7,12 +7,31 @@ pub fn eval(command: &str, context: &Option<Context>) -> Result<(String, Option<
     let (command, arguments) = parse(command);
     
     match command {
-        "open" => command::open(arguments[0], context),
+        "open" => if arguments.len() == 1 {
+            command::open(arguments[0], context)
+        } else {
+            Err(ReplError::ArgumentError)
+        },
         "show" => command::show(context), 
-        "export" => command::export(arguments[0], context), 
+        "export" => if arguments.len() == 1 {
+            command::export(arguments[0], context)
+        } else {
+            Err(ReplError::ArgumentError)
+        },
         "render" => command::render(context),
-        "goto" => command::goto(arguments[0], context),
-        "depth" => command::depth(arguments[0].parse::<u8>().unwrap(), context),
+        "goto" => if arguments.len() == 1 {
+            command::goto(arguments[0], context)
+        } else {
+            Err(ReplError::ArgumentError)
+        },
+        "depth" => if arguments.len() == 1 {
+            match arguments[0].parse::<u8>() {
+                Ok(depth)=> command::depth(depth, context),
+                Err(_) => Err(ReplError::ArgumentError)
+            }
+        } else {
+            Err(ReplError::ArgumentError)
+        },
         _ => Err(ReplError::UnknownCommandError(command.to_string(), arguments.iter().map(|s| s.to_string()).collect()))
     }
 }
