@@ -9,6 +9,9 @@ fn main() -> Result<()> {
     let mut context: Option<context::Context> = None;
 
     let mut repl = Editor::<()>::new()?;
+    if repl.load_history("history.txt").is_err() {
+        println!("No previous history"); 
+    }
     loop {
         let line = repl.readline(">> ");
         match line {
