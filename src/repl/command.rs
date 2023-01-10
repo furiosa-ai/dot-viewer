@@ -1,6 +1,21 @@
+use std::fs;
 use std::io::Write;
 use crate::repl::context::Context;
+use crate::graph::parser;
 use crate::graph::graph::Node;
+
+// open and parse a given dot file
+pub fn open(filename: &str, context: &mut Context) -> String {
+    let dot = fs::read_to_string(filename).expect("no such file");
+    let graph = parser::parse(&dot);
+
+    context.filename = String::from(filename);
+    context.graph = graph.clone();
+    context.center = graph.nodes.first().unwrap().clone();
+    context.depth_limit = 1;
+
+    String::from("Opened file")
+}
 
 // print current CenterGraph to console
 pub fn show(context: &mut Context) -> String {

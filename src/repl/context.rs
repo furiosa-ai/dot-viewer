@@ -1,6 +1,7 @@
 use crate::graph::graph::{ Graph, Node };
 
 // TODO hold CenterGraph in Context to prevent redundant computation on each repl
+// TODO center and depth_limit can be replaced with centergraph
 pub struct Context {
     pub filename: String,
     pub graph: Graph,
