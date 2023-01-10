@@ -77,14 +77,26 @@ pub fn render(context: &Option<Context>) -> Result<(String, Option<Context>), Re
 }
 
 // change center node
-pub fn goto(node: &str, context: &Option<Context>) -> Result<(String, Option<Context>), ReplError> {
+pub fn goto(target: &str, context: &Option<Context>) -> Result<(String, Option<Context>), ReplError> {
     if let Some(ctxt) = &context {
-        let graph = &ctxt.graph;
+        match target.parse::<u8>() {
+            Ok(idx) => {
+                let centergraph = &ctxt.centergraph;
 
-        if graph.contains(&node) {
-            show(&Some(ctxt.center(&Node::new(node))))
-        } else {
-           Err(ReplError::NoNodeError) 
+                match centergraph.fwd.get(&idx) {
+                    Some(node) => show(&Some(ctxt.center(node))),
+                    None => Err(ReplError::NoNodeError)
+                }
+            },
+            Err(_) => {
+                let graph = &ctxt.graph;
+
+                if graph.contains(&target) {
+                    show(&Some(ctxt.center(&Node::new(target))))
+                } else {
+                   Err(ReplError::NoNodeError) 
+                }
+            }
         }
     } else {
        Err(ReplError::NoGraphError) 

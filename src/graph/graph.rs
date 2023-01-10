@@ -58,13 +58,23 @@ pub struct CenterGraph {
     pub graph: Graph,
     pub center: Node,
     pub vicinity: Vec<(Node, i8)>, // closeness of a node with respect to the center node
+    pub fwd: BTreeMap<u8, Node>, 
+    pub bwd: BTreeMap<Node, u8>, // bindings for faster goto
     pub depth_limit: u8,
 }
 
 impl CenterGraph {
     pub fn new(graph: Graph, center: Node, mut vicinity: Vec<(Node, i8)>, depth_limit: u8) -> CenterGraph {
         vicinity.sort_by(|&(_, a), &(_, b)| a.cmp(&b));
-        CenterGraph { graph, center, vicinity, depth_limit }
+
+        let mut fwd: BTreeMap<u8, Node> = BTreeMap::new();
+        let mut bwd: BTreeMap<Node, u8> = BTreeMap::new();
+        for (idx, (node, _)) in vicinity.iter().enumerate() {
+            fwd.insert(idx as u8, node.clone());
+            bwd.insert(node.clone(), idx as u8);
+        }
+
+        CenterGraph { graph, center, vicinity, fwd, bwd, depth_limit }
     }
 
     pub fn merge(prevs: CenterGraph, nexts: CenterGraph) -> CenterGraph {
@@ -93,8 +103,13 @@ impl CenterGraph {
             .filter(|(_, depth)| *depth < 0)
             .cloned()
             .collect();
+        let mut depth_track: i8 = -100;
         for (node, depth) in prevs {
-            console.push_str(&format!("({}) {}\n", depth, node.id));
+            if depth != depth_track {
+                console.push_str(&format!("\ndepth {}\n\n", depth));
+                depth_track = depth;
+            }
+            console.push_str(&format!("[{}] {}\n", self.bwd.get(&node).unwrap(), node.id));
         }
 
         console.push_str("\n/\\ prevs /\\\n\n");
@@ -107,7 +122,11 @@ impl CenterGraph {
             .cloned()
             .collect();
         for (node, depth) in nexts {
-            console.push_str(&format!("({}) {}\n", depth, node.id));
+            if depth != depth_track {
+                console.push_str(&format!("\ndepth {}\n\n", depth));
+                depth_track = depth;
+            }
+            console.push_str(&format!("[{}] {}\n", self.bwd.get(&node).unwrap(), node.id));
         }
 
         console
