@@ -109,7 +109,9 @@ impl CenterGraph {
                 console.push_str(&format!("\ndepth {}\n\n", depth));
                 depth_track = depth;
             }
-            console.push_str(&format!("[{}] {}\n", self.bwd.get(&node).unwrap(), node.id));
+            console.push_str("----------------------\n");
+            console.push_str(&format!("| [{}] {: ^15} |\n", self.bwd.get(&node).unwrap(), node.id));
+            console.push_str("----------------------\n");
         }
 
         console.push_str("\n/\\ prevs /\\\n\n");
@@ -126,7 +128,9 @@ impl CenterGraph {
                 console.push_str(&format!("\ndepth {}\n\n", depth));
                 depth_track = depth;
             }
-            console.push_str(&format!("[{}] {}\n", self.bwd.get(&node).unwrap(), node.id));
+            console.push_str("----------------------\n");
+            console.push_str(&format!("| [{}] {: ^15} |\n", self.bwd.get(&node).unwrap(), node.id));
+            console.push_str("----------------------\n");
         }
 
         console
