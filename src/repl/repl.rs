@@ -1,8 +1,9 @@
 use std::collections::VecDeque;
 use crate::repl::context::Context;
 use crate::repl::command;
+use crate::repl::error::ReplError;
 
-pub fn eval(command: &str, context: Option<Context>) -> (String, Option<Context>) {
+pub fn eval(command: &str, context: &Option<Context>) -> Result<(String, Option<Context>), ReplError> {
     let (command, arguments) = parse(command);
     
     match command {
@@ -12,7 +13,7 @@ pub fn eval(command: &str, context: Option<Context>) -> (String, Option<Context>
         "render" => command::render(context),
         "goto" => command::goto(arguments[0], context),
         "depth" => command::depth(arguments[0].parse::<u8>().unwrap(), context),
-        _ => (format!("Unknown command {} with arguments {:?}", command, arguments), context)
+        _ => Err(ReplError::UnknownCommandError(command.to_string(), arguments.iter().map(|s| s.to_string()).collect()))
     }
 }
 

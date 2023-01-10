@@ -1,5 +1,6 @@
 use crate::graph::graph::{ Graph, CenterGraph, Node };
 
+#[derive(Clone)]
 pub struct Context {
     pub filename: String,
     pub graph: Graph,

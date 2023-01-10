@@ -14,11 +14,14 @@ fn main() -> Result<()> {
         match line {
             Ok(line) => {
                 repl.add_history_entry(line.as_str());
-                let result = repl::repl::eval(line.as_str(), context);
-                let print = result.0;
-                context = result.1;
-
-                println!("{}", print);
+                let result = repl::repl::eval(line.as_str(), &context);
+                match result {
+                    Ok((result, ctxt)) => {
+                        context = ctxt;
+                        println!("{}", result)
+                    },
+                    Err(err) => println!("Error: {:?}", err)
+                }
             },
             Err(ReadlineError::Interrupted) | Err(ReadlineError::Eof) => {
                 println!("exit");
