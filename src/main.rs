@@ -42,7 +42,8 @@ fn main() -> Result<()> {
             Command::new("depth", depth)
                 .with_parameter(Parameter::new("depth").set_required(true)?)?
                 .with_help("Set visualization depth"),
-        );
+        ).
+        use_completion(true);
 
     // run repl
     repl.run()
