@@ -106,16 +106,18 @@ impl CenterGraph {
         let mut depth_track: i8 = -100;
         for (node, depth) in prevs {
             if depth != depth_track {
-                console.push_str(&format!("\ndepth {}\n\n", depth));
+                console.push_str(&format!("\ndepth {}\n", depth));
                 depth_track = depth;
             }
-            console.push_str("----------------------\n");
+            console.push_str("------------------------\n");
             console.push_str(&format!("| [{}] {: ^15} |\n", self.bwd.get(&node).unwrap(), node.id));
-            console.push_str("----------------------\n");
+            console.push_str("------------------------\n");
         }
 
         console.push_str("\n/\\ prevs /\\\n\n");
-        console.push_str(&format!("{}\n\n", &self.center.id));
+        console.push_str("------------------------\n");
+        console.push_str(&format!("| {: ^15} |\n", &self.center.id));
+        console.push_str("------------------------\n");
         console.push_str("\\/ nexts \\/\n\n");
 
         let nexts: Vec<(Node, i8)> = self.vicinity
@@ -125,12 +127,12 @@ impl CenterGraph {
             .collect();
         for (node, depth) in nexts {
             if depth != depth_track {
-                console.push_str(&format!("\ndepth {}\n\n", depth));
+                console.push_str(&format!("\ndepth {}\n", depth));
                 depth_track = depth;
             }
-            console.push_str("----------------------\n");
+            console.push_str("------------------------\n");
             console.push_str(&format!("| [{}] {: ^15} |\n", self.bwd.get(&node).unwrap(), node.id));
-            console.push_str("----------------------\n");
+            console.push_str("------------------------\n");
         }
 
         console
