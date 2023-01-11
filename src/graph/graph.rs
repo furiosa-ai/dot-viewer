@@ -109,15 +109,15 @@ impl CenterGraph {
                 console.push_str(&format!("\ndepth {}\n", depth));
                 depth_track = depth;
             }
-            console.push_str("-------------------------------\n");
+            console.push_str("--------------------------------\n");
             console.push_str(&format!("| [{}] {: ^25} |\n", self.bwd.get(&node).unwrap(), node.id));
             console.push_str("--------------------------------\n");
         }
 
         console.push_str("\n/\\ prevs /\\\n\n");
-        console.push_str("--------------------------------\n");
+        console.push_str("-----------------------------\n");
         console.push_str(&format!("| {: ^25} |\n", &self.center.id));
-        console.push_str("--------------------------------\n");
+        console.push_str("-----------------------------\n");
         console.push_str("\n\\/ nexts \\/\n\n");
 
         let nexts: Vec<(Node, i8)> = self.vicinity
