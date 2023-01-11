@@ -3,8 +3,9 @@ extern crate dot_viewer;
 use std::env;
 use dot_viewer::repl;
 use dot_viewer::repl::context;
+use dot_viewer::repl::helper;
 use rustyline::error::ReadlineError;
-use rustyline::{ Editor, Result };
+use rustyline::{ Config, Editor, Result };
 
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
@@ -20,12 +21,14 @@ fn main() -> Result<()> {
         None => println!("Failed to open file")
     };
 
-    let mut repl = Editor::<()>::new()?;
+    let config = Config::builder().build();
+    let mut repl = Editor::with_config(config)?;
+    repl.set_helper(Some(helper::ReplHelper { colored_prompt: format!("\x1b[1;32mdot-viewer> \x1b[m") }));
     if repl.load_history("history.txt").is_err() {
         println!("No previous history"); 
     }
     loop {
-        let line = repl.readline(">> ");
+        let line = repl.readline("dot-viewer> ");
         match line {
             Ok(line) => {
                 repl.add_history_entry(line.as_str());

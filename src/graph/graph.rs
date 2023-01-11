@@ -106,7 +106,7 @@ impl CenterGraph {
         let mut depth_track: i8 = -100;
         for (node, depth) in prevs {
             if depth != depth_track {
-                console.push_str(&format!("\ndepth {}\n", depth));
+                console.push_str(&format!("\ndepth {};\n", depth));
                 depth_track = depth;
             }
             console.push_str("--------------------------------\n");
@@ -127,7 +127,7 @@ impl CenterGraph {
             .collect();
         for (node, depth) in nexts {
             if depth != depth_track {
-                console.push_str(&format!("\ndepth {}\n", depth));
+                console.push_str(&format!("\ndepth {};\n", depth));
                 depth_track = depth;
             }
             console.push_str("--------------------------------\n");
