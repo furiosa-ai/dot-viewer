@@ -27,6 +27,7 @@ pub fn launch(tick_rate: Duration) -> Result<(), Box<dyn Error>> {
     let mut terminal = Terminal::new(backend)?;
 
     // create and run app
+    // TODO accept path as command line args
     let app = App::new("graph.dot");
     let res = run(&mut terminal, app, tick_rate);
 
