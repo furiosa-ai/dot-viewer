@@ -8,18 +8,20 @@ impl App {
         let command: Vec<&str> = command.split_whitespace().collect();
         let command = commands.try_get_matches_from(command);
 
-        match command {
+        let msg = match command {
             Ok(command) => match command.subcommand() {
                 Some(("goto", args)) => {
                     let node = args.get_one::<String>("id").unwrap();
-                    self.goto(node);
+                    self.goto(node)
                 }
                 Some(("render", _)) => self.render(),
-                _ => {},
+                _ => Some(format!("Err: no such command")),
             },
             // TODO print out error to tui
-            Err(msg) => println!("Err: {:?}", msg)
+            Err(msg) => Some(format!("Err: {:?}", msg))
         };
+
+        self.errormsg = msg;
     }
 
     fn commands() -> Command {
@@ -37,16 +39,19 @@ impl App {
             )
     }
 
-    fn goto(&mut self, node: &str) {
+    fn goto(&mut self, node: &str) -> Option<String> {
         let idx = self.graph.lookup.get_by_left(node);
         match idx {
-            Some(idx) => self.nodes.state.select(Some(*idx)),
+            Some(idx) => {
+                self.nodes.state.select(Some(*idx));
+                None
+            },
             // TODO print out error to tui
-            None => println!("Err: No such node {:?}", node),
+            None => Some(format!("Err: no such node {:?}", node))
         }
     }
 
-    fn render(&mut self) {
-        println!("render");
+    fn render(&mut self) -> Option<String> {
+        Some(format!("render"))
     }
 }

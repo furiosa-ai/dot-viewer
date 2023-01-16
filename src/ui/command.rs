@@ -22,7 +22,10 @@ pub fn draw_command<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         )
         .split(chunk);
     draw_help(f, chunks[0], app);
-    draw_input(f, chunks[1], app);
+    match app.mode {
+        Mode::Normal => draw_error(f, chunks[1], app),
+        Mode::Command => draw_input(f, chunks[1], app)
+    };
 }
 
 // help block
@@ -31,20 +34,20 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         Mode::Normal => (
             vec![
                 Span::raw("Press "),
-                Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to exit, "),
-                Span::styled("!", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to start editing."),
+                Span::styled("!", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::raw(" to start entering command."),
             ],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
         Mode::Command => (
             vec![
                 Span::raw("Press "),
-                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled("Esc", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to stop editing, "),
-                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to fire the command"),
+                Span::styled("Enter", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::raw(" to execute the command"),
             ],
             Style::default(),
         ),
@@ -54,6 +57,19 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
     let help = Paragraph::new(text);
     f.render_widget(help, chunk);
+}
+
+// error block
+fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+    if let Some(msg) = &app.errormsg {
+        let msg = Paragraph::new(msg.to_string())
+            .style(
+                Style::default()
+                    .fg(Color::Red)
+                    .add_modifier(Modifier::BOLD)
+            );
+        f.render_widget(msg, chunk);
+    }
 }
 
 // input block

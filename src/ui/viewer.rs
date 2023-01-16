@@ -1,7 +1,7 @@
 use tui::{
     backend::Backend,
     layout::{ Constraint, Direction, Layout, Rect },
-    style::{ Modifier, Style },
+    style::{ Color, Modifier, Style },
     text::{ Span, Spans },
     widgets::{
         Block, Borders, List, ListItem,
@@ -51,7 +51,7 @@ fn draw_list<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // TODO dim highlighting for adjacent nodes
     let list = List::new(list)
         .block(Block::default().borders(Borders::ALL).title("Nodes"))
-        .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+        .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
     f.render_stateful_widget(list, chunk, &mut app.nodes.state);
 }

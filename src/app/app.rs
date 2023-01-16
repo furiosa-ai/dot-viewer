@@ -15,6 +15,7 @@ pub struct App {
     pub mode: Mode,
     pub command: String,
     pub history: Vec<String>,
+    pub errormsg: Option<String>,
 
     pub graph: Graph,
     pub nodes: StatefulList<String>,
@@ -30,6 +31,7 @@ impl App {
             mode: Mode::Normal,
             command: String::from(""),
             history: Vec::new(),
+            errormsg: None,
             graph,
             nodes: StatefulList::with_items(nodes),
         }
