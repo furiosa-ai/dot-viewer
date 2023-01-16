@@ -1,109 +1,18 @@
-use crate::app::{ App, Mode };
 use tui::{
     backend::Backend,
-    layout::{ Alignment, Constraint, Direction, Layout, Rect },
-    style::{ Color, Modifier, Style },
-    text::{ Span, Spans, Text },
+    layout::{ Constraint, Direction, Layout, Rect },
+    style::{ Modifier, Style },
+    text::{ Span, Spans },
     widgets::{
-        Block, Borders, BorderType, List, ListItem,
+        Block, Borders, List, ListItem,
         Paragraph, Wrap,
     },
     Frame,
 };
 use dot_graph::structs::Node;
+use crate::app::app::App;
 
-pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
-    let size = f.size();
-
-    // surrounding block
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .title("Dot Viewer (Dev)")
-        .title_alignment(Alignment::Center)
-        .border_type(BorderType::Rounded);
-    f.render_widget(block, size);
-
-    // inner blocks
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(1)
-        .constraints(
-            [
-                Constraint::Percentage(95),
-                Constraint::Percentage(5),
-            ].as_ref()
-        )
-        .split(size);
-    draw_viewer(f, chunks[0], app);
-    draw_command(f, chunks[1], app);
-}
-
-fn draw_command<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    // inner blocks
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(1)
-        .constraints(
-            [
-                Constraint::Percentage(50),
-                Constraint::Percentage(50),
-            ].as_ref()
-        )
-        .split(chunk);
-    draw_help(f, chunks[0], app);
-    draw_input(f, chunks[1], app);
-}
-
-fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let (msg, style) = match app.mode {
-        Mode::Normal => (
-            vec![
-                Span::raw("Press "),
-                Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to exit, "),
-                Span::styled("!", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to start editing."),
-            ],
-            Style::default().add_modifier(Modifier::RAPID_BLINK),
-        ),
-        Mode::Command => (
-            vec![
-                Span::raw("Press "),
-                Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to stop editing, "),
-                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(" to fire the command"),
-            ],
-            Style::default(),
-        ),
-    };
-
-    let mut text = Text::from(Spans::from(msg));
-    text.patch_style(style);
-
-    let help = Paragraph::new(text);
-    f.render_widget(help, chunk);
-}
-
-fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let input = Paragraph::new(app.command.as_ref())
-        .style(match app.mode {
-            Mode::Normal => Style::default(),
-            Mode::Command => Style::default().fg(Color::Yellow),
-        });
-    f.render_widget(input, chunk);
-    match app.mode {
-        Mode::Normal => {}
-        Mode::Command => {
-            f.set_cursor(
-                chunk.x + app.command.len() as u16,
-                chunk.y,
-            )
-        }
-    }
-}
-
-fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)

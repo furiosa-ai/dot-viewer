@@ -1,6 +1,6 @@
 use crate::{ 
-    app::App, 
-    ui 
+    app::app::App, 
+    ui::ui 
 };
 use crossterm::{
     event::{ self, DisableMouseCapture, EnableMouseCapture, Event },

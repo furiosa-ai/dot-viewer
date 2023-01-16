@@ -1,41 +1,7 @@
 use crossterm::event::{ KeyCode, KeyEvent };
-use crate::utils::list::StatefulList;
-use dot_graph::{
-    parser::parse,
-    structs::Graph,
-};
+use crate::app::app::{ App, Mode };
 
-pub enum Mode {
-    Normal,
-    Command,
-}
-
-pub struct App {
-    pub quit: bool,
-
-    pub mode: Mode,
-    pub command: String,
-    pub history: Vec<String>,
-
-    pub graph: Graph,
-    pub nodes: StatefulList<String>,
-}
-
-impl App {
-    pub fn new(path: &str) -> App{
-        let graph = parse(path); 
-        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();
-
-        App {
-            quit: false,
-            mode: Mode::Normal,
-            command: String::from(""),
-            history: Vec::new(),
-            graph,
-            nodes: StatefulList::with_items(nodes),
-        }
-    }
-
+impl App {    
     pub fn on_key(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Char(c) => self.on_char(c),
@@ -119,7 +85,4 @@ impl App {
             _ => {},
         }
     } 
-
-    pub fn on_tick(&mut self) {
-    }
 }
