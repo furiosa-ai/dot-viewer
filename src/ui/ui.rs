@@ -27,8 +27,8 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .margin(1)
         .constraints(
             [
-                Constraint::Percentage(95),
-                Constraint::Percentage(5),
+                Constraint::Percentage(90),
+                Constraint::Percentage(10),
             ].as_ref()
         )
         .split(size);
