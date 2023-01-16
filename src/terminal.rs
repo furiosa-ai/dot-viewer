@@ -57,7 +57,7 @@ fn run<B: Backend>(
         terminal.draw(|f| ui::draw(f, &mut app))?;
 
         if let Event::Key(key) = event::read()? {
-            app.on_key(key);
+            app.key(key);
         }
 
         if app.quit {

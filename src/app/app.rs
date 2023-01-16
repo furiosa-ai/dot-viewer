@@ -23,7 +23,7 @@ pub struct App {
 impl App {
     pub fn new(path: &str) -> App{
         let graph = parse(path); 
-        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();
+        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect(); 
 
         App {
             quit: false,

@@ -8,6 +8,7 @@ use tui::{
 };
 use crate::app::app::{ App, Mode };
 
+// command block
 pub fn draw_command<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // inner blocks
     let chunks = Layout::default()
@@ -24,6 +25,7 @@ pub fn draw_command<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     draw_input(f, chunks[1], app);
 }
 
+// help block
 fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let (msg, style) = match app.mode {
         Mode::Normal => (
@@ -47,7 +49,6 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             Style::default(),
         ),
     };
-
     let mut text = Text::from(Spans::from(msg));
     text.patch_style(style);
 
@@ -55,6 +56,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     f.render_widget(help, chunk);
 }
 
+// input block
 fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let input = Paragraph::new(app.command.as_ref())
         .style(match app.mode {
@@ -62,6 +64,8 @@ fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             Mode::Command => Style::default().fg(Color::Yellow),
         });
     f.render_widget(input, chunk);
+    
+    // cursor
     match app.mode {
         Mode::Normal => {}
         Mode::Command => {

@@ -12,6 +12,17 @@ use tui::{
 use dot_graph::structs::Node;
 use crate::app::app::App;
 
+pub fn selected(app: &App) -> Option<&Node> {
+    match app.nodes.state.selected() {
+        Some(idx) => {
+            let id = &app.nodes.items[idx]; 
+            app.graph.lookup(id)
+        }
+        None => None
+    }
+}
+
+// viewer (main) block
 pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // inner blocks
     let chunks = Layout::default()
@@ -28,6 +39,7 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     draw_node(f, chunks[1], app);
 }
 
+// node list (topologically sorted) block
 fn draw_list<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let list: Vec<ListItem> = app
         .nodes
@@ -35,6 +47,8 @@ fn draw_list<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .iter()
         .map(|i| ListItem::new(vec![Spans::from(Span::raw(i.as_str()))]))
         .collect();
+
+    // TODO dim highlighting for adjacent nodes
     let list = List::new(list)
         .block(Block::default().borders(Borders::ALL).title("Nodes"))
         .highlight_style(Style::default().add_modifier(Modifier::BOLD))
@@ -42,6 +56,7 @@ fn draw_list<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     f.render_stateful_widget(list, chunk, &mut app.nodes.state);
 }
 
+// node metadata block
 fn draw_node<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
     let block = Block::default()
@@ -64,6 +79,7 @@ fn draw_node<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     draw_edges(f, chunks[1], app);
 }
 
+// node attr block
 fn draw_attrs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let block = Block::default().borders(Borders::ALL).title("Attrs");
 
@@ -75,8 +91,9 @@ fn draw_attrs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     }
 }
 
+// adjacent nodes block
 fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    // TODO unnecessary block to prevent multiple mutable borrows
+    // TODO remove this unnecessary block to prevent multiple mutable borrows
     let node = match selected(app) {
         Some(node) => Some(node.clone()),
         None => None,
@@ -103,6 +120,7 @@ fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     }
 }
 
+// TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, node: &Node, app: &mut App) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Prev Nodes");
@@ -123,6 +141,7 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, node: &Node, app: &mut 
     }
 }
 
+// TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, node: &Node, app: &mut App) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Next Nodes");
@@ -140,15 +159,5 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, node: &Node, app: &mut 
         f.render_widget(paragraph, chunk);
     } else {
         f.render_widget(block, chunk);
-    }
-}
-
-fn selected(app: &App) -> Option<&Node> {
-    match app.nodes.state.selected() {
-        Some(idx) => {
-            let id = &app.nodes.items[idx]; 
-            app.graph.lookup(id)
-        }
-        None => None
     }
 }
