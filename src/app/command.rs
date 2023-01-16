@@ -17,7 +17,6 @@ impl App {
                 Some(("render", _)) => self.render(),
                 _ => Some(format!("Err: no such command")),
             },
-            // TODO print out error to tui
             Err(msg) => Some(format!("Err: {:?}", msg))
         };
 

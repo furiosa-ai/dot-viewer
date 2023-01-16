@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use tui::{
     backend::Backend,
     layout::{ Constraint, Direction, Layout, Rect },
@@ -41,14 +42,35 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // node list (topologically sorted) block
 fn draw_list<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+    let (froms, tos) = match selected(app) {
+        Some(node) => {
+            let idx = app.graph.lookup.get_by_left(&node.id).unwrap();
+            let empty = HashSet::new();
+            let froms = app.graph.bwdmap.get(idx).unwrap_or(&empty);
+            let tos = app.graph.fwdmap.get(idx).unwrap_or(&empty);
+
+            (froms.clone(), tos.clone())
+        },
+        None => (HashSet::new(), HashSet::new())
+    };
+
     let list: Vec<ListItem> = app
         .nodes
         .items
         .iter()
-        .map(|i| ListItem::new(vec![Spans::from(Span::raw(i.as_str()))]))
+        .map(|s| {
+            let idx = app.graph.lookup.get_by_left(s).unwrap();
+            let mut item = ListItem::new(vec![Spans::from(Span::raw(s.as_str()))]);
+            if froms.contains(idx) {
+                item = item.style(Style::default().fg(Color::Red));
+            } else if tos.contains(idx) {
+                item = item.style(Style::default().fg(Color::Blue));
+            } 
+
+            item
+        })
         .collect();
 
-    // TODO dim highlighting for adjacent nodes
     let list = List::new(list)
         .block(Block::default().borders(Borders::ALL).title("Nodes"))
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
