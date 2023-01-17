@@ -10,7 +10,7 @@ use tui::{
     },
     Frame,
 };
-use crate::app::app::App;
+use crate::app::app::{ App, Mode, Focus };
 
 // viewer (main) block
 pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
@@ -51,6 +51,15 @@ fn draw_lists<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 }
 
 fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+    // surrounding block
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(match app.mode {
+            Mode::Traverse(Focus::All) => Color::Yellow,
+            _ => Color::White,
+        }))
+        .title("Nodes");
+
     let (froms, tos) = match app.all.selected() {
         Some(id) => (app.graph.froms(&id), app.graph.tos(&id)),
         None => (HashSet::new(), HashSet::new())
@@ -73,7 +82,7 @@ fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .collect();
 
     let list = List::new(list)
-        .block(Block::default().borders(Borders::ALL).title("Nodes"))
+        .block(block)
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
     f.render_stateful_widget(list, chunk, &mut app.all.state);
@@ -104,7 +113,14 @@ fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App) {
-    app.prevs(id);
+    // surrounding block
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(match app.mode {
+            Mode::Traverse(Focus::Prevs) => Color::Yellow,
+            _ => Color::White,
+        }))
+        .title("Prev Nodes");
 
     let list: Vec<ListItem> = app
         .prevs
@@ -114,7 +130,7 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App
         .collect();
     
     let list = List::new(list)
-        .block(Block::default().borders(Borders::ALL).title("Prev Nodes"))
+        .block(block)
         .highlight_style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
     
@@ -123,7 +139,14 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App) {
-    app.nexts(id);
+    // surrounding block
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(match app.mode {
+            Mode::Traverse(Focus::Nexts) => Color::Yellow,
+            _ => Color::White,
+        }))
+        .title("Next Nodes");
 
     let list: Vec<ListItem> = app
         .nexts
@@ -133,7 +156,7 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App
         .collect();
 
     let list = List::new(list)
-        .block(Block::default().borders(Borders::ALL).title("Next Nodes"))
+        .block(block)
         .highlight_style(Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
     f.render_stateful_widget(list, chunk, &mut app.nexts.state);

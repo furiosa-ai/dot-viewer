@@ -3,13 +3,23 @@ use tui::{
     layout::{ Constraint, Direction, Layout, Rect },
     style::{ Color, Modifier, Style },
     text::{ Span, Spans, Text },
-    widgets::Paragraph,
+    widgets::{ Block, Borders, Paragraph },
     Frame,
 };
 use crate::app::app::{ App, Mode };
 
 // command block
 pub fn draw_command<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+    // surrounding block
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(match app.mode {
+            Mode::Command => Color::Yellow,
+            _ => Color::White,
+        }))
+        .title("Command");
+    f.render_widget(block, chunk);
+
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -23,7 +33,7 @@ pub fn draw_command<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .split(chunk);
     draw_help(f, chunks[0], app);
     match app.mode {
-        Mode::Normal => draw_error(f, chunks[1], app),
+        Mode::Traverse(_) => draw_error(f, chunks[1], app),
         Mode::Command => draw_input(f, chunks[1], app)
     };
 }
@@ -31,7 +41,7 @@ pub fn draw_command<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 // help block
 fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let (msg, style) = match app.mode {
-        Mode::Normal => (
+        Mode::Traverse(_) => (
             vec![
                 Span::raw("Press "),
                 Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
@@ -76,14 +86,14 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let input = Paragraph::new(app.input.as_ref())
         .style(match app.mode {
-            Mode::Normal => Style::default(),
+            Mode::Traverse(_) => Style::default(),
             Mode::Command => Style::default().fg(Color::Yellow),
         });
     f.render_widget(input, chunk);
     
     // cursor
     match app.mode {
-        Mode::Normal => {}
+        Mode::Traverse(_) => {}
         Mode::Command => {
             f.set_cursor(
                 chunk.x + app.input.len() as u16,

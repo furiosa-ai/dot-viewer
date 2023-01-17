@@ -5,8 +5,14 @@ use dot_graph::{
 };
 
 pub enum Mode {
-    Normal,
+    Traverse(Focus),
     Command,
+}
+
+pub enum Focus {
+    All,
+    Prevs,
+    Nexts,
 }
 
 pub struct App {
@@ -30,7 +36,7 @@ impl App {
                 
         let mut app = App {
             quit: false,
-            mode: Mode::Normal,
+            mode: Mode::Traverse(Focus::All),
             input: String::from(""),
             history: Vec::new(),
             errormsg: None,
@@ -39,20 +45,21 @@ impl App {
             prevs: StatefulList::with_items(Vec::new()),
             nexts: StatefulList::with_items(Vec::new()),
         };
-
-        let id = app.all.selected().unwrap();
-        app.prevs(id.as_str());
-        app.nexts(id.as_str());
+ 
+        app.prevs();
+        app.nexts();
 
         app
     }
 
-    pub fn prevs(&mut self, id: &str) {
+    pub fn prevs(&mut self) {
+        let id = self.all.selected().unwrap();
         let prevs = self.graph.froms(&id).iter().map(|n| n.to_string()).collect();
         self.prevs = StatefulList::with_items(prevs);
     }
 
-    pub fn nexts(&mut self, id: &str) {
+    pub fn nexts(&mut self) {
+        let id = self.all.selected().unwrap();
         let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();
         self.nexts = StatefulList::with_items(nexts);
     }

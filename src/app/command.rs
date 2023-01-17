@@ -41,14 +41,16 @@ impl App {
         self.errormsg = msg;
     }
 
-    fn goto(&mut self, node: &str) -> Option<String> {
-        let idx = self.graph.lookup.get_by_left(node);
+    pub fn goto(&mut self, id: &str) -> Option<String> {
+        let idx = self.graph.lookup.get_by_left(id);
         match idx {
             Some(idx) => {
                 self.all.state.select(Some(*idx));
+                self.prevs();
+                self.nexts();
                 None
             },
-            None => Some(format!("Err: no such node {:?}", node))
+            None => Some(format!("Err: no such node {:?}", id))
         }
     }
 
