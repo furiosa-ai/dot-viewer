@@ -17,7 +17,7 @@ pub fn selected(app: &App) -> Option<&Node> {
     match app.nodes.state.selected() {
         Some(idx) => {
             let id = &app.nodes.items[idx]; 
-            app.graph.lookup(id)
+            app.graph.search(id)
         }
         None => None
     }
@@ -43,14 +43,7 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 // node list (topologically sorted) block
 fn draw_list<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let (froms, tos) = match selected(app) {
-        Some(node) => {
-            let idx = app.graph.lookup.get_by_left(&node.id).unwrap();
-            let empty = HashSet::new();
-            let froms = app.graph.bwdmap.get(idx).unwrap_or(&empty);
-            let tos = app.graph.fwdmap.get(idx).unwrap_or(&empty);
-
-            (froms.clone(), tos.clone())
-        },
+        Some(node) => (app.graph.froms(&node.id), app.graph.tos(&node.id)),
         None => (HashSet::new(), HashSet::new())
     };
 
@@ -58,12 +51,11 @@ fn draw_list<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .nodes
         .items
         .iter()
-        .map(|s| {
-            let idx = app.graph.lookup.get_by_left(s).unwrap();
-            let mut item = ListItem::new(vec![Spans::from(Span::raw(s.as_str()))]);
-            if froms.contains(idx) {
+        .map(|id| {
+            let mut item = ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]);
+            if froms.contains(id.as_str()) {
                 item = item.style(Style::default().fg(Color::Red));
-            } else if tos.contains(idx) {
+            } else if tos.contains(id.as_str()) {
                 item = item.style(Style::default().fg(Color::Blue));
             } 
 
@@ -147,20 +139,15 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, node: &Node, app: &mut 
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Prev Nodes");
 
-    let idx = app.graph.lookup.get_by_left(&node.id).unwrap();
-    if let Some(froms) = app.graph.bwdmap.get(idx) {
-        let mut text = String::from("");
-        for from in froms {
-            let from = app.graph.lookup.get_by_right(from).unwrap();
-            text.push_str(from);
-            text.push_str("\n");
-        }
-
-        let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
-        f.render_widget(paragraph, chunk);
-    } else {
-        f.render_widget(block, chunk);
+    let mut text = String::from("");
+    let froms = app.graph.froms(&node.id); 
+    for from in froms {
+        text.push_str(from);
+        text.push_str("\n");
     }
+
+    let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
+    f.render_widget(paragraph, chunk);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
@@ -168,18 +155,13 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, node: &Node, app: &mut 
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Next Nodes");
 
-    let idx = app.graph.lookup.get_by_left(&node.id).unwrap();
-    if let Some(tos) = app.graph.fwdmap.get(idx) {
-        let mut text = String::from("");
-        for to in tos {
-            let to = app.graph.lookup.get_by_right(to).unwrap();
-            text.push_str(to);
-            text.push_str("\n");
-        }
-
-        let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
-        f.render_widget(paragraph, chunk);
-    } else {
-        f.render_widget(block, chunk);
+    let mut text = String::from("");
+    let tos = app.graph.tos(&node.id); 
+    for to in tos {
+        text.push_str(to);
+        text.push_str("\n");
     }
+
+    let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
+    f.render_widget(paragraph, chunk);
 }
