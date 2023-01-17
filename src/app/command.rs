@@ -9,7 +9,7 @@ impl App {
             .subcommand_required(true)
             .allow_external_subcommands(true)
             .subcommand(
-                Command::new("goto")
+                Command::new("gt")
                     .arg(Arg::new("id"))
                     .arg_required_else_help(true),
             )
@@ -28,7 +28,7 @@ impl App {
 
         let msg = match cmd {
             Ok(cmd) => match cmd.subcommand() {
-                Some(("goto", args)) => {
+                Some(("gt", args)) => {
                     let node = args.get_one::<String>("id").unwrap();
                     self.goto(node)
                 }
