@@ -25,12 +25,32 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             ].as_ref()
         )
         .split(chunk);
-    draw_list(f, chunks[0], app);
-    draw_node(f, chunks[1], app);
+    draw_lists(f, chunks[0], app);
+    draw_metadata(f, chunks[1], app);
 }
 
 // node list (topologically sorted) block
-fn draw_list<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+fn draw_lists<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+    // surrounding block
+    let block = Block::default().borders(Borders::ALL).title("Graph Traversal");
+    f.render_widget(block, chunk);
+
+    // inner blocks
+    let chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .margin(1)
+        .constraints(
+            [
+                Constraint::Percentage(50),
+                Constraint::Percentage(50),
+            ].as_ref()
+        )
+        .split(chunk);
+    draw_nodes(f, chunks[0], app);
+    draw_edges(f, chunks[1], app);
+}
+
+fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let (froms, tos) = match app.nodes.selected() {
         Some(id) => (app.graph.froms(&id), app.graph.tos(&id)),
         None => (HashSet::new(), HashSet::new())
@@ -57,42 +77,6 @@ fn draw_list<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
     f.render_stateful_widget(list, chunk, &mut app.nodes.state);
-}
-
-// node metadata block
-fn draw_node<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    // surrounding block
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .title("Node Info");
-    f.render_widget(block, chunk);
-
-    // inner blocks
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(1)
-        .constraints(
-            [
-                Constraint::Percentage(50),
-                Constraint::Percentage(50),
-            ].as_ref()
-        )
-        .split(chunk);
-    draw_attrs(f, chunks[0], app);
-    draw_edges(f, chunks[1], app);
-}
-
-// node attr block
-fn draw_attrs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let block = Block::default().borders(Borders::ALL).title("Attrs");
-
-    if let Some(id) = app.nodes.selected() {
-        let node = app.graph.search(&id).unwrap(); 
-        let paragraph = Paragraph::new(node.to_string()).block(block).wrap(Wrap { trim: true });
-        f.render_widget(paragraph, chunk);
-    } else {
-        f.render_widget(block, chunk);
-    }
 }
 
 // adjacent nodes block
@@ -149,3 +133,19 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App
     let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
     f.render_widget(paragraph, chunk);
 }
+
+// node attr block
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+    // surrounding block
+    let block = Block::default().borders(Borders::ALL).title("Attrs");
+
+    if let Some(id) = app.nodes.selected() {
+        let node = app.graph.search(&id).unwrap(); 
+        let paragraph = Paragraph::new(node.to_string()).block(block).wrap(Wrap { trim: true });
+        f.render_widget(paragraph, chunk);
+    } else {
+        f.render_widget(block, chunk);
+    }
+}
+
+
