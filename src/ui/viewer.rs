@@ -97,25 +97,23 @@ fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let block = Block::default().borders(Borders::ALL).title("Edges");
     f.render_widget(block, chunk);
 
-    if let Some(id) = app.all.selected() {
-        // inner blocks
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .margin(1)
-            .constraints(
-                [
-                    Constraint::Percentage(50),
-                    Constraint::Percentage(50),
-                ].as_ref()
-            )
-            .split(chunk);
-        draw_prevs(f, chunks[0], &id, app);
-        draw_nexts(f, chunks[1], &id, app);
-    }
+    // inner blocks
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .margin(1)
+        .constraints(
+            [
+                Constraint::Percentage(50),
+                Constraint::Percentage(50),
+            ].as_ref()
+        )
+        .split(chunk);
+    draw_prevs(f, chunks[0], app);
+    draw_nexts(f, chunks[1], app);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App) {
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
     let block = Block::default()
         .borders(Borders::ALL)
@@ -141,7 +139,7 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App) {
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
     let block = Block::default()
         .borders(Borders::ALL)

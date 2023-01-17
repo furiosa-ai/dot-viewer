@@ -16,7 +16,7 @@ use tui::{
     Terminal,
 };
 
-pub fn launch() -> Result<(), Box<dyn Error>> {
+pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -30,7 +30,7 @@ pub fn launch() -> Result<(), Box<dyn Error>> {
 
     // create and run app
     // TODO accept path as command line args
-    let app = App::new("graph.dot");
+    let app = App::new(&path);
     let res = run(&mut terminal, app);
 
     // restore terminal 
