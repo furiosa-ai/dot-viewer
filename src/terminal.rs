@@ -33,13 +33,15 @@ pub fn launch() -> Result<(), Box<dyn Error>> {
     let app = App::new("graph.dot");
     let res = run(&mut terminal, app);
 
-    // restore terminal
-    disable_raw_mode()?;
+    // restore terminal 
+    terminal.clear()?;
+    let mut stdout = io::stdout();
     execute!(
-        terminal.backend_mut(),
+        stdout,
         LeaveAlternateScreen,
         DisableMouseCapture
     )?;
+    disable_raw_mode()?;
     terminal.show_cursor()?;
 
     if let Err(err) = res {
