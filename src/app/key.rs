@@ -41,13 +41,19 @@ impl App {
     fn enter(&mut self) {
         match &self.mode {
             Mode::Traverse(focus) => match focus {
-                Focus::Prevs => {
-                    let id = self.prevs.selected().unwrap();
-                    self.goto(&id); 
+                Focus::Prevs => match self.prevs.selected() {
+                    Some(id) => {
+                        self.goto(&id);
+                        ()
+                    },
+                    None => {},
                 },
-                Focus::Nexts => {
-                    let id = self.nexts.selected().unwrap();
-                    self.goto(&id);    
+                Focus::Nexts => match self.nexts.selected() {
+                    Some(id) => {
+                        self.goto(&id);
+                        ()
+                    },
+                    None => {},
                 },
                 _ => {},
             },
