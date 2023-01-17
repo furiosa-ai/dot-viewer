@@ -7,10 +7,16 @@ pub struct StatefulList<T> {
 
 impl<T: Clone> StatefulList<T> {
     pub fn with_items(items: Vec<T>) -> StatefulList<T> {
-        StatefulList {
+        let mut list = StatefulList {
             state: ListState::default(),
             items,
+        };
+
+        if list.items.len() > 0 {
+            list.state.select(Some(0));
         }
+
+        list
     }
 
     pub fn next(&mut self) {
