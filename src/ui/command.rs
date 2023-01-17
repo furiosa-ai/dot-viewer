@@ -47,7 +47,10 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
                 Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to exit, "),
                 Span::styled("!", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-                Span::raw(" to start entering command."),
+                Span::raw(" to start entering command, "),
+                Span::styled("tab", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::raw(" to navigate blocks."),
+
             ],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
