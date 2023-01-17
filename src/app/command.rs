@@ -45,7 +45,7 @@ impl App {
         let idx = self.graph.lookup.get_by_left(node);
         match idx {
             Some(idx) => {
-                self.nodes.state.select(Some(*idx));
+                self.all.state.select(Some(*idx));
                 None
             },
             None => Some(format!("Err: no such node {:?}", node))

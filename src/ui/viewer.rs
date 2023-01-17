@@ -51,13 +51,13 @@ fn draw_lists<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 }
 
 fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let (froms, tos) = match app.nodes.selected() {
+    let (froms, tos) = match app.all.selected() {
         Some(id) => (app.graph.froms(&id), app.graph.tos(&id)),
         None => (HashSet::new(), HashSet::new())
     };
 
     let list: Vec<ListItem> = app
-        .nodes
+        .all
         .items
         .iter()
         .map(|id| {
@@ -76,16 +76,16 @@ fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .block(Block::default().borders(Borders::ALL).title("Nodes"))
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
-    f.render_stateful_widget(list, chunk, &mut app.nodes.state);
+    f.render_stateful_widget(list, chunk, &mut app.all.state);
 }
 
 // adjacent nodes block
 fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    if let Some(id) = app.nodes.selected() {
-        // surrounding block
-        let block = Block::default().borders(Borders::ALL).title("Edges");
-        f.render_widget(block, chunk);
+    // surrounding block
+    let block = Block::default().borders(Borders::ALL).title("Edges");
+    f.render_widget(block, chunk);
 
+    if let Some(id) = app.all.selected() {
         // inner blocks
         let chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -104,34 +104,39 @@ fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App) {
-    // surrounding block
-    let block = Block::default().borders(Borders::ALL).title("Prev Nodes");
+    app.prevs(id);
 
-    let mut text = String::from("");
-    let froms = app.graph.froms(id); 
-    for from in froms {
-        text.push_str(from);
-        text.push_str("\n");
-    }
-
-    let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
-    f.render_widget(paragraph, chunk);
+    let list: Vec<ListItem> = app
+        .prevs
+        .items
+        .iter()
+        .map(|id| ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]))
+        .collect();
+    
+    let list = List::new(list)
+        .block(Block::default().borders(Borders::ALL).title("Prev Nodes"))
+        .highlight_style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))
+        .highlight_symbol("> ");
+    
+    f.render_stateful_widget(list, chunk, &mut app.prevs.state);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App) {
-    // surrounding block
-    let block = Block::default().borders(Borders::ALL).title("Next Nodes");
+    app.nexts(id);
 
-    let mut text = String::from("");
-    let tos = app.graph.tos(id); 
-    for to in tos {
-        text.push_str(to);
-        text.push_str("\n");
-    }
+    let list: Vec<ListItem> = app
+        .nexts
+        .items
+        .iter()
+        .map(|id| ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]))
+        .collect();
 
-    let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
-    f.render_widget(paragraph, chunk);
+    let list = List::new(list)
+        .block(Block::default().borders(Borders::ALL).title("Next Nodes"))
+        .highlight_style(Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD))
+        .highlight_symbol("> ");
+    f.render_stateful_widget(list, chunk, &mut app.nexts.state);
 }
 
 // node attr block
@@ -139,7 +144,7 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Attrs");
 
-    if let Some(id) = app.nodes.selected() {
+    if let Some(id) = app.all.selected() {
         let node = app.graph.search(&id).unwrap(); 
         let paragraph = Paragraph::new(node.to_string()).block(block).wrap(Wrap { trim: true });
         f.render_widget(paragraph, chunk);

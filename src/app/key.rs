@@ -73,7 +73,7 @@ impl App {
     fn up(&mut self) {
         match self.mode {
             Mode::Normal => {
-                self.nodes.previous();
+                self.all.previous();
             },
             _ => {},
         }
@@ -82,7 +82,7 @@ impl App {
     fn down(&mut self) {
         match self.mode {
             Mode::Normal => {
-                self.nodes.next();
+                self.all.next();
             },
             _ => {},
         }

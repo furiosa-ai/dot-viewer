@@ -18,22 +18,42 @@ pub struct App {
     pub history: Vec<String>,
 
     pub graph: Graph,
-    pub nodes: StatefulList<String>,
+    pub all: StatefulList<String>,
+    pub prevs: StatefulList<String>,
+    pub nexts: StatefulList<String>,
 }
 
 impl App {
-    pub fn new(path: &str) -> App{
+    pub fn new(path: &str) -> App {
         let graph = parse(path); 
-        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect(); 
-
-        App {
+        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();  
+                
+        let mut app = App {
             quit: false,
             mode: Mode::Normal,
             input: String::from(""),
             history: Vec::new(),
             errormsg: None,
             graph,
-            nodes: StatefulList::with_items(nodes),
-        }
+            all: StatefulList::with_items(nodes),
+            prevs: StatefulList::with_items(Vec::new()),
+            nexts: StatefulList::with_items(Vec::new()),
+        };
+
+        let id = app.all.selected().unwrap();
+        app.prevs(id.as_str());
+        app.nexts(id.as_str());
+
+        app
+    }
+
+    pub fn prevs(&mut self, id: &str) {
+        let prevs = self.graph.froms(&id).iter().map(|n| n.to_string()).collect();
+        self.prevs = StatefulList::with_items(prevs);
+    }
+
+    pub fn nexts(&mut self, id: &str) {
+        let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();
+        self.nexts = StatefulList::with_items(nexts);
     }
 }
