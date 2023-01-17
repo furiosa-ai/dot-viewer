@@ -45,6 +45,7 @@ impl App {
         let idx = self.graph.lookup.get_by_left(id);
         match idx {
             Some(idx) => {
+                // TODO merge below three lines into a function
                 self.all.state.select(Some(*idx));
                 self.prevs();
                 self.nexts();
