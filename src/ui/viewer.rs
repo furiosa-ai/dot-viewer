@@ -52,13 +52,16 @@ fn draw_lists<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
+    let idx = app.all.state.selected().unwrap();
+    let len = app.all.items.len();
+    let percentage = (idx as f32 / len as f32) * 100 as f32;
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(match app.mode {
             Mode::Traverse(Focus::All) => Color::Yellow,
             _ => Color::White,
         }))
-        .title("Nodes");
+        .title(format!("Nodes [{} / {} ({:.3}%)]", idx, len, percentage));
 
     let (froms, tos) = match app.all.selected() {
         Some(id) => (app.graph.froms(&id), app.graph.tos(&id)),
