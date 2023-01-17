@@ -74,7 +74,7 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // input block
 fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let input = Paragraph::new(app.command.as_ref())
+    let input = Paragraph::new(app.input.as_ref())
         .style(match app.mode {
             Mode::Normal => Style::default(),
             Mode::Command => Style::default().fg(Color::Yellow),
@@ -86,7 +86,7 @@ fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         Mode::Normal => {}
         Mode::Command => {
             f.set_cursor(
-                chunk.x + app.command.len() as u16,
+                chunk.x + app.input.len() as u16,
                 chunk.y,
             )
         }

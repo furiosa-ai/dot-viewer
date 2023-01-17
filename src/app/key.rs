@@ -14,14 +14,14 @@ impl App {
         }
     }
 
-    pub fn char(&mut self, c: char) {
+    fn char(&mut self, c: char) {
         match self.mode {
             Mode::Normal => self.normal_char(c),
             Mode::Command => self.command_char(c),
         } 
     }
 
-    pub fn normal_char(&mut self, c: char) {
+    fn normal_char(&mut self, c: char) {
         match c {
             'q' => {
                 self.quit = true;
@@ -33,44 +33,44 @@ impl App {
         }
     }
 
-    pub fn command_char(&mut self, c: char) {
-        self.command.push(c);
+    fn command_char(&mut self, c: char) {
+        self.input.push(c);
     }
 
-    pub fn enter(&mut self) {
+    fn enter(&mut self) {
         match self.mode {
             Mode::Command => {
-                let command: String = self.command.drain(..).collect();
+                let command: String = self.input.drain(..).collect();
                 self.history.push(command.clone());
                 self.exec(command); 
                 
-                self.command = String::from("");
+                self.input = String::from("");
                 self.mode = Mode::Normal;
             },
             _ => {},
         } 
     }
 
-    pub fn backspace(&mut self) {
+    fn backspace(&mut self) {
         match self.mode {
             Mode::Command => {
-                self.command.pop();
+                self.input.pop();
             },
             _ => {},
         } 
     }
 
-    pub fn esc(&mut self) {
+    fn esc(&mut self) {
         match self.mode {
             Mode::Command => {
-                self.command = String::from("");
+                self.input = String::from("");
                 self.mode = Mode::Normal;
             },
             _ => {},
         } 
     }
 
-    pub fn up(&mut self) {
+    fn up(&mut self) {
         match self.mode {
             Mode::Normal => {
                 self.nodes.previous();
@@ -79,7 +79,7 @@ impl App {
         }
     }
 
-    pub fn down(&mut self) {
+    fn down(&mut self) {
         match self.mode {
             Mode::Normal => {
                 self.nodes.next();
