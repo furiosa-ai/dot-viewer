@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 tui = "0.19"
 crossterm = "0.25"
-dot-graph = { path = "../dot-graph" }
+dot-graph = { path = "dot-graph" }
 clap = { version = "4.1.1", features = ["derive"] }
