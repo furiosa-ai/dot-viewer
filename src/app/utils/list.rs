@@ -5,7 +5,7 @@ pub struct StatefulList<T> {
     pub items: Vec<T>,
 }
 
-impl<T> StatefulList<T> {
+impl<T: Clone> StatefulList<T> {
     pub fn with_items(items: Vec<T>) -> StatefulList<T> {
         StatefulList {
             state: ListState::default(),
@@ -39,6 +39,13 @@ impl<T> StatefulList<T> {
             None => 0,
         };
         self.state.select(Some(i));
+    }
+
+    pub fn selected(&self) -> Option<T> {
+        match self.state.selected() {
+            Some(i) => Some(self.items[i].clone()),
+            None => None,
+        }
     }
 }
 

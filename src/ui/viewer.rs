@@ -10,18 +10,7 @@ use tui::{
     },
     Frame,
 };
-use dot_graph::structs::Node;
 use crate::app::app::App;
-
-pub fn selected(app: &App) -> Option<&Node> {
-    match app.nodes.state.selected() {
-        Some(idx) => {
-            let id = &app.nodes.items[idx]; 
-            app.graph.search(id)
-        }
-        None => None
-    }
-}
 
 // viewer (main) block
 pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
@@ -42,8 +31,8 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // node list (topologically sorted) block
 fn draw_list<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let (froms, tos) = match selected(app) {
-        Some(node) => (app.graph.froms(&node.id), app.graph.tos(&node.id)),
+    let (froms, tos) = match app.nodes.selected() {
+        Some(id) => (app.graph.froms(&id), app.graph.tos(&id)),
         None => (HashSet::new(), HashSet::new())
     };
 
@@ -97,7 +86,8 @@ fn draw_node<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 fn draw_attrs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let block = Block::default().borders(Borders::ALL).title("Attrs");
 
-    if let Some(node) = selected(app) {
+    if let Some(id) = app.nodes.selected() {
+        let node = app.graph.search(&id).unwrap(); 
         let paragraph = Paragraph::new(node.to_string()).block(block).wrap(Wrap { trim: true });
         f.render_widget(paragraph, chunk);
     } else {
@@ -107,13 +97,7 @@ fn draw_attrs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // adjacent nodes block
 fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    // TODO remove this unnecessary block to prevent multiple mutable borrows
-    let node = match selected(app) {
-        Some(node) => Some(node.clone()),
-        None => None,
-    };
-
-    if let Some(node) = node {
+    if let Some(id) = app.nodes.selected() {
         // surrounding block
         let block = Block::default().borders(Borders::ALL).title("Edges");
         f.render_widget(block, chunk);
@@ -129,18 +113,18 @@ fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
                 ].as_ref()
             )
             .split(chunk);
-        draw_prevs(f, chunks[0], &node, app);
-        draw_nexts(f, chunks[1], &node, app);
+        draw_prevs(f, chunks[0], &id, app);
+        draw_nexts(f, chunks[1], &id, app);
     }
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, node: &Node, app: &mut App) {
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Prev Nodes");
 
     let mut text = String::from("");
-    let froms = app.graph.froms(&node.id); 
+    let froms = app.graph.froms(id); 
     for from in froms {
         text.push_str(from);
         text.push_str("\n");
@@ -151,12 +135,12 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, node: &Node, app: &mut 
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, node: &Node, app: &mut App) {
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, id: &str, app: &mut App) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Next Nodes");
 
     let mut text = String::from("");
-    let tos = app.graph.tos(&node.id); 
+    let tos = app.graph.tos(id); 
     for to in tos {
         text.push_str(to);
         text.push_str("\n");
