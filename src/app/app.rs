@@ -7,13 +7,15 @@ use dot_graph::{
     structs::Graph,
 };
 
+#[derive(Debug, Clone)]
 pub enum Mode {
-    Traverse(Focus),
+    Traverse,
     Search,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Focus {
-    All,
+    Current,
     Prevs,
     Nexts,
 }
@@ -26,39 +28,68 @@ pub struct App {
     pub errormsg: Option<String>,
     pub history: Vec<String>,
 
+    pub lists: Lists,
+}
+
+pub struct Lists {
     pub graph: Graph,
     pub trie: SearchTrie,
-    pub all: StatefulList<String>,
+
+    pub focus: Focus,
+    pub current: StatefulList<String>,
     pub prevs: StatefulList<String>,
     pub nexts: StatefulList<String>,
+    pub search: StatefulList<String>,
 }
 
 impl App {
-    pub fn new(path: &str) -> App {
-        let graph = parse(path); 
-        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();  
-        let trie = SearchTrie::new(&nodes);
-                
-        let mut app = App {
+    pub fn new(path: &str) -> App {                
+        App {
             quit: false,
-            mode: Mode::Traverse(Focus::All),
+            mode: Mode::Traverse,
             input: String::from(""),
             history: Vec::new(),
             errormsg: None,
+            lists: Lists::new(path),
+        }
+    }
+}
+
+impl Lists {
+    pub fn new(path: &str) -> Lists {
+        let graph = parse(path); 
+        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();  
+        let trie = SearchTrie::new(&nodes);
+
+        let mut lists = Lists {
             graph,
             trie,
-            all: StatefulList::with_items(nodes),
+            focus: Focus::Current,
+            current: StatefulList::with_items(nodes),
             prevs: StatefulList::with_items(Vec::new()),
             nexts: StatefulList::with_items(Vec::new()),
+            search: StatefulList::with_items(Vec::new()),
         };
- 
-        app.update_list();
 
-        app
+        lists.update();
+
+        lists
     }
 
-    pub fn update_list(&mut self) {
-        let id = self.all.selected().unwrap();
+    pub fn current(&self) -> Option<String> {
+        self.current.selected()
+    }
+
+    pub fn idx(&self) -> Option<usize> {
+        self.current.state.selected()
+    }
+
+    pub fn count(&self) -> usize {
+        self.current.items.len()
+    }
+
+    pub fn update(&mut self) {
+        let id = self.current().unwrap();
 
         let prevs = self.graph.froms(&id).iter().map(|n| n.to_string()).collect();
         self.prevs = StatefulList::with_items(prevs);

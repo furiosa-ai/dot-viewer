@@ -10,7 +10,7 @@ use tui::{
     },
     Frame,
 };
-use crate::app::app::{ App, Mode, Focus };
+use crate::app::app::{ App, Lists, Focus };
 
 // viewer (main) block
 pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
@@ -25,12 +25,12 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             ].as_ref()
         )
         .split(chunk);
-    draw_lists(f, chunks[0], app);
-    draw_metadata(f, chunks[1], app);
+    draw_lists(f, chunks[0], &mut app.lists);
+    draw_metadata(f, chunks[1], &mut app.lists);
 }
 
 // node list (topologically sorted) block
-fn draw_lists<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+fn draw_lists<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Graph Traversal");
     f.render_widget(block, chunk);
@@ -46,30 +46,36 @@ fn draw_lists<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             ].as_ref()
         )
         .split(chunk);
-    draw_nodes(f, chunks[0], app);
-    draw_edges(f, chunks[1], app);
+    draw_nodes(f, chunks[0], lists);
+    draw_edges(f, chunks[1], lists);
 }
 
-fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    // surrounding block
-    let idx = app.all.state.selected().unwrap();
-    let len = app.all.items.len();
-    let percentage = (idx as f32 / len as f32) * 100 as f32;
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(match app.mode {
-            Mode::Traverse(Focus::All) => Color::Yellow,
-            _ => Color::White,
-        }))
-        .title(format!("Nodes [{} / {} ({:.3}%)]", idx, len, percentage));
+fn draw_highlighted_block(current: Focus, expected: Focus, title: String) -> Block<'static> {
+    let color = if current == expected { Color::Yellow } else { Color::White };
 
-    let (froms, tos) = match app.all.selected() {
-        Some(id) => (app.graph.froms(&id), app.graph.tos(&id)),
+    Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(color))
+        .title(title)
+}
+
+fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
+    // surrounding block 
+    let title = {
+        let idx = lists.idx().unwrap();
+        let len = lists.count();
+        let percentage = (idx as f32 / len as f32) * 100 as f32;
+        format!("Nodes [{} / {} ({:.3}%)]", idx, len, percentage)
+    };
+    let block = draw_highlighted_block(lists.focus.clone(), Focus::Current, title);
+
+    let (froms, tos) = match &lists.current() {
+        Some(id) => (lists.graph.froms(&id).clone(), lists.graph.tos(&id)),
         None => (HashSet::new(), HashSet::new())
     };
 
-    let list: Vec<ListItem> = app
-        .all
+    let list: Vec<ListItem> = lists
+        .current
         .items
         .iter()
         .map(|id| {
@@ -88,11 +94,12 @@ fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .block(block)
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
-    f.render_stateful_widget(list, chunk, &mut app.all.state);
+
+    f.render_stateful_widget(list, chunk, &mut lists.current.state);
 }
 
 // adjacent nodes block
-fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -103,22 +110,16 @@ fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             ].as_ref()
         )
         .split(chunk);
-    draw_prevs(f, chunks[0], app);
-    draw_nexts(f, chunks[1], app);
+    draw_prevs(f, chunks[0], lists);
+    draw_nexts(f, chunks[1], lists);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
     // surrounding block
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(match app.mode {
-            Mode::Traverse(Focus::Prevs) => Color::Yellow,
-            _ => Color::White,
-        }))
-        .title("Prev Nodes");
+    let block = draw_highlighted_block(lists.focus.clone(), Focus::Prevs, "Prev Nodes".to_string());
 
-    let list: Vec<ListItem> = app
+    let list: Vec<ListItem> = lists
         .prevs
         .items
         .iter()
@@ -130,21 +131,15 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .highlight_style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
     
-    f.render_stateful_widget(list, chunk, &mut app.prevs.state);
+    f.render_stateful_widget(list, chunk, &mut lists.prevs.state);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
     // surrounding block
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(match app.mode {
-            Mode::Traverse(Focus::Nexts) => Color::Yellow,
-            _ => Color::White,
-        }))
-        .title("Next Nodes");
+    let block = draw_highlighted_block(lists.focus.clone(), Focus::Nexts, "Next Nodes".to_string());
 
-    let list: Vec<ListItem> = app
+    let list: Vec<ListItem> = lists
         .nexts
         .items
         .iter()
@@ -155,21 +150,20 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .block(block)
         .highlight_style(Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
-    f.render_stateful_widget(list, chunk, &mut app.nexts.state);
+
+    f.render_stateful_widget(list, chunk, &mut lists.nexts.state);
 }
 
 // node attr block
-fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Attrs");
 
-    if let Some(id) = app.all.selected() {
-        let node = app.graph.search(&id).unwrap(); 
+    if let Some(id) = lists.current() {
+        let node = lists.graph.search(&id).unwrap(); 
         let paragraph = Paragraph::new(node.to_string()).block(block).wrap(Wrap { trim: true });
         f.render_widget(paragraph, chunk);
     } else {
         f.render_widget(block, chunk);
     }
 }
-
-

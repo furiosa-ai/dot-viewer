@@ -1,5 +1,5 @@
 use crossterm::event::{ KeyCode, KeyEvent };
-use crate::app::app::{ App, Mode, Focus };
+use crate::app::app::{ App, Lists, Mode, Focus };
 
 impl App {    
     pub fn key(&mut self, key: KeyEvent) {
@@ -20,7 +20,7 @@ impl App {
 
     fn char(&mut self, c: char) {
         match self.mode {
-            Mode::Traverse(_) => self.normal_char(c),
+            Mode::Traverse => self.normal_char(c),
             Mode::Search => self.search_char(c),
         } 
     }
@@ -43,29 +43,13 @@ impl App {
 
     fn enter(&mut self) {
         match &self.mode {
-            Mode::Traverse(focus) => match focus {
-                Focus::Prevs => match self.prevs.selected() {
-                    Some(id) => {
-                        self.goto(&id);
-                        ()
-                    },
-                    None => {},
-                },
-                Focus::Nexts => match self.nexts.selected() {
-                    Some(id) => {
-                        self.goto(&id);
-                        ()
-                    },
-                    None => {},
-                },
-                _ => {},
-            },
+            Mode::Traverse => self.lists.enter(),
             Mode::Search => {
                 let keyword: String = self.input.drain(..).collect();
                 self.history.push(keyword.clone());
-                self.search(keyword); 
+                self.lists.search(keyword); 
                 
-                self.mode = Mode::Traverse(Focus::All);
+                self.mode = Mode::Traverse;
             },
         } 
     }
@@ -83,7 +67,7 @@ impl App {
         match self.mode {
             Mode::Search => {
                 self.input = String::from("");
-                self.mode = Mode::Traverse(Focus::All);
+                self.mode = Mode::Traverse;
             },
             _ => {},
         } 
@@ -101,57 +85,75 @@ impl App {
 
     fn up(&mut self) {
         match &self.mode {
-            Mode::Traverse(focus) => match focus {
-                Focus::All => {
-                    self.all.previous();
-                    self.update_list();
-                },
-                Focus::Prevs => self.prevs.previous(),
-                Focus::Nexts => self.nexts.previous(),
-            },
+            Mode::Traverse => self.lists.up(),
             _ => {},
         }
     }
 
     fn down(&mut self) {
         match &self.mode {
-            Mode::Traverse(focus) => match focus {
-                Focus::All => {
-                    self.all.next();
-                    self.update_list();
-                },
-                Focus::Prevs => self.prevs.next(),
-                Focus::Nexts => self.nexts.next(),
-            },
+            Mode::Traverse => self.lists.down(),
             _ => {},
         }
     } 
 
     fn right(&mut self) {
         match &self.mode {
-            Mode::Traverse(focus) => {
-                // all -> prevs -> nexts
-                self.mode = Mode::Traverse(match focus {
-                    Focus::All => Focus::Prevs,
-                    Focus::Prevs => Focus::Nexts,
-                    Focus::Nexts => Focus::All,
-                })
-            },
+            Mode::Traverse => self.lists.right(),
             _ => {},
         }
     }
 
     fn left(&mut self) {
         match &self.mode {
-            Mode::Traverse(focus) => {
-                // all <- prevs <- nexts
-                self.mode = Mode::Traverse(match focus {
-                    Focus::All => Focus::Nexts,
-                    Focus::Prevs => Focus::All,
-                    Focus::Nexts => Focus::Prevs,
-                })
-            },
+            Mode::Traverse => self.lists.left(),
             _ => {},
+        }
+    }
+}
+
+impl Lists {
+    pub fn enter(&mut self) {
+        let id = match self.focus {
+            Focus::Prevs => self.prevs.selected(),
+            Focus::Nexts => self.nexts.selected(),
+            _ => None,
+        };
+
+        if let Some(id) = id {
+            self.goto(&id);
+        }
+    }
+
+    pub fn up(&mut self) {
+        match self.focus {
+            Focus::Current => self.current.previous(),
+            Focus::Prevs => self.prevs.previous(),
+            Focus::Nexts => self.nexts.previous(),
+        }
+    }
+
+    pub fn down(&mut self) {
+        match self.focus {
+            Focus::Current => self.current.next(),
+            Focus::Prevs => self.prevs.next(),
+            Focus::Nexts => self.nexts.next(),
+        }
+    }
+
+    pub fn right(&mut self) {
+        self.focus = match self.focus {
+            Focus::Current => Focus::Prevs,
+            Focus::Prevs => Focus::Nexts,
+            Focus::Nexts => Focus::Current,
+        }
+    }
+
+    pub fn left(&mut self) {
+        self.focus = match self.focus {
+            Focus::Current => Focus::Nexts,
+            Focus::Prevs => Focus::Current,
+            Focus::Nexts => Focus::Prevs,
         }
     }
 }
