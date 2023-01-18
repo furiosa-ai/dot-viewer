@@ -9,6 +9,7 @@ impl App {
             KeyCode::Backspace => self.backspace(),
             KeyCode::Esc => self.esc(),
             KeyCode::Tab => self.tab(),
+            KeyCode::BackTab => self.backtab(),
             KeyCode::Up => self.up(),
             KeyCode::Down => self.down(),
             KeyCode::Right => self.right(),
@@ -100,9 +101,22 @@ impl App {
 
     fn tab(&mut self) {
         match &self.mode {
+            Mode::Traverse => {
+                self.tab = (self.tab + 1) % self.ctxts.len(); 
+            }
             Mode::Search => {
                 let keyword: String = self.input.clone();
                 self.autocomplete(keyword);
+            },
+        }
+    }
+
+    fn backtab(&mut self) {
+        match &self.mode {
+            Mode::Traverse => if self.tab > 0 {
+                self.tab -= 1; 
+            } else {
+                self.tab = self.ctxts.len() - 1;
             },
             _ => {},
         }
