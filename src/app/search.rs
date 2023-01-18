@@ -18,10 +18,10 @@ impl Lists {
     }
 
     pub fn goto(&mut self, id: &str) -> Option<String> {
-        let idx = self.graph.lookup.get_by_left(id);
+        let idx = self.current.find(id.to_string());
         match idx {
             Some(idx) => {
-                self.current.select(*idx);
+                self.current.select(idx);
                 self.update();
                 None
             },

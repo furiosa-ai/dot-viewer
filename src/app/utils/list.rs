@@ -5,7 +5,7 @@ pub struct StatefulList<T> {
     pub items: Vec<T>,
 }
 
-impl<T: Clone> StatefulList<T> {
+impl<T: Clone + Eq> StatefulList<T> {
     pub fn with_items(items: Vec<T>) -> StatefulList<T> {
         let mut list = StatefulList {
             state: ListState::default(),
@@ -62,6 +62,10 @@ impl<T: Clone> StatefulList<T> {
             Some(i) => Some(self.items[i].clone()),
             None => None,
         }
+    }
+
+    pub fn find(&self, key: T) -> Option<usize> {
+        self.items.iter().position(|item| *item == key) 
     }
 }
 

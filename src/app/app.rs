@@ -88,6 +88,7 @@ impl Lists {
         self.current.items.len()
     }
 
+    // TODO only show prev, next nodes contained in current list?
     pub fn update(&mut self) {
         let id = self.current().unwrap();
 
