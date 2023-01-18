@@ -47,7 +47,7 @@ impl App {
             Mode::Search => {
                 let keyword: String = self.input.drain(..).collect();
                 self.history.push(keyword.clone());
-                self.lists.search(keyword); 
+                self.errormsg = self.lists.search(keyword); 
                 
                 self.mode = Mode::Traverse;
             },

@@ -13,8 +13,8 @@ impl Lists {
         self.trie.autocomplete(&keyword)
     }
 
-    pub fn search(&mut self, keyword: String) {
-        self.goto(&keyword);
+    pub fn search(&mut self, keyword: String) -> Option<String> {
+        self.goto(&keyword)
     }
 
     pub fn goto(&mut self, id: &str) -> Option<String> {
