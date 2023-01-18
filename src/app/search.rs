@@ -17,15 +17,18 @@ impl Ctxt {
         self.trie.autocomplete(&keyword)
     }
 
-    pub fn search(&mut self, keyword: String) -> Option<String> {
+    pub fn search(&mut self, keyword: String) -> Result<Ctxt, String> {
         if self.search.items.len() > 0 {
-            self.current = StatefulList::with_items(self.search.items.clone());
-            self.search = StatefulList::with_items(Vec::new());
-            self.update_adjacent();
+            let mut ctxt = Ctxt::new(&self.graph, keyword);
+            ctxt.current = StatefulList::with_items(self.search.items.clone());
+            ctxt.search = StatefulList::with_items(Vec::new());
+            ctxt.update_adjacent();
 
-            None
+            self.search = StatefulList::with_items(Vec::new());
+
+            Ok(ctxt)
         } else {
-            Some(format!("Err: no match for keyword {:?}", keyword))
+            Err(format!("Err: no match for keyword {:?}", keyword))
         }
     }
 

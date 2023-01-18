@@ -50,18 +50,33 @@ impl App {
     fn enter(&mut self) {
         let tab = &mut self.ctxts[self.tab];
 
-        match &self.mode {
-            Mode::Traverse => tab.enter(),
+        let ctxt = match &self.mode {
+            Mode::Traverse => {
+                tab.enter();
+                None
+            },
             Mode::Search => {
                 let keyword: String = self.input.drain(..).collect();
                 self.history.push(keyword.clone());
-                self.errormsg = tab.search(keyword); 
-                
+
                 // TODO this is redundant
                 self.mode = Mode::Traverse;
                 tab.focus = Focus::Current;
+
+                match tab.search(keyword) {
+                    Ok(ctxt) => Some(ctxt), 
+                    Err(msg) => {
+                        self.errormsg = Some(msg);
+                        None
+                    }
+                } 
             },
-        } 
+        };
+
+        if let Some(ctxt) = ctxt {
+            self.ctxts.push(ctxt);
+            self.tab = self.ctxts.len() - 1;
+        }
     }
 
     fn backspace(&mut self) {
