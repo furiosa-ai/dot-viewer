@@ -8,6 +8,7 @@ impl App {
             KeyCode::Enter => self.enter(),
             KeyCode::Backspace => self.backspace(),
             KeyCode::Esc => self.esc(),
+            KeyCode::Tab => self.tab(),
             KeyCode::Up => self.up(),
             KeyCode::Down => self.down(),
             KeyCode::Right => self.right(),
@@ -64,7 +65,6 @@ impl App {
                 self.history.push(command.clone());
                 self.exec(command); 
                 
-                self.input = String::from("");
                 self.mode = Mode::Traverse(Focus::All);
             },
         } 
@@ -87,6 +87,16 @@ impl App {
             },
             _ => {},
         } 
+    }
+
+    fn tab(&mut self) {
+        match &self.mode {
+            Mode::Command => {
+                let command: String = self.input.clone();
+                self.autocomplete(command);
+            },
+            _ => {},
+        }
     }
 
     fn up(&mut self) {

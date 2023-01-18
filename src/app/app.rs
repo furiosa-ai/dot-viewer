@@ -1,4 +1,7 @@
-use crate::app::utils::list::StatefulList;
+use crate::app::utils::{
+    list::StatefulList,
+    trie::SearchTrie,
+};
 use dot_graph::{
     parser::parse,
     structs::Graph,
@@ -24,6 +27,7 @@ pub struct App {
     pub history: Vec<String>,
 
     pub graph: Graph,
+    pub trie: SearchTrie,
     pub all: StatefulList<String>,
     pub prevs: StatefulList<String>,
     pub nexts: StatefulList<String>,
@@ -33,6 +37,7 @@ impl App {
     pub fn new(path: &str) -> App {
         let graph = parse(path); 
         let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();  
+        let trie = SearchTrie::new(&nodes);
                 
         let mut app = App {
             quit: false,
@@ -41,6 +46,7 @@ impl App {
             history: Vec::new(),
             errormsg: None,
             graph,
+            trie,
             all: StatefulList::with_items(nodes),
             prevs: StatefulList::with_items(Vec::new()),
             nexts: StatefulList::with_items(Vec::new()),
