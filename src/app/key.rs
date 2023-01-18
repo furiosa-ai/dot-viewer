@@ -9,6 +9,7 @@ impl App {
             KeyCode::Backspace => self.backspace(),
             KeyCode::Esc => self.esc(),
             KeyCode::Tab => self.tab(),
+            KeyCode::BackTab => self.backtab(),
             KeyCode::Up => self.up(),
             KeyCode::Down => self.down(),
             _ => {},
@@ -95,6 +96,20 @@ impl App {
                     Focus::All => Focus::Prevs,
                     Focus::Prevs => Focus::Nexts,
                     Focus::Nexts => Focus::All,
+                })
+            },
+            _ => {},
+        }
+    }
+
+    fn backtab(&mut self) {
+        match &self.mode {
+            Mode::Traverse(focus) => {
+                // all <- prevs <- nexts
+                self.mode = Mode::Traverse(match focus {
+                    Focus::All => Focus::Nexts,
+                    Focus::Prevs => Focus::All,
+                    Focus::Nexts => Focus::Prevs,
                 })
             },
             _ => {},
