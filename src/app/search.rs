@@ -1,4 +1,7 @@
-use crate::app::app::{ App, Lists };
+use crate::app::{
+    app::{ App, Lists },
+    utils::list::StatefulList,
+};
 
 impl App {
     pub fn autocomplete(&mut self, keyword: String) {
@@ -22,10 +25,29 @@ impl Lists {
         match idx {
             Some(idx) => {
                 self.current.select(idx);
-                self.update();
+                self.update_adjacent();
                 None
             },
             None => Some(format!("Err: no such node {:?}", id))
         }
+    }
+
+    // TODO only show prev, next nodes contained in current list?
+    pub fn update_adjacent(&mut self) {
+        let id = self.current().unwrap();
+
+        let prevs = self.graph.froms(&id).iter().map(|n| n.to_string()).collect();
+        self.prevs = StatefulList::with_items(prevs);
+
+        let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();
+        self.nexts = StatefulList::with_items(nexts);
+    }
+
+    // TODO only show prev, next nodes contained in current list?
+    pub fn update_search(&mut self, key: String) {
+        let nodes = self.current.items.clone();
+        let search: Vec<String> = nodes.iter().filter(|id| id.starts_with(&key)).cloned().collect();
+
+        self.search = StatefulList::with_items(search);
     }
 }

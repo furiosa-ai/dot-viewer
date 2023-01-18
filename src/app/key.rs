@@ -39,6 +39,7 @@ impl App {
 
     fn search_char(&mut self, c: char) {
         self.input.push(c);
+        self.lists.update_search(self.input.clone());
     }
 
     fn enter(&mut self) {

@@ -71,7 +71,7 @@ impl Lists {
             search: StatefulList::with_items(Vec::new()),
         };
 
-        lists.update();
+        lists.update_adjacent();
 
         lists
     }
@@ -86,16 +86,5 @@ impl Lists {
 
     pub fn count(&self) -> usize {
         self.current.items.len()
-    }
-
-    // TODO only show prev, next nodes contained in current list?
-    pub fn update(&mut self) {
-        let id = self.current().unwrap();
-
-        let prevs = self.graph.froms(&id).iter().map(|n| n.to_string()).collect();
-        self.prevs = StatefulList::with_items(prevs);
-
-        let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();
-        self.nexts = StatefulList::with_items(nexts);
-    }
+    } 
 }

@@ -10,7 +10,7 @@ use tui::{
     },
     Frame,
 };
-use crate::app::app::{ App, Lists, Focus };
+use crate::app::app::{ App, Lists, Mode, Focus };
 
 // viewer (main) block
 pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
@@ -25,8 +25,13 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             ].as_ref()
         )
         .split(chunk);
-    draw_lists(f, chunks[0], &mut app.lists);
-    draw_metadata(f, chunks[1], &mut app.lists);
+    match app.mode {
+        Mode::Traverse => {
+            draw_lists(f, chunks[0], &mut app.lists);
+            draw_metadata(f, chunks[1], &mut app.lists);
+        },
+        Mode::Search => draw_result(f, chunk, &mut app.lists),
+    } 
 }
 
 // node list (topologically sorted) block
@@ -166,4 +171,22 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
     } else {
         f.render_widget(block, chunk);
     }
+}
+
+// search result block
+fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
+    // surrounding block
+    let block = draw_highlighted_block(lists.focus.clone(), Focus::Nexts, "Searching...".to_string());
+
+    let list: Vec<ListItem> = lists
+        .search
+        .items
+        .iter()
+        .map(|id| ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]))
+        .collect();
+
+    let list = List::new(list)
+        .block(block);
+
+    f.render_stateful_widget(list, chunk, &mut lists.search.state);
 }
