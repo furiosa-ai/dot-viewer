@@ -39,9 +39,10 @@ Users may interact with dot-viewer in TUI to traverse the graph.
 Key | Effect
 --- | ---
 `q` | quit
-`tab` | move focus between lists (highlighted in yellow borders)
 `up` | traverse the focused node list
 `down` | traverse the focused node list
+`right` | move focus between lists (highlighted in yellow borders)
+`left` | move focus between lists (highlighted in yellow borders)
 `enter` | when traversing in prev/next node list, goto the selected node
 `enter` | or execute the buffered command
 `!` | all characters following the bang are buffered as a command
