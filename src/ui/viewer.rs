@@ -25,12 +25,10 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             ].as_ref()
         )
         .split(chunk);
+    draw_lists(f, chunks[0], &mut app.lists);
     match app.mode {
-        Mode::Traverse => {
-            draw_lists(f, chunks[0], &mut app.lists);
-            draw_metadata(f, chunks[1], &mut app.lists);
-        },
-        Mode::Search => draw_result(f, chunk, &mut app.lists),
+        Mode::Traverse => draw_metadata(f, chunks[1], &mut app.lists),
+        Mode::Search => draw_result(f, chunks[1], &mut app.lists),
     } 
 }
 
@@ -176,7 +174,7 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
 // search result block
 fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
     // surrounding block
-    let block = draw_highlighted_block(lists.focus.clone(), Focus::Nexts, "Searching...".to_string());
+    let block = draw_highlighted_block(lists.focus.clone(), Focus::Search, "Searching...".to_string());
 
     let list: Vec<ListItem> = lists
         .search
@@ -186,7 +184,9 @@ fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
         .collect();
 
     let list = List::new(list)
-        .block(block);
+        .block(block)
+        .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
+        .highlight_symbol("> ");
 
     f.render_stateful_widget(list, chunk, &mut lists.search.state);
 }

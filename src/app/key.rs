@@ -31,7 +31,9 @@ impl App {
                 self.quit = true;
             },
             '/' => {
+                // TODO this is redundant
                 self.mode = Mode::Search;
+                self.lists.focus = Focus::Search;
             },
             _ => {},
         }
@@ -50,7 +52,9 @@ impl App {
                 self.history.push(keyword.clone());
                 self.errormsg = self.lists.search(keyword); 
                 
+                // TODO this is redundant
                 self.mode = Mode::Traverse;
+                self.lists.focus = Focus::Current;
             },
         } 
     }
@@ -86,15 +90,13 @@ impl App {
 
     fn up(&mut self) {
         match &self.mode {
-            Mode::Traverse => self.lists.up(),
-            _ => {},
+            _ => self.lists.up(),
         }
     }
 
     fn down(&mut self) {
         match &self.mode {
-            Mode::Traverse => self.lists.down(),
-            _ => {},
+            _ => self.lists.down(),
         }
     } 
 
@@ -131,6 +133,7 @@ impl Lists {
             Focus::Current => self.current.previous(),
             Focus::Prevs => self.prevs.previous(),
             Focus::Nexts => self.nexts.previous(),
+            Focus::Search => self.search.previous(),
         }
     }
 
@@ -139,6 +142,7 @@ impl Lists {
             Focus::Current => self.current.next(),
             Focus::Prevs => self.prevs.next(),
             Focus::Nexts => self.nexts.next(),
+            Focus::Search => self.search.next(),
         }
     }
 
@@ -147,6 +151,7 @@ impl Lists {
             Focus::Current => Focus::Prevs,
             Focus::Prevs => Focus::Nexts,
             Focus::Nexts => Focus::Current,
+            Focus::Search => Focus::Search,
         }
     }
 
@@ -155,6 +160,7 @@ impl Lists {
             Focus::Current => Focus::Nexts,
             Focus::Prevs => Focus::Current,
             Focus::Nexts => Focus::Prevs,
+            Focus::Search => Focus::Search,
         }
     }
 }

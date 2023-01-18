@@ -17,7 +17,15 @@ impl Lists {
     }
 
     pub fn search(&mut self, keyword: String) -> Option<String> {
-        self.goto(&keyword)
+        if self.search.items.len() > 0 {
+            self.current = StatefulList::with_items(self.search.items.clone());
+            self.search = StatefulList::with_items(Vec::new());
+            self.update_adjacent();
+
+            None
+        } else {
+            Some(format!("Err: no match for keyword {:?}", keyword))
+        }
     }
 
     pub fn goto(&mut self, id: &str) -> Option<String> {

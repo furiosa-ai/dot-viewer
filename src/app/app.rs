@@ -7,6 +7,7 @@ use dot_graph::{
     structs::Graph,
 };
 
+// TODO merge Mode and Focus into one enum?
 #[derive(Debug, Clone)]
 pub enum Mode {
     Traverse,
@@ -18,6 +19,7 @@ pub enum Focus {
     Current,
     Prevs,
     Nexts,
+    Search,
 }
 
 pub struct App {
