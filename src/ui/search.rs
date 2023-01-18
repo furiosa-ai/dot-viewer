@@ -8,16 +8,16 @@ use tui::{
 };
 use crate::app::app::{ App, Mode };
 
-// command block
-pub fn draw_command<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+// search block
+pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(match app.mode {
-            Mode::Command => Color::Yellow,
+            Mode::Search => Color::Yellow,
             _ => Color::White,
         }))
-        .title("Command");
+        .title("Search");
     f.render_widget(block, chunk);
 
     // inner blocks
@@ -34,7 +34,7 @@ pub fn draw_command<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     draw_help(f, chunks[0], app);
     match app.mode {
         Mode::Traverse(_) => draw_error(f, chunks[1], app),
-        Mode::Command => draw_input(f, chunks[1], app)
+        Mode::Search => draw_input(f, chunks[1], app)
     };
 }
 
@@ -46,21 +46,21 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
                 Span::raw("Press "),
                 Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to exit, "),
-                Span::styled("!", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-                Span::raw(" to start entering command, "),
+                Span::styled("/", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::raw(" to start search, "),
                 Span::styled("tab", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to navigate blocks."),
 
             ],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
-        Mode::Command => (
+        Mode::Search => (
             vec![
                 Span::raw("Press "),
                 Span::styled("Esc", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-                Span::raw(" to stop editing, "),
+                Span::raw(" to stop search, "),
                 Span::styled("Enter", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-                Span::raw(" to execute the command"),
+                Span::raw(" to search"),
             ],
             Style::default(),
         ),
@@ -90,14 +90,14 @@ fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let input = Paragraph::new(app.input.as_ref())
         .style(match app.mode {
             Mode::Traverse(_) => Style::default(),
-            Mode::Command => Style::default().fg(Color::Yellow),
+            Mode::Search => Style::default().fg(Color::Yellow),
         });
     f.render_widget(input, chunk);
     
     // cursor
     match app.mode {
         Mode::Traverse(_) => {}
-        Mode::Command => {
+        Mode::Search => {
             f.set_cursor(
                 chunk.x + app.input.len() as u16,
                 chunk.y,

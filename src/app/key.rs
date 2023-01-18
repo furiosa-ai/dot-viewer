@@ -21,7 +21,7 @@ impl App {
     fn char(&mut self, c: char) {
         match self.mode {
             Mode::Traverse(_) => self.normal_char(c),
-            Mode::Command => self.command_char(c),
+            Mode::Search => self.search_char(c),
         } 
     }
 
@@ -30,14 +30,14 @@ impl App {
             'q' => {
                 self.quit = true;
             },
-            '!' => {
-                self.mode = Mode::Command;
+            '/' => {
+                self.mode = Mode::Search;
             },
             _ => {},
         }
     }
 
-    fn command_char(&mut self, c: char) {
+    fn search_char(&mut self, c: char) {
         self.input.push(c);
     }
 
@@ -60,10 +60,10 @@ impl App {
                 },
                 _ => {},
             },
-            Mode::Command => {
-                let command: String = self.input.drain(..).collect();
-                self.history.push(command.clone());
-                self.exec(command); 
+            Mode::Search => {
+                let keyword: String = self.input.drain(..).collect();
+                self.history.push(keyword.clone());
+                self.search(keyword); 
                 
                 self.mode = Mode::Traverse(Focus::All);
             },
@@ -72,7 +72,7 @@ impl App {
 
     fn backspace(&mut self) {
         match self.mode {
-            Mode::Command => {
+            Mode::Search => {
                 self.input.pop();
             },
             _ => {},
@@ -81,7 +81,7 @@ impl App {
 
     fn esc(&mut self) {
         match self.mode {
-            Mode::Command => {
+            Mode::Search => {
                 self.input = String::from("");
                 self.mode = Mode::Traverse(Focus::All);
             },
@@ -91,9 +91,9 @@ impl App {
 
     fn tab(&mut self) {
         match &self.mode {
-            Mode::Command => {
-                let command: String = self.input.clone();
-                self.autocomplete(command);
+            Mode::Search => {
+                let keyword: String = self.input.clone();
+                self.autocomplete(keyword);
             },
             _ => {},
         }

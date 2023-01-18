@@ -9,7 +9,7 @@ use dot_graph::{
 
 pub enum Mode {
     Traverse(Focus),
-    Command,
+    Search,
 }
 
 pub enum Focus {
