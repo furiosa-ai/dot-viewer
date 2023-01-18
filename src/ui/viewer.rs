@@ -20,8 +20,8 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .margin(1)
         .constraints(
             [
-                Constraint::Percentage(50),
-                Constraint::Percentage(50),
+                Constraint::Percentage(60),
+                Constraint::Percentage(40),
             ].as_ref()
         )
         .split(chunk);
@@ -93,14 +93,9 @@ fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // adjacent nodes block
 fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    // surrounding block
-    let block = Block::default().borders(Borders::ALL).title("Edges");
-    f.render_widget(block, chunk);
-
     // inner blocks
     let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(1)
+        .direction(Direction::Horizontal)
         .constraints(
             [
                 Constraint::Percentage(50),

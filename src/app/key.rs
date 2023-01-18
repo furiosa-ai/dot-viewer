@@ -8,10 +8,11 @@ impl App {
             KeyCode::Enter => self.enter(),
             KeyCode::Backspace => self.backspace(),
             KeyCode::Esc => self.esc(),
-            KeyCode::Tab => self.tab(),
-            KeyCode::BackTab => self.backtab(),
             KeyCode::Up => self.up(),
             KeyCode::Down => self.down(),
+            KeyCode::Right => self.right(),
+            KeyCode::Left => self.left(),
+
             _ => {},
         }
     }
@@ -88,34 +89,6 @@ impl App {
         } 
     }
 
-    fn tab(&mut self) {
-        match &self.mode {
-            Mode::Traverse(focus) => {
-                // all -> prevs -> nexts
-                self.mode = Mode::Traverse(match focus {
-                    Focus::All => Focus::Prevs,
-                    Focus::Prevs => Focus::Nexts,
-                    Focus::Nexts => Focus::All,
-                })
-            },
-            _ => {},
-        }
-    }
-
-    fn backtab(&mut self) {
-        match &self.mode {
-            Mode::Traverse(focus) => {
-                // all <- prevs <- nexts
-                self.mode = Mode::Traverse(match focus {
-                    Focus::All => Focus::Nexts,
-                    Focus::Prevs => Focus::All,
-                    Focus::Nexts => Focus::Prevs,
-                })
-            },
-            _ => {},
-        }
-    }
-
     fn up(&mut self) {
         match &self.mode {
             Mode::Traverse(focus) => match focus {
@@ -143,4 +116,32 @@ impl App {
             _ => {},
         }
     } 
+
+    fn right(&mut self) {
+        match &self.mode {
+            Mode::Traverse(focus) => {
+                // all -> prevs -> nexts
+                self.mode = Mode::Traverse(match focus {
+                    Focus::All => Focus::Prevs,
+                    Focus::Prevs => Focus::Nexts,
+                    Focus::Nexts => Focus::All,
+                })
+            },
+            _ => {},
+        }
+    }
+
+    fn left(&mut self) {
+        match &self.mode {
+            Mode::Traverse(focus) => {
+                // all <- prevs <- nexts
+                self.mode = Mode::Traverse(match focus {
+                    Focus::All => Focus::Nexts,
+                    Focus::Prevs => Focus::All,
+                    Focus::Nexts => Focus::Prevs,
+                })
+            },
+            _ => {},
+        }
+    }
 }
