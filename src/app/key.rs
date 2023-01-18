@@ -1,5 +1,5 @@
 use crossterm::event::{ KeyCode, KeyEvent };
-use crate::app::app::{ App, Lists, Mode, Focus };
+use crate::app::app::{ App, Ctxt, Mode, Focus };
 
 impl App {    
     pub fn key(&mut self, key: KeyEvent) {
@@ -33,7 +33,7 @@ impl App {
             '/' => {
                 // TODO this is redundant
                 self.mode = Mode::Search;
-                self.lists.focus = Focus::Search;
+                self.ctxt.focus = Focus::Search;
             },
             _ => {},
         }
@@ -41,20 +41,20 @@ impl App {
 
     fn search_char(&mut self, c: char) {
         self.input.push(c);
-        self.lists.update_search(self.input.clone());
+        self.ctxt.update_search(self.input.clone());
     }
 
     fn enter(&mut self) {
         match &self.mode {
-            Mode::Traverse => self.lists.enter(),
+            Mode::Traverse => self.ctxt.enter(),
             Mode::Search => {
                 let keyword: String = self.input.drain(..).collect();
                 self.history.push(keyword.clone());
-                self.errormsg = self.lists.search(keyword); 
+                self.errormsg = self.ctxt.search(keyword); 
                 
                 // TODO this is redundant
                 self.mode = Mode::Traverse;
-                self.lists.focus = Focus::Current;
+                self.ctxt.focus = Focus::Current;
             },
         } 
     }
@@ -90,32 +90,32 @@ impl App {
 
     fn up(&mut self) {
         match &self.mode {
-            _ => self.lists.up(),
+            _ => self.ctxt.up(),
         }
     }
 
     fn down(&mut self) {
         match &self.mode {
-            _ => self.lists.down(),
+            _ => self.ctxt.down(),
         }
     } 
 
     fn right(&mut self) {
         match &self.mode {
-            Mode::Traverse => self.lists.right(),
+            Mode::Traverse => self.ctxt.right(),
             _ => {},
         }
     }
 
     fn left(&mut self) {
         match &self.mode {
-            Mode::Traverse => self.lists.left(),
+            Mode::Traverse => self.ctxt.left(),
             _ => {},
         }
     }
 }
 
-impl Lists {
+impl Ctxt {
     pub fn enter(&mut self) {
         let id = match self.focus {
             Focus::Prevs => self.prevs.selected(),

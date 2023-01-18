@@ -1,17 +1,17 @@
 use crate::app::{
-    app::{ App, Lists },
+    app::{ App, Ctxt },
     utils::list::StatefulList,
 };
 
 impl App {
     pub fn autocomplete(&mut self, keyword: String) {
-        if let Some(node) = self.lists.autocomplete(keyword) {
+        if let Some(node) = self.ctxt.autocomplete(keyword) {
             self.input = node;
         }
     }
 }
 
-impl Lists {
+impl Ctxt {
     pub fn autocomplete(&mut self, keyword: String) -> Option<String> {
         self.trie.autocomplete(&keyword)
     }

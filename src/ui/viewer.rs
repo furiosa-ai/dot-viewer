@@ -10,7 +10,7 @@ use tui::{
     },
     Frame,
 };
-use crate::app::app::{ App, Lists, Mode, Focus };
+use crate::app::app::{ App, Ctxt, Mode, Focus };
 
 // viewer (main) block
 pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
@@ -25,15 +25,15 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             ].as_ref()
         )
         .split(chunk);
-    draw_lists(f, chunks[0], &mut app.lists);
+    draw_ctxt(f, chunks[0], &mut app.ctxt);
     match app.mode {
-        Mode::Traverse => draw_metadata(f, chunks[1], &mut app.lists),
-        Mode::Search => draw_result(f, chunks[1], &mut app.lists),
+        Mode::Traverse => draw_metadata(f, chunks[1], &mut app.ctxt),
+        Mode::Search => draw_result(f, chunks[1], &mut app.ctxt),
     } 
 }
 
 // node list (topologically sorted) block
-fn draw_lists<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
+fn draw_ctxt<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Graph Traversal");
     f.render_widget(block, chunk);
@@ -49,8 +49,8 @@ fn draw_lists<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
             ].as_ref()
         )
         .split(chunk);
-    draw_nodes(f, chunks[0], lists);
-    draw_edges(f, chunks[1], lists);
+    draw_nodes(f, chunks[0], ctxt);
+    draw_edges(f, chunks[1], ctxt);
 }
 
 fn draw_highlighted_block(current: Focus, expected: Focus, title: String) -> Block<'static> {
@@ -62,22 +62,22 @@ fn draw_highlighted_block(current: Focus, expected: Focus, title: String) -> Blo
         .title(title)
 }
 
-fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
+fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
     // surrounding block 
     let title = {
-        let idx = lists.idx().unwrap();
-        let len = lists.count();
+        let idx = ctxt.idx().unwrap();
+        let len = ctxt.count();
         let percentage = (idx as f32 / len as f32) * 100 as f32;
         format!("Nodes [{} / {} ({:.3}%)]", idx, len, percentage)
     };
-    let block = draw_highlighted_block(lists.focus.clone(), Focus::Current, title);
+    let block = draw_highlighted_block(ctxt.focus.clone(), Focus::Current, title);
 
-    let (froms, tos) = match &lists.current() {
-        Some(id) => (lists.graph.froms(&id).clone(), lists.graph.tos(&id)),
+    let (froms, tos) = match &ctxt.current() {
+        Some(id) => (ctxt.graph.froms(&id).clone(), ctxt.graph.tos(&id)),
         None => (HashSet::new(), HashSet::new())
     };
 
-    let list: Vec<ListItem> = lists
+    let list: Vec<ListItem> = ctxt
         .current
         .items
         .iter()
@@ -98,11 +98,11 @@ fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut lists.current.state);
+    f.render_stateful_widget(list, chunk, &mut ctxt.current.state);
 }
 
 // adjacent nodes block
-fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
+fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -113,16 +113,16 @@ fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
             ].as_ref()
         )
         .split(chunk);
-    draw_prevs(f, chunks[0], lists);
-    draw_nexts(f, chunks[1], lists);
+    draw_prevs(f, chunks[0], ctxt);
+    draw_nexts(f, chunks[1], ctxt);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
     // surrounding block
-    let block = draw_highlighted_block(lists.focus.clone(), Focus::Prevs, "Prev Nodes".to_string());
+    let block = draw_highlighted_block(ctxt.focus.clone(), Focus::Prevs, "Prev Nodes".to_string());
 
-    let list: Vec<ListItem> = lists
+    let list: Vec<ListItem> = ctxt
         .prevs
         .items
         .iter()
@@ -134,15 +134,15 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
         .highlight_style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
     
-    f.render_stateful_widget(list, chunk, &mut lists.prevs.state);
+    f.render_stateful_widget(list, chunk, &mut ctxt.prevs.state);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
     // surrounding block
-    let block = draw_highlighted_block(lists.focus.clone(), Focus::Nexts, "Next Nodes".to_string());
+    let block = draw_highlighted_block(ctxt.focus.clone(), Focus::Nexts, "Next Nodes".to_string());
 
-    let list: Vec<ListItem> = lists
+    let list: Vec<ListItem> = ctxt
         .nexts
         .items
         .iter()
@@ -154,16 +154,16 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
         .highlight_style(Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut lists.nexts.state);
+    f.render_stateful_widget(list, chunk, &mut ctxt.nexts.state);
 }
 
 // node attr block
-fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Attrs");
 
-    if let Some(id) = lists.current() {
-        let node = lists.graph.search(&id).unwrap(); 
+    if let Some(id) = ctxt.current() {
+        let node = ctxt.graph.search(&id).unwrap(); 
         let paragraph = Paragraph::new(node.to_string()).block(block).wrap(Wrap { trim: true });
         f.render_widget(paragraph, chunk);
     } else {
@@ -172,11 +172,11 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
 }
 
 // search result block
-fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
+fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
     // surrounding block
-    let block = draw_highlighted_block(lists.focus.clone(), Focus::Search, "Searching...".to_string());
+    let block = draw_highlighted_block(ctxt.focus.clone(), Focus::Search, "Searching...".to_string());
 
-    let list: Vec<ListItem> = lists
+    let list: Vec<ListItem> = ctxt
         .search
         .items
         .iter()
@@ -188,5 +188,5 @@ fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, lists: &mut Lists) {
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut lists.search.state);
+    f.render_stateful_widget(list, chunk, &mut ctxt.search.state);
 }

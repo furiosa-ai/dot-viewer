@@ -30,10 +30,10 @@ pub struct App {
     pub errormsg: Option<String>,
     pub history: Vec<String>,
 
-    pub lists: Lists,
+    pub ctxt: Ctxt,
 }
 
-pub struct Lists {
+pub struct Ctxt {
     pub graph: Graph,
     pub trie: SearchTrie,
 
@@ -52,18 +52,18 @@ impl App {
             input: String::from(""),
             history: Vec::new(),
             errormsg: None,
-            lists: Lists::new(path),
+            ctxt: Ctxt::new(path),
         }
     }
 }
 
-impl Lists {
-    pub fn new(path: &str) -> Lists {
+impl Ctxt {
+    pub fn new(path: &str) -> Ctxt {
         let graph = parse(path); 
         let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();  
         let trie = SearchTrie::new(&nodes);
 
-        let mut lists = Lists {
+        let mut ctxt = Ctxt {
             graph,
             trie,
             focus: Focus::Current,
@@ -73,9 +73,9 @@ impl Lists {
             search: StatefulList::with_items(Vec::new()),
         };
 
-        lists.update_adjacent();
+        ctxt.update_adjacent();
 
-        lists
+        ctxt
     }
 
     pub fn current(&self) -> Option<String> {
