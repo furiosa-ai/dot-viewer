@@ -120,10 +120,8 @@ impl App {
         match &self.mode {
             Mode::Traverse(focus) => match focus {
                 Focus::All => {
-                    // TODO merge below three lines into a function
                     self.all.previous();
-                    self.prevs();
-                    self.nexts();
+                    self.update_list();
                 },
                 Focus::Prevs => self.prevs.previous(),
                 Focus::Nexts => self.nexts.previous(),
@@ -136,10 +134,8 @@ impl App {
         match &self.mode {
             Mode::Traverse(focus) => match focus {
                 Focus::All => {
-                    // TODO merge below three lines into a function
                     self.all.next();
-                    self.prevs();
-                    self.nexts();
+                    self.update_list();
                 },
                 Focus::Prevs => self.prevs.next(),
                 Focus::Nexts => self.nexts.next(),

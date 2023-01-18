@@ -19,7 +19,6 @@ impl App {
     }
 
     pub fn exec(&mut self, command: String) {
-        // create clap commands and parse given command
         let commands: Vec<&str> = command.split_whitespace().collect();
         
         // parse command using clap
@@ -45,10 +44,8 @@ impl App {
         let idx = self.graph.lookup.get_by_left(id);
         match idx {
             Some(idx) => {
-                // TODO merge below three lines into a function
-                self.all.state.select(Some(*idx));
-                self.prevs();
-                self.nexts();
+                self.all.select(*idx);
+                self.update_list();
                 None
             },
             None => Some(format!("Err: no such node {:?}", id))

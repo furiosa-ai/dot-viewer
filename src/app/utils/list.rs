@@ -51,6 +51,12 @@ impl<T: Clone> StatefulList<T> {
         }
     }
 
+    pub fn select(&mut self, idx: usize) {
+        if idx < self.items.len() {
+            self.state.select(Some(idx));
+        }
+    }
+
     pub fn selected(&self) -> Option<T> {
         match self.state.selected() {
             Some(i) => Some(self.items[i].clone()),

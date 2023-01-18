@@ -46,20 +46,17 @@ impl App {
             nexts: StatefulList::with_items(Vec::new()),
         };
  
-        app.prevs();
-        app.nexts();
+        app.update_list();
 
         app
     }
 
-    pub fn prevs(&mut self) {
+    pub fn update_list(&mut self) {
         let id = self.all.selected().unwrap();
+
         let prevs = self.graph.froms(&id).iter().map(|n| n.to_string()).collect();
         self.prevs = StatefulList::with_items(prevs);
-    }
 
-    pub fn nexts(&mut self) {
-        let id = self.all.selected().unwrap();
         let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();
         self.nexts = StatefulList::with_items(nexts);
     }
