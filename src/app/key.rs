@@ -33,7 +33,8 @@ impl App {
             '/' => {
                 // TODO this is redundant
                 self.mode = Mode::Search;
-                self.ctxt.focus = Focus::Search;
+                let tab = &mut self.ctxts[self.tab];
+                tab.focus = Focus::Search;
             },
             _ => {},
         }
@@ -41,20 +42,24 @@ impl App {
 
     fn search_char(&mut self, c: char) {
         self.input.push(c);
-        self.ctxt.update_search(self.input.clone());
+
+        let tab = &mut self.ctxts[self.tab];
+        tab.update_search(self.input.clone());
     }
 
     fn enter(&mut self) {
+        let tab = &mut self.ctxts[self.tab];
+
         match &self.mode {
-            Mode::Traverse => self.ctxt.enter(),
+            Mode::Traverse => tab.enter(),
             Mode::Search => {
                 let keyword: String = self.input.drain(..).collect();
                 self.history.push(keyword.clone());
-                self.errormsg = self.ctxt.search(keyword); 
+                self.errormsg = tab.search(keyword); 
                 
                 // TODO this is redundant
                 self.mode = Mode::Traverse;
-                self.ctxt.focus = Focus::Current;
+                tab.focus = Focus::Current;
             },
         } 
     }
@@ -89,27 +94,31 @@ impl App {
     }
 
     fn up(&mut self) {
+        let tab = &mut self.ctxts[self.tab];
         match &self.mode {
-            _ => self.ctxt.up(),
+            _ => tab.up(),
         }
     }
 
     fn down(&mut self) {
+        let tab = &mut self.ctxts[self.tab];
         match &self.mode {
-            _ => self.ctxt.down(),
+            _ => tab.down(),
         }
     } 
 
     fn right(&mut self) {
+        let tab = &mut self.ctxts[self.tab];
         match &self.mode {
-            Mode::Traverse => self.ctxt.right(),
+            Mode::Traverse => tab.right(),
             _ => {},
         }
     }
 
     fn left(&mut self) {
+        let tab = &mut self.ctxts[self.tab];
         match &self.mode {
-            Mode::Traverse => self.ctxt.left(),
+            Mode::Traverse => tab.left(),
             _ => {},
         }
     }

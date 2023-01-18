@@ -5,7 +5,8 @@ use crate::app::{
 
 impl App {
     pub fn autocomplete(&mut self, keyword: String) {
-        if let Some(node) = self.ctxt.autocomplete(keyword) {
+        let ctxt = &mut self.ctxts[self.tab];
+        if let Some(node) = ctxt.autocomplete(keyword) {
             self.input = node;
         }
     }

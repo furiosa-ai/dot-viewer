@@ -25,15 +25,18 @@ pub enum Focus {
 pub struct App {
     pub quit: bool,
     pub mode: Mode,
+    pub tab: usize,
 
     pub input: String, 
     pub errormsg: Option<String>,
     pub history: Vec<String>,
 
-    pub ctxt: Ctxt,
+    pub ctxts: Vec<Ctxt>,
 }
 
 pub struct Ctxt {
+    pub title: String,
+
     pub graph: Graph,
     pub trie: SearchTrie,
 
@@ -49,10 +52,11 @@ impl App {
         App {
             quit: false,
             mode: Mode::Traverse,
+            tab: 0,
             input: String::from(""),
             history: Vec::new(),
             errormsg: None,
-            ctxt: Ctxt::new(path),
+            ctxts: vec![Ctxt::new(path)],
         }
     }
 }
@@ -64,6 +68,7 @@ impl Ctxt {
         let trie = SearchTrie::new(&nodes);
 
         let mut ctxt = Ctxt {
+            title: String::from("DAG"),
             graph,
             trie,
             focus: Focus::Current,

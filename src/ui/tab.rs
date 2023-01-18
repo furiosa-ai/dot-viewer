@@ -10,10 +10,10 @@ use tui::{
     },
     Frame,
 };
-use crate::app::app::{ App, Ctxt, Mode, Focus };
+use crate::app::app::{ Ctxt, Focus };
 
-// viewer (main) block
-pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+// current tab 
+pub fn draw_tab<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -25,15 +25,15 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             ].as_ref()
         )
         .split(chunk);
-    draw_ctxt(f, chunks[0], &mut app.ctxt);
-    match app.mode {
-        Mode::Traverse => draw_metadata(f, chunks[1], &mut app.ctxt),
-        Mode::Search => draw_result(f, chunks[1], &mut app.ctxt),
+    draw_nav(f, chunks[0], ctxt);
+    match ctxt.focus { 
+        Focus::Search => draw_result(f, chunks[1], ctxt),
+        _ => draw_metadata(f, chunks[1], ctxt),
     } 
 }
 
-// node list (topologically sorted) block
-fn draw_ctxt<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
+// navigation block
+fn draw_nav<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Graph Traversal");
     f.render_widget(block, chunk);
