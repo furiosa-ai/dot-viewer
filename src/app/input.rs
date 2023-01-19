@@ -76,11 +76,14 @@ impl Viewer {
     }
 
     pub fn update_filter(&mut self, key: String) {
+        let mut filter: Vec<(String, Vec<usize>)> = Vec::new();
         let nodes = self.current.items.clone();
-        let filter: Vec<String> = nodes.iter().filter(|id| id.starts_with(&key)).cloned().collect();
-
         let highlight: Vec<usize> = (0..key.len()).collect();
-        let filter: Vec<(String, Vec<usize>)> = filter.iter().map(|id| (id.clone(), highlight.clone())).collect();
+        for id in nodes {
+            if id.starts_with(&key) {
+                filter.push((id.clone(), highlight.clone()));
+            }
+        }
 
         self.filter = StatefulList::with_items(filter);
     }

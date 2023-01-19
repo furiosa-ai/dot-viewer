@@ -14,7 +14,6 @@ impl App {
             KeyCode::Down => self.down(),
             KeyCode::Right => self.right(),
             KeyCode::Left => self.left(),
-
             _ => {},
         }
     }
