@@ -17,6 +17,21 @@ impl Viewer {
         }
     }
 
+    pub fn filter(&mut self, key: String) -> Result<Viewer, String> {
+        if self.filter.items.is_empty() {
+            return Err(format!("Err: no match for key {:?}", key));
+        }
+
+        // TODO instead of cloning the graph, make a subgraph
+        let mut viewer = Viewer::new(format!("{} > {}", self.title, key), self.graph.clone());
+        viewer.current = StatefulList::with_items(self.filter.items.iter().map(|item| item.0.clone()).collect());
+        viewer.update_adjacent();
+
+        self.filter = StatefulList::with_items(Vec::new());
+
+        Ok(viewer)
+    }
+
     pub fn update_adjacent(&mut self) {
         let id = self.current().unwrap();
 
@@ -58,5 +73,15 @@ impl Viewer {
             }
         }
         self.cache = StatefulList::with_items(cache);
+    }
+
+    pub fn update_filter(&mut self, key: String) {
+        let nodes = self.current.items.clone();
+        let filter: Vec<String> = nodes.iter().filter(|id| id.starts_with(&key)).cloned().collect();
+
+        let highlight: Vec<usize> = (0..key.len()).collect();
+        let filter: Vec<(String, Vec<usize>)> = filter.iter().map(|id| (id.clone(), highlight.clone())).collect();
+
+        self.filter = StatefulList::with_items(filter);
     }
 }

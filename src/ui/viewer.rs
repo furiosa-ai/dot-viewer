@@ -47,8 +47,11 @@ fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
         .split(chunk);
     match viewer.focus {
         Focus::Search => {
-            draw_match(f, chunks[0], viewer);
+            draw_search_match(f, chunks[0], viewer);
         },
+        Focus::Filter => {
+            draw_filter_match(f, chunks[0], viewer);
+        }
         _ => {
             draw_current(f, chunks[0], viewer);
             draw_adjacent(f, chunks[1], viewer);
@@ -58,7 +61,7 @@ fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
 
 fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     match viewer.focus {
-        Focus::Search => {},
+        Focus::Search | Focus::Filter => {},
         _ => draw_metadata(f, chunk, viewer)
     }
 }
@@ -173,7 +176,7 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer)
 }
 
 // search result block
-fn draw_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+fn draw_search_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // surrounding block
     let block = draw_highlighted_block(viewer.focus.clone(), Focus::Search, "Searching...".to_string());
 
@@ -205,6 +208,41 @@ fn draw_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
         .highlight_symbol("> ");
 
     f.render_stateful_widget(list, chunk, &mut viewer.search.state);
+}
+
+// search result block
+fn draw_filter_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+    // surrounding block
+    let block = draw_highlighted_block(viewer.focus.clone(), Focus::Filter, "Filtering...".to_string());
+
+    let list: Vec<ListItem> = viewer
+        .filter
+        .items
+        .iter()
+        .map(|item| {
+            let mut spans = Vec::new();
+            let id = &item.0;
+            let highlight = &item.1;
+            for (idx, c) in id.chars().enumerate() {
+                let span = if highlight.contains(&idx) {
+                    Span::styled(c.to_string(), Style::default().bg(Color::DarkGray).add_modifier(Modifier::BOLD))
+                } else {
+                    Span::raw(c.to_string())
+                };
+
+                spans.push(span);
+            }
+
+            ListItem::new(vec![Spans::from(spans)])
+        })
+        .collect();
+
+    let list = List::new(list)
+        .block(block)
+        .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
+        .highlight_symbol("> ");
+
+    f.render_stateful_widget(list, chunk, &mut viewer.filter.state);
 }
 
 fn draw_highlighted_block(current: Focus, expected: Focus, title: String) -> Block<'static> {

@@ -21,43 +21,64 @@ impl App {
 
     fn char(&mut self, c: char) {
         match self.mode {
-            Mode::Navigate => self.nav_char(c),
-            Mode::Search => self.search_char(c),
+            Mode::Navigate => self.char_nav(c),
+            Mode::Input => self.char_input(c),
         } 
     }
 
-    fn nav_char(&mut self, c: char) {
+    fn char_nav(&mut self, c: char) {
         match c {
             'q' => self.quit = true,
-            '/' => self.to_search_mode(),
+            '/' => self.to_input_mode(Focus::Search),
+            'f' => self.to_input_mode(Focus::Filter),
+            'c' => self.tabs.close(),
             _ => {},
         }
     }
 
-    fn search_char(&mut self, c: char) {
+    fn char_input(&mut self, c: char) {
         self.input.push(c);
 
         let viewer = self.tabs.selected();
-        viewer.update_search_fwd(self.input.clone());
+        viewer.char(self.input.clone());
     }
 
     fn enter(&mut self) {
         let viewer = self.tabs.selected();
-        viewer.enter();
 
-        match self.mode {
-            Mode::Search => self.to_nav_mode(),
-            _ => {},
+        match viewer.focus {
+            Focus::Filter => {
+                let key: String = self.input.drain(..).collect();
+                self.history.push(key.clone());
+
+                match viewer.filter(key) {
+                    Ok(viewer) => {
+                        self.tabs.open(viewer);
+                    },
+                    Err(msg) => {
+                        self.errormsg = Some(msg);
+                    },
+                }
+
+                self.to_nav_mode();
+            },
+            Focus::Search => {
+                viewer.enter();
+                self.to_nav_mode();
+            },
+            _ => {
+                viewer.enter();
+            },
         }
     }
 
     fn backspace(&mut self) {
         match self.mode {
-            Mode::Search => {
+            Mode::Input => {
                 self.input.pop();
 
                 let viewer = self.tabs.selected();
-                viewer.update_search_bwd(self.input.clone());
+                viewer.backspace(self.input.clone());
             },
             _ => {},
         } 
@@ -65,7 +86,7 @@ impl App {
 
     fn esc(&mut self) {
         match self.mode {
-            Mode::Search => {
+            Mode::Input => {
                 self.input = String::from("");
                 self.to_nav_mode();
             },
@@ -75,12 +96,14 @@ impl App {
 
     fn tab(&mut self) {
         match &self.mode {
+            Mode::Navigate => self.tabs.next(),
             _ => {},
         }
     }
 
     fn backtab(&mut self) {
         match &self.mode {
+            Mode::Navigate => self.tabs.previous(),
             _ => {},
         }
     }
@@ -107,6 +130,22 @@ impl App {
 }
 
 impl Viewer {
+    pub fn char(&mut self, input: String) {
+        match self.focus {
+            Focus::Search => self.update_search_fwd(input),
+            Focus::Filter => self.update_filter(input),
+            _ => {},
+        }
+    }
+
+    pub fn backspace(&mut self, input: String) {
+        match self.focus {
+            Focus::Search => self.update_search_bwd(input),
+            Focus::Filter => self.update_filter(input),
+            _ => {},
+        }
+    }
+
     pub fn enter(&mut self) {
         let id = match self.focus {
             Focus::Prevs => self.prevs.selected(),
@@ -133,6 +172,7 @@ impl Viewer {
             Focus::Prevs => self.prevs.previous(),
             Focus::Nexts => self.nexts.previous(),
             Focus::Search => self.search.previous(),
+            Focus::Filter => self.filter.previous(),
         }
     }
 
@@ -145,6 +185,7 @@ impl Viewer {
             Focus::Prevs => self.prevs.next(),
             Focus::Nexts => self.nexts.next(),
             Focus::Search => self.search.next(),
+            Focus::Filter => self.filter.next(),
         }
     }
 
@@ -154,6 +195,7 @@ impl Viewer {
             Focus::Prevs => Focus::Nexts,
             Focus::Nexts => Focus::Current,
             Focus::Search => Focus::Search,
+            Focus::Filter => Focus::Filter,
         }
     }
 
@@ -163,6 +205,7 @@ impl Viewer {
             Focus::Prevs => Focus::Current,
             Focus::Nexts => Focus::Prevs,
             Focus::Search => Focus::Search,
+            Focus::Filter => Focus::Filter,
         }
     }
 }

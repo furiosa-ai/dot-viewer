@@ -10,7 +10,7 @@ use dot_graph::{
 #[derive(Debug, Clone)]
 pub enum Mode {
     Navigate,
-    Search,
+    Input,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -19,6 +19,7 @@ pub enum Focus {
     Prevs,
     Nexts,
     Search,
+    Filter,
 }
 
 pub struct App {
@@ -38,11 +39,15 @@ pub struct Viewer {
     pub graph: Graph,
 
     pub focus: Focus,
+
     pub current: StatefulList<String>,
     pub prevs: StatefulList<String>,
     pub nexts: StatefulList<String>,
+
     pub search: StatefulList<(String, Vec<usize>)>,
     pub cache: StatefulList<(String, Vec<usize>)>,
+
+    pub filter: StatefulList<(String, Vec<usize>)>,
 }
 
 impl App {
@@ -69,14 +74,20 @@ impl App {
         viewer.focus = Focus::Current;
     }
 
-    pub fn to_search_mode(&mut self) {
-        self.mode = Mode::Search;
+    pub fn to_input_mode(&mut self, focus: Focus) {
+        self.mode = Mode::Input;
 
         let viewer = self.tabs.selected();
         let init: Vec<(String, Vec<usize>)> = viewer.current.items.iter().map(|id| (id.clone(), Vec::new())).collect();
-        viewer.focus = Focus::Search;
-        viewer.search = StatefulList::with_items(init.clone());
-        viewer.search = StatefulList::with_items(init.clone());
+        viewer.focus = focus.clone();
+        match focus {
+            Focus::Search => {
+                viewer.search = StatefulList::with_items(init.clone());
+                viewer.cache = StatefulList::with_items(init.clone());
+            },
+            Focus::Filter => viewer.filter = StatefulList::with_items(init.clone()),
+            _ => {}
+        }
     }
 }
 
@@ -93,6 +104,7 @@ impl Viewer {
             nexts: StatefulList::with_items(Vec::new()),
             search: StatefulList::with_items(Vec::new()),
             cache: StatefulList::with_items(Vec::new()),
+            filter: StatefulList::with_items(Vec::new()),
         };
 
         viewer.update_adjacent();

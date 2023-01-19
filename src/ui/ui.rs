@@ -7,7 +7,7 @@ use tui::{
 use crate::app::app::App;
 use crate::ui::{
     tabs::draw_tabs,
-    search::draw_search,
+    input::draw_input,
 };
 
 pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
@@ -33,5 +33,5 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         )
         .split(size);
     draw_tabs(f, chunks[0], app);
-    draw_search(f, chunks[1], app);
+    draw_input(f, chunks[1], app);
 }
