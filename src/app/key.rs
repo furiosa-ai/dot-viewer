@@ -37,7 +37,7 @@ impl App {
     fn search_char(&mut self, c: char) {
         self.input.push(c);
 
-        self.viewer.update_search(self.input.clone(), true);
+        self.viewer.update_search_fwd(self.input.clone());
     }
 
     fn enter(&mut self) {
@@ -54,7 +54,7 @@ impl App {
             Mode::Search => {
                 self.input.pop();
 
-                self.viewer.update_search(self.input.clone(), false);
+                self.viewer.update_search_bwd(self.input.clone());
             },
             _ => {},
         } 
@@ -108,7 +108,11 @@ impl Viewer {
         let id = match self.focus {
             Focus::Prevs => self.prevs.selected(),
             Focus::Nexts => self.nexts.selected(),
-            Focus::Search => self.search.selected(),
+            Focus::Search => if let Some((id, _)) = self.search.selected() {
+                Some(id)
+            } else {
+                None
+            },
             _ => None,
         };
 

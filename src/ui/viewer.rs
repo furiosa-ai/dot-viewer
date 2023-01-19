@@ -181,7 +181,22 @@ fn draw_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
         .search
         .items
         .iter()
-        .map(|id| ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]))
+        .map(|item| {
+            let mut spans = Vec::new();
+            let id = &item.0;
+            let highlight = &item.1;
+            for (idx, c) in id.chars().enumerate() {
+                let span = if highlight.contains(&idx) {
+                    Span::styled(c.to_string(), Style::default().bg(Color::DarkGray).add_modifier(Modifier::BOLD))
+                } else {
+                    Span::raw(c.to_string())
+                };
+
+                spans.push(span);
+            }
+
+            ListItem::new(vec![Spans::from(spans)])
+        })
         .collect();
 
     let list = List::new(list)

@@ -44,8 +44,8 @@ pub struct Viewer {
     pub current: StatefulList<String>,
     pub prevs: StatefulList<String>,
     pub nexts: StatefulList<String>,
-    pub search: StatefulList<String>,
-    pub cache: StatefulList<String>,
+    pub search: StatefulList<(String, Vec<usize>)>,
+    pub cache: StatefulList<(String, Vec<usize>)>,
 }
 
 impl App {
@@ -72,8 +72,10 @@ impl App {
     pub fn to_search_mode(&mut self) {
         self.mode = Mode::Search;
         self.viewer.focus = Focus::Search;
-        self.viewer.search = StatefulList::with_items(self.viewer.current.items.clone());
-        self.viewer.search = StatefulList::with_items(self.viewer.current.items.clone());
+
+        let init: Vec<(String, Vec<usize>)> = self.viewer.current.items.iter().map(|id| (id.clone(), Vec::new())).collect();
+        self.viewer.search = StatefulList::with_items(init.clone());
+        self.viewer.search = StatefulList::with_items(init.clone());
     }
 }
 

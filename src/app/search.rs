@@ -39,22 +39,36 @@ impl Viewer {
         self.nexts = StatefulList::with_items(nexts);
     }
 
-    // direction: true if forward, false if backward (backspace)
-    pub fn update_search(&mut self, mut key: String, direction: bool) {
+    pub fn update_search_fwd(&mut self, mut key: String) {
         let matcher = SkimMatcherV2::default();
-        let search: Vec<String> = if direction {
-            self.search.items.iter().filter(|id| matcher.fuzzy_match(id, &key).is_some()).cloned().collect()
-        } else {
-            self.cache.items.clone()
-        };
-        self.search = StatefulList::with_items(search);
 
-        if direction {
-            self.cache = StatefulList::with_items(self.search.items.clone());
-        } else {
-            key.pop();
-            let cache = self.current.items.iter().filter(|id| matcher.fuzzy_match(id, &key).is_some()).cloned().collect();
-            self.cache = StatefulList::with_items(cache);
+        self.cache = StatefulList::with_items(self.search.items.clone());
+
+        let mut search: Vec<(String, Vec<usize>)> = Vec::new();
+        for id in &self.search.items {
+            let id = &id.0;
+            let res = matcher.fuzzy_indices(&id, &key);
+            if let Some((_, idxs)) = res {
+                search.push((id.clone(), idxs));
+            }
         }
+        self.search = StatefulList::with_items(search);
+    }
+
+    pub fn update_search_bwd(&mut self, mut key: String) {
+        let matcher = SkimMatcherV2::default();
+
+        self.search = StatefulList::with_items(self.cache.items.clone());
+
+        key.pop();
+
+        let mut cache: Vec<(String, Vec<usize>)> = Vec::new();
+        for id in &self.current.items {
+            let res = matcher.fuzzy_indices(&id, &key);
+            if let Some((_, idxs)) = res {
+                cache.push((id.clone(), idxs));
+            }
+        }
+        self.cache = StatefulList::with_items(cache);
     }
 }
