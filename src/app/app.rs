@@ -1,14 +1,9 @@
-use crate::app::utils::{
-    list::StatefulList,
-    trie::SearchTrie,
-};
+use crate::app::utils::list::StatefulList;
 use dot_graph::{
     parser::parse,
     structs::Graph,
 };
-use crate::app::utils::tabs::StatefulTabs;
 
-// TODO merge Mode and Focus into one enum?
 #[derive(Debug, Clone)]
 pub enum Mode {
     Navigate,
@@ -38,7 +33,6 @@ pub struct Viewer {
     pub title: String,
 
     pub graph: Graph,
-    pub trie: SearchTrie,
 
     pub focus: Focus,
     pub current: StatefulList<String>,
@@ -82,12 +76,10 @@ impl App {
 impl Viewer {
     pub fn new(title: String, graph: Graph) -> Viewer {
         let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();  
-        let trie = SearchTrie::new(&nodes);
 
         let mut viewer = Viewer {
             title,
             graph,
-            trie,
             focus: Focus::Current,
             current: StatefulList::with_items(nodes),
             prevs: StatefulList::with_items(Vec::new()),

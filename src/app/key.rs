@@ -72,10 +72,6 @@ impl App {
 
     fn tab(&mut self) {
         match &self.mode {
-            Mode::Search => {
-                let keyword: String = self.input.clone();
-                self.autocomplete(keyword);
-            },
             _ => {},
         }
     }

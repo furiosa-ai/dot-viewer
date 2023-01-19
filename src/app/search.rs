@@ -1,22 +1,10 @@
 use fuzzy_matcher::{ FuzzyMatcher, skim::SkimMatcherV2 };
 use crate::app::{
-    app::{ App, Viewer },
+    app::Viewer,
     utils::list::StatefulList,
 };
 
-impl App {
-    pub fn autocomplete(&mut self, keyword: String) {
-        if let Some(id) = self.viewer.autocomplete(keyword) {
-            self.input = id;
-        }
-    }
-}
-
 impl Viewer {
-    pub fn autocomplete(&mut self, keyword: String) -> Option<String> {
-        self.trie.autocomplete(&keyword)
-    }
-
     pub fn goto(&mut self, id: &str) -> Option<String> {
         let idx = self.current.find(id.to_string());
         match idx {
