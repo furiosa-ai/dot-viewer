@@ -11,3 +11,4 @@ crossterm = "0.25"
 dot-graph = { path = "dot-graph" }
 clap = { version = "4.1.1", features = ["derive"] }
 trie-rs = "0.1.1"
+fuzzy-matcher = "0.3.7"

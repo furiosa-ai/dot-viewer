@@ -37,7 +37,7 @@ impl App {
     fn search_char(&mut self, c: char) {
         self.input.push(c);
 
-        self.viewer.update_search(self.input.clone());
+        self.viewer.update_search(self.input.clone(), true);
     }
 
     fn enter(&mut self) {
@@ -54,7 +54,7 @@ impl App {
             Mode::Search => {
                 self.input.pop();
 
-                self.viewer.update_search(self.input.clone());
+                self.viewer.update_search(self.input.clone(), false);
             },
             _ => {},
         } 

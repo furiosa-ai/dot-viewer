@@ -1,3 +1,4 @@
+use fuzzy_matcher::{ FuzzyMatcher, skim::SkimMatcherV2 };
 use crate::app::{
     app::{ App, Viewer },
     utils::list::StatefulList,
@@ -38,10 +39,22 @@ impl Viewer {
         self.nexts = StatefulList::with_items(nexts);
     }
 
-    pub fn update_search(&mut self, key: String) {
-        let nodes = self.current.items.clone();
-        let search: Vec<String> = nodes.iter().filter(|id| id.starts_with(&key)).cloned().collect();
-
+    // direction: true if forward, false if backward (backspace)
+    pub fn update_search(&mut self, mut key: String, direction: bool) {
+        let matcher = SkimMatcherV2::default();
+        let search: Vec<String> = if direction {
+            self.search.items.iter().filter(|id| matcher.fuzzy_match(id, &key).is_some()).cloned().collect()
+        } else {
+            self.cache.items.clone()
+        };
         self.search = StatefulList::with_items(search);
+
+        if direction {
+            self.cache = StatefulList::with_items(self.search.items.clone());
+        } else {
+            key.pop();
+            let cache = self.current.items.iter().filter(|id| matcher.fuzzy_match(id, &key).is_some()).cloned().collect();
+            self.cache = StatefulList::with_items(cache);
+        }
     }
 }
