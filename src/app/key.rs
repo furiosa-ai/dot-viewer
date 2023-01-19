@@ -43,38 +43,22 @@ impl App {
     }
 
     fn enter(&mut self) {
+        let viewer = &mut self.tabs.selected();
+        viewer.enter();
+
         match self.mode {
-            Mode::Navigate => self.nav_enter(),
-            Mode::Search => self.search_enter(),
+            Mode::Search => self.to_nav_mode(),
+            _ => {},
         }
-    }
-
-    fn nav_enter(&mut self) {
-        let viewer = &mut self.tabs.selected();
-        viewer.enter()
-    }
-
-    fn search_enter(&mut self) {
-        self.to_nav_mode(); 
-
-        let keyword: String = self.input.drain(..).collect();
-        self.history.push(keyword.clone());
-
-        let viewer = &mut self.tabs.selected();
-        match viewer.search(keyword) {
-            Ok(viewer) => {
-                self.tabs.open(viewer);
-            }, 
-            Err(msg) => {
-                self.errormsg = Some(msg);
-            }
-        } 
     }
 
     fn backspace(&mut self) {
         match self.mode {
             Mode::Search => {
                 self.input.pop();
+
+                let viewer = &mut self.tabs.selected();
+                viewer.update_search(self.input.clone());
             },
             _ => {},
         } 
@@ -133,6 +117,7 @@ impl Viewer {
         let id = match self.focus {
             Focus::Prevs => self.prevs.selected(),
             Focus::Nexts => self.nexts.selected(),
+            Focus::Search => self.search.selected(),
             _ => None,
         };
 

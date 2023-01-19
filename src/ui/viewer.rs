@@ -63,15 +63,6 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     }
 }
 
-fn draw_highlighted_block(current: Focus, expected: Focus, title: String) -> Block<'static> {
-    let color = if current == expected { Color::Yellow } else { Color::White };
-
-    Block::default()
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(color))
-        .title(title)
-}
-
 fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // surrounding block 
     let title = {
@@ -199,4 +190,13 @@ fn draw_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
         .highlight_symbol("> ");
 
     f.render_stateful_widget(list, chunk, &mut viewer.search.state);
+}
+
+fn draw_highlighted_block(current: Focus, expected: Focus, title: String) -> Block<'static> {
+    let color = if current == expected { Color::Yellow } else { Color::White };
+
+    Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(color))
+        .title(title)
 }
