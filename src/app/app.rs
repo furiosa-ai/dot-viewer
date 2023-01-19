@@ -6,11 +6,12 @@ use dot_graph::{
     parser::parse,
     structs::Graph,
 };
+use crate::app::utils::tabs::StatefulTabs;
 
 // TODO merge Mode and Focus into one enum?
 #[derive(Debug, Clone)]
 pub enum Mode {
-    Traverse,
+    Navigate,
     Search,
 }
 
@@ -25,16 +26,15 @@ pub enum Focus {
 pub struct App {
     pub quit: bool,
     pub mode: Mode,
-    pub tab: usize,
+
+    pub tabs: StatefulTabs<Viewer>,
 
     pub input: String, 
     pub errormsg: Option<String>,
     pub history: Vec<String>,
-
-    pub ctxts: Vec<Ctxt>,
 }
 
-pub struct Ctxt {
+pub struct Viewer {
     pub title: String,
 
     pub graph: Graph,
@@ -49,26 +49,41 @@ pub struct Ctxt {
 
 impl App {
     pub fn new(path: &str) -> App {                
+        let graph = parse(path);
+        let viewer = Viewer::new("DAG".to_string(), graph);
+        let tabs = StatefulTabs::with_tabs(vec![viewer]);
+
         App {
             quit: false,
-            mode: Mode::Traverse,
-            tab: 0,
+            mode: Mode::Navigate,
+            tabs,
             input: String::from(""),
             history: Vec::new(),
             errormsg: None,
-            ctxts: vec![Ctxt::init(path, "DAG".to_string())],
         }
+    }
+
+    pub fn to_nav_mode(&mut self) {
+        self.mode = Mode::Navigate;
+
+        let viewer = &mut self.tabs.selected();
+        viewer.focus = Focus::Current;
+    }
+
+    pub fn to_search_mode(&mut self) {
+        self.mode = Mode::Search;
+
+        let viewer = &mut self.tabs.selected();
+        viewer.focus = Focus::Search;
     }
 }
 
-impl Ctxt {
-    // TODO merge init and new to one function
-    pub fn init(path: &str, title: String) -> Ctxt {
-        let graph = parse(path); 
+impl Viewer {
+    pub fn new(title: String, graph: Graph) -> Viewer {
         let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();  
         let trie = SearchTrie::new(&nodes);
 
-        let mut ctxt = Ctxt {
+        let mut viewer = Viewer {
             title,
             graph,
             trie,
@@ -79,31 +94,10 @@ impl Ctxt {
             search: StatefulList::with_items(Vec::new()),
         };
 
-        ctxt.update_adjacent();
+        viewer.update_adjacent();
 
-        ctxt
+        viewer 
     }
-
-    pub fn new(graph: &Graph, title: String) -> Ctxt {
-        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();  
-        let trie = SearchTrie::new(&nodes);
-
-        let mut ctxt = Ctxt {
-            title,
-            graph: graph.clone(),
-            trie,
-            focus: Focus::Current,
-            current: StatefulList::with_items(nodes),
-            prevs: StatefulList::with_items(Vec::new()),
-            nexts: StatefulList::with_items(Vec::new()),
-            search: StatefulList::with_items(Vec::new()),
-        };
-
-        ctxt.update_adjacent();
-
-        ctxt
-    }
-
 
     pub fn current(&self) -> Option<String> {
         self.current.selected()

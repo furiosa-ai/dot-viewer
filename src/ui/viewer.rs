@@ -10,10 +10,10 @@ use tui::{
     },
     Frame,
 };
-use crate::app::app::{ Ctxt, Focus };
+use crate::app::app::{ Viewer, Focus };
 
 // current tab 
-pub fn draw_tab<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
+pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -25,15 +25,11 @@ pub fn draw_tab<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
             ].as_ref()
         )
         .split(chunk);
-    draw_nav(f, chunks[0], ctxt);
-    match ctxt.focus { 
-        Focus::Search => draw_result(f, chunks[1], ctxt),
-        _ => draw_metadata(f, chunks[1], ctxt),
-    } 
+    draw_left(f, chunks[0], viewer);
+    draw_right(f, chunks[1], viewer);
 }
 
-// navigation block
-fn draw_nav<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
+fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Graph Traversal");
     f.render_widget(block, chunk);
@@ -49,8 +45,15 @@ fn draw_nav<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
             ].as_ref()
         )
         .split(chunk);
-    draw_nodes(f, chunks[0], ctxt);
-    draw_edges(f, chunks[1], ctxt);
+    draw_current(f, chunks[0], viewer);
+    draw_adjacent(f, chunks[1], viewer);
+}
+
+fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+    match viewer.focus {
+        Focus::Search => draw_result(f, chunk, viewer),
+        _ => draw_metadata(f, chunk, viewer)
+    }
 }
 
 fn draw_highlighted_block(current: Focus, expected: Focus, title: String) -> Block<'static> {
@@ -62,22 +65,22 @@ fn draw_highlighted_block(current: Focus, expected: Focus, title: String) -> Blo
         .title(title)
 }
 
-fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
+fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // surrounding block 
     let title = {
-        let idx = ctxt.idx().unwrap();
-        let len = ctxt.count();
+        let idx = viewer.idx().unwrap();
+        let len = viewer.count();
         let percentage = (idx as f32 / len as f32) * 100 as f32;
         format!("Nodes [{} / {} ({:.3}%)]", idx, len, percentage)
     };
-    let block = draw_highlighted_block(ctxt.focus.clone(), Focus::Current, title);
+    let block = draw_highlighted_block(viewer.focus.clone(), Focus::Current, title);
 
-    let (froms, tos) = match &ctxt.current() {
-        Some(id) => (ctxt.graph.froms(&id).clone(), ctxt.graph.tos(&id)),
+    let (froms, tos) = match &viewer.current() {
+        Some(id) => (viewer.graph.froms(&id).clone(), viewer.graph.tos(&id)),
         None => (HashSet::new(), HashSet::new())
     };
 
-    let list: Vec<ListItem> = ctxt
+    let list: Vec<ListItem> = viewer 
         .current
         .items
         .iter()
@@ -98,11 +101,11 @@ fn draw_nodes<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut ctxt.current.state);
+    f.render_stateful_widget(list, chunk, &mut viewer.current.state);
 }
 
 // adjacent nodes block
-fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
+fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -113,16 +116,16 @@ fn draw_edges<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
             ].as_ref()
         )
         .split(chunk);
-    draw_prevs(f, chunks[0], ctxt);
-    draw_nexts(f, chunks[1], ctxt);
+    draw_prevs(f, chunks[0], viewer);
+    draw_nexts(f, chunks[1], viewer);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // surrounding block
-    let block = draw_highlighted_block(ctxt.focus.clone(), Focus::Prevs, "Prev Nodes".to_string());
+    let block = draw_highlighted_block(viewer.focus.clone(), Focus::Prevs, "Prev Nodes".to_string());
 
-    let list: Vec<ListItem> = ctxt
+    let list: Vec<ListItem> = viewer 
         .prevs
         .items
         .iter()
@@ -134,15 +137,15 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
         .highlight_style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
     
-    f.render_stateful_widget(list, chunk, &mut ctxt.prevs.state);
+    f.render_stateful_widget(list, chunk, &mut viewer.prevs.state);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // surrounding block
-    let block = draw_highlighted_block(ctxt.focus.clone(), Focus::Nexts, "Next Nodes".to_string());
+    let block = draw_highlighted_block(viewer.focus.clone(), Focus::Nexts, "Next Nodes".to_string());
 
-    let list: Vec<ListItem> = ctxt
+    let list: Vec<ListItem> = viewer 
         .nexts
         .items
         .iter()
@@ -154,16 +157,16 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
         .highlight_style(Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut ctxt.nexts.state);
+    f.render_stateful_widget(list, chunk, &mut viewer.nexts.state);
 }
 
 // node attr block
-fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Attrs");
 
-    if let Some(id) = ctxt.current() {
-        let node = ctxt.graph.search(&id).unwrap(); 
+    if let Some(id) = viewer.current() {
+        let node = viewer.graph.search(&id).unwrap(); 
         let paragraph = Paragraph::new(node.to_string()).block(block).wrap(Wrap { trim: true });
         f.render_widget(paragraph, chunk);
     } else {
@@ -172,11 +175,11 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
 }
 
 // search result block
-fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
+fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // surrounding block
-    let block = draw_highlighted_block(ctxt.focus.clone(), Focus::Search, "Searching...".to_string());
+    let block = draw_highlighted_block(viewer.focus.clone(), Focus::Search, "Searching...".to_string());
 
-    let list: Vec<ListItem> = ctxt
+    let list: Vec<ListItem> = viewer
         .search
         .items
         .iter()
@@ -188,5 +191,5 @@ fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, ctxt: &mut Ctxt) {
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut ctxt.search.state);
+    f.render_stateful_widget(list, chunk, &mut viewer.search.state);
 }

@@ -1,35 +1,35 @@
 use crate::app::{
-    app::{ App, Ctxt },
+    app::{ App, Viewer },
     utils::list::StatefulList,
 };
 
 impl App {
     pub fn autocomplete(&mut self, keyword: String) {
-        let ctxt = &mut self.ctxts[self.tab];
-        if let Some(node) = ctxt.autocomplete(keyword) {
-            self.input = node;
+        let viewer = &mut self.tabs.selected();
+        if let Some(id) = viewer.autocomplete(keyword) {
+            self.input = id;
         }
     }
 }
 
-impl Ctxt {
+impl Viewer {
     pub fn autocomplete(&mut self, keyword: String) -> Option<String> {
         self.trie.autocomplete(&keyword)
     }
 
-    pub fn search(&mut self, keyword: String) -> Result<Ctxt, String> {
-        if self.search.items.len() > 0 {
-            let mut ctxt = Ctxt::new(&self.graph, keyword);
-            ctxt.current = StatefulList::with_items(self.search.items.clone());
-            ctxt.search = StatefulList::with_items(Vec::new());
-            ctxt.update_adjacent();
-
-            self.search = StatefulList::with_items(Vec::new());
-
-            Ok(ctxt)
-        } else {
-            Err(format!("Err: no match for keyword {:?}", keyword))
+    pub fn search(&mut self, keyword: String) -> Result<Viewer, String> {
+        if self.search.items.is_empty() {
+            return Err(format!("Err: no match for keyword {:?}", keyword));
         }
+
+        // TODO instead of cloning the graph, make a subgraph
+        let mut viewer = Viewer::new(keyword, self.graph.clone());
+        viewer.current = StatefulList::with_items(self.search.items.clone());
+        viewer.update_adjacent();
+
+        self.search = StatefulList::with_items(Vec::new());
+
+        Ok(viewer)
     }
 
     pub fn goto(&mut self, id: &str) -> Option<String> {
@@ -55,7 +55,6 @@ impl Ctxt {
         self.nexts = StatefulList::with_items(nexts);
     }
 
-    // TODO only show prev, next nodes contained in current list?
     pub fn update_search(&mut self, key: String) {
         let nodes = self.current.items.clone();
         let search: Vec<String> = nodes.iter().filter(|id| id.starts_with(&key)).cloned().collect();

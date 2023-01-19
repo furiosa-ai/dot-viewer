@@ -1,4 +1,4 @@
 pub mod ui;
-pub mod traverse;
-pub mod tab;
+pub mod navigate;
+pub mod viewer;
 pub mod search;

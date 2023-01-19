@@ -7,10 +7,10 @@ use tui::{
     Frame,
 };
 use crate::app::app::App;
-use crate::ui::tab::draw_tab;
+use crate::ui::viewer::draw_viewer;
 
 // main block
-pub fn draw_traverse<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+pub fn draw_nav<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -18,15 +18,15 @@ pub fn draw_traverse<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
         .split(chunk);
     draw_tabs(f, chunks[0], app);
-    let tab = &mut app.ctxts[app.tab];
-    draw_tab(f, chunks[1], tab);
+    let viewer = app.tabs.selected();
+    draw_viewer(f, chunks[1], viewer);
 }
 
 pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Tabs");
 
-    let titles: Vec<String> = app.ctxts.iter().map(|ctxt| ctxt.title.clone()).collect();
+    let titles: Vec<String> = app.tabs.tabs.iter().map(|viewer| viewer.title.clone()).collect();
     let titles = titles.iter()
         .map(|title| Spans::from(vec![
                 Span::styled(title, Style::default().fg(Color::Yellow))
@@ -35,7 +35,7 @@ pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
     let tabs = Tabs::new(titles)
         .block(block)
-        .select(app.tab)
+        .select(app.tabs.state)
         .highlight_style(Style::default().add_modifier(Modifier::BOLD).bg(Color::Black));
 
     f.render_widget(tabs, chunk)

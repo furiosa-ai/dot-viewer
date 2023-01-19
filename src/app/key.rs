@@ -1,5 +1,5 @@
 use crossterm::event::{ KeyCode, KeyEvent };
-use crate::app::app::{ App, Ctxt, Mode, Focus };
+use crate::app::app::{ App, Viewer, Mode, Focus };
 
 impl App {    
     pub fn key(&mut self, key: KeyEvent) {
@@ -21,22 +21,15 @@ impl App {
 
     fn char(&mut self, c: char) {
         match self.mode {
-            Mode::Traverse => self.normal_char(c),
+            Mode::Navigate => self.nav_char(c),
             Mode::Search => self.search_char(c),
         } 
     }
 
-    fn normal_char(&mut self, c: char) {
+    fn nav_char(&mut self, c: char) {
         match c {
-            'q' => {
-                self.quit = true;
-            },
-            '/' => {
-                // TODO this is redundant
-                self.mode = Mode::Search;
-                let tab = &mut self.ctxts[self.tab];
-                tab.focus = Focus::Search;
-            },
+            'q' => self.quit = true,
+            '/' => self.to_search_mode(),
             _ => {},
         }
     }
@@ -44,40 +37,37 @@ impl App {
     fn search_char(&mut self, c: char) {
         self.input.push(c);
 
-        let tab = &mut self.ctxts[self.tab];
-        tab.update_search(self.input.clone());
+        let viewer = &mut self.tabs.selected();
+        viewer.update_search(self.input.clone());
     }
 
     fn enter(&mut self) {
-        let tab = &mut self.ctxts[self.tab];
-
-        let ctxt = match &self.mode {
-            Mode::Traverse => {
-                tab.enter();
-                None
-            },
-            Mode::Search => {
-                let keyword: String = self.input.drain(..).collect();
-                self.history.push(keyword.clone());
-
-                // TODO this is redundant
-                self.mode = Mode::Traverse;
-                tab.focus = Focus::Current;
-
-                match tab.search(keyword) {
-                    Ok(ctxt) => Some(ctxt), 
-                    Err(msg) => {
-                        self.errormsg = Some(msg);
-                        None
-                    }
-                } 
-            },
-        };
-
-        if let Some(ctxt) = ctxt {
-            self.ctxts.push(ctxt);
-            self.tab = self.ctxts.len() - 1;
+        match self.mode {
+            Mode::Navigate => self.nav_enter(),
+            Mode::Search => self.search_enter(),
         }
+    }
+
+    fn nav_enter(&mut self) {
+        let viewer = &mut self.tabs.selected();
+        viewer.enter()
+    }
+
+    fn search_enter(&mut self) {
+        self.to_nav_mode(); 
+
+        let keyword: String = self.input.drain(..).collect();
+        self.history.push(keyword.clone());
+
+        let viewer = &mut self.tabs.selected();
+        match viewer.search(keyword) {
+            Ok(viewer) => {
+                self.tabs.insert(viewer);
+            }, 
+            Err(msg) => {
+                self.errormsg = Some(msg);
+            }
+        } 
     }
 
     fn backspace(&mut self) {
@@ -93,7 +83,7 @@ impl App {
         match self.mode {
             Mode::Search => {
                 self.input = String::from("");
-                self.mode = Mode::Traverse;
+                self.mode = Mode::Navigate;
             },
             _ => {},
         } 
@@ -101,9 +91,7 @@ impl App {
 
     fn tab(&mut self) {
         match &self.mode {
-            Mode::Traverse => {
-                self.tab = (self.tab + 1) % self.ctxts.len(); 
-            }
+            Mode::Navigate => self.tabs.next(),
             Mode::Search => {
                 let keyword: String = self.input.clone();
                 self.autocomplete(keyword);
@@ -113,47 +101,33 @@ impl App {
 
     fn backtab(&mut self) {
         match &self.mode {
-            Mode::Traverse => if self.tab > 0 {
-                self.tab -= 1; 
-            } else {
-                self.tab = self.ctxts.len() - 1;
-            },
+            Mode::Navigate => self.tabs.previous(),
             _ => {},
         }
     }
 
     fn up(&mut self) {
-        let tab = &mut self.ctxts[self.tab];
-        match &self.mode {
-            _ => tab.up(),
-        }
+        let viewer = &mut self.tabs.selected();
+        viewer.up()
     }
 
     fn down(&mut self) {
-        let tab = &mut self.ctxts[self.tab];
-        match &self.mode {
-            _ => tab.down(),
-        }
+        let viewer = &mut self.tabs.selected();
+        viewer.down()
     } 
 
     fn right(&mut self) {
-        let tab = &mut self.ctxts[self.tab];
-        match &self.mode {
-            Mode::Traverse => tab.right(),
-            _ => {},
-        }
+        let viewer = &mut self.tabs.selected();
+        viewer.right()
     }
 
     fn left(&mut self) {
-        let tab = &mut self.ctxts[self.tab];
-        match &self.mode {
-            Mode::Traverse => tab.left(),
-            _ => {},
-        }
+        let viewer = &mut self.tabs.selected();
+        viewer.left()
     }
 }
 
-impl Ctxt {
+impl Viewer {
     pub fn enter(&mut self) {
         let id = match self.focus {
             Focus::Prevs => self.prevs.selected(),

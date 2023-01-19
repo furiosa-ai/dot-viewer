@@ -6,7 +6,7 @@ use tui::{
 };
 use crate::app::app::App;
 use crate::ui::{
-    traverse::draw_traverse,
+    navigate::draw_nav,
     search::draw_search,
 };
 
@@ -32,6 +32,6 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             ].as_ref()
         )
         .split(size);
-    draw_traverse(f, chunks[0], app);
+    draw_nav(f, chunks[0], app);
     draw_search(f, chunks[1], app);
 }

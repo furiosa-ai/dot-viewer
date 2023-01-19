@@ -33,7 +33,7 @@ pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .split(chunk);
     draw_help(f, chunks[0], app);
     match app.mode {
-        Mode::Traverse => draw_error(f, chunks[1], app),
+        Mode::Navigate => draw_error(f, chunks[1], app),
         Mode::Search => draw_input(f, chunks[1], app)
     };
 }
@@ -41,7 +41,7 @@ pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 // help block
 fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let (msg, style) = match app.mode {
-        Mode::Traverse => (
+        Mode::Navigate => (
             vec![
                 Span::raw("Press "),
                 Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
@@ -89,14 +89,14 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let input = Paragraph::new(app.input.as_ref())
         .style(match app.mode {
-            Mode::Traverse => Style::default(),
+            Mode::Navigate => Style::default(),
             Mode::Search => Style::default().fg(Color::Yellow),
         });
     f.render_widget(input, chunk);
     
     // cursor
     match app.mode {
-        Mode::Traverse => {}
+        Mode::Navigate => {}
         Mode::Search => {
             f.set_cursor(
                 chunk.x + app.input.len() as u16,
