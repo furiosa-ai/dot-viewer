@@ -45,13 +45,20 @@ fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
             ].as_ref()
         )
         .split(chunk);
-    draw_current(f, chunks[0], viewer);
-    draw_adjacent(f, chunks[1], viewer);
+    match viewer.focus {
+        Focus::Search => {
+            draw_match(f, chunks[0], viewer);
+        },
+        _ => {
+            draw_current(f, chunks[0], viewer);
+            draw_adjacent(f, chunks[1], viewer);
+        },
+    }
 }
 
 fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     match viewer.focus {
-        Focus::Search => draw_result(f, chunk, viewer),
+        Focus::Search => {},
         _ => draw_metadata(f, chunk, viewer)
     }
 }
@@ -175,7 +182,7 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer)
 }
 
 // search result block
-fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+fn draw_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
     // surrounding block
     let block = draw_highlighted_block(viewer.focus.clone(), Focus::Search, "Searching...".to_string());
 
