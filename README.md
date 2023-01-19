@@ -44,4 +44,4 @@ Key | Effect
 `right` | move focus between lists (highlighted in yellow borders)
 `left` | move focus between lists (highlighted in yellow borders)
 `enter` | when traversing in prev/next/search-match node list, goto the selected node
-`/[node-id-pattern]` | search for node by fuzzy matcher
+`/[node-id-pattern] (e.g. /g1s35t)` | search for node by fuzzy matcher
