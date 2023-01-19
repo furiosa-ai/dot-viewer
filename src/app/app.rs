@@ -27,7 +27,7 @@ pub struct App {
     pub quit: bool,
     pub mode: Mode,
 
-    pub tabs: StatefulTabs<Viewer>,
+    pub viewer: Viewer,
 
     pub input: String, 
     pub errormsg: Option<String>,
@@ -51,12 +51,11 @@ impl App {
     pub fn new(path: &str) -> App {                
         let graph = parse(path);
         let viewer = Viewer::new("DAG".to_string(), graph);
-        let tabs = StatefulTabs::with_tabs(vec![viewer]);
 
         App {
             quit: false,
             mode: Mode::Navigate,
-            tabs,
+            viewer,
             input: String::from(""),
             history: Vec::new(),
             errormsg: None,
@@ -65,16 +64,13 @@ impl App {
 
     pub fn to_nav_mode(&mut self) {
         self.mode = Mode::Navigate;
-
-        let viewer = &mut self.tabs.selected();
-        viewer.focus = Focus::Current;
+        self.viewer.focus = Focus::Current;
+        self.input = "".to_string();
     }
 
     pub fn to_search_mode(&mut self) {
         self.mode = Mode::Search;
-
-        let viewer = &mut self.tabs.selected();
-        viewer.focus = Focus::Search;
+        self.viewer.focus = Focus::Search;
     }
 }
 

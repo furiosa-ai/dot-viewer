@@ -29,7 +29,6 @@ impl App {
     fn nav_char(&mut self, c: char) {
         match c {
             'q' => self.quit = true,
-            'c' => self.tabs.close(),
             '/' => self.to_search_mode(),
             _ => {},
         }
@@ -38,13 +37,11 @@ impl App {
     fn search_char(&mut self, c: char) {
         self.input.push(c);
 
-        let viewer = &mut self.tabs.selected();
-        viewer.update_search(self.input.clone());
+        self.viewer.update_search(self.input.clone());
     }
 
     fn enter(&mut self) {
-        let viewer = &mut self.tabs.selected();
-        viewer.enter();
+        self.viewer.enter();
 
         match self.mode {
             Mode::Search => self.to_nav_mode(),
@@ -57,8 +54,7 @@ impl App {
             Mode::Search => {
                 self.input.pop();
 
-                let viewer = &mut self.tabs.selected();
-                viewer.update_search(self.input.clone());
+                self.viewer.update_search(self.input.clone());
             },
             _ => {},
         } 
@@ -76,39 +72,34 @@ impl App {
 
     fn tab(&mut self) {
         match &self.mode {
-            Mode::Navigate => self.tabs.next(),
             Mode::Search => {
                 let keyword: String = self.input.clone();
                 self.autocomplete(keyword);
             },
+            _ => {},
         }
     }
 
     fn backtab(&mut self) {
         match &self.mode {
-            Mode::Navigate => self.tabs.previous(),
             _ => {},
         }
     }
 
     fn up(&mut self) {
-        let viewer = &mut self.tabs.selected();
-        viewer.up()
+        self.viewer.up()
     }
 
     fn down(&mut self) {
-        let viewer = &mut self.tabs.selected();
-        viewer.down()
+        self.viewer.down()
     } 
 
     fn right(&mut self) {
-        let viewer = &mut self.tabs.selected();
-        viewer.right()
+        self.viewer.right()
     }
 
     fn left(&mut self) {
-        let viewer = &mut self.tabs.selected();
-        viewer.left()
+        self.viewer.left()
     }
 }
 

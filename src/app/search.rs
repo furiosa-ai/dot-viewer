@@ -5,8 +5,7 @@ use crate::app::{
 
 impl App {
     pub fn autocomplete(&mut self, keyword: String) {
-        let viewer = &mut self.tabs.selected();
-        if let Some(id) = viewer.autocomplete(keyword) {
+        if let Some(id) = self.viewer.autocomplete(keyword) {
             self.input = id;
         }
     }
@@ -15,21 +14,6 @@ impl App {
 impl Viewer {
     pub fn autocomplete(&mut self, keyword: String) -> Option<String> {
         self.trie.autocomplete(&keyword)
-    }
-
-    pub fn search(&mut self, keyword: String) -> Result<Viewer, String> {
-        if self.search.items.is_empty() {
-            return Err(format!("Err: no match for keyword {:?}", keyword));
-        }
-
-        // TODO instead of cloning the graph, make a subgraph
-        let mut viewer = Viewer::new(format!("{} > {}", self.title, keyword), self.graph.clone());
-        viewer.current = StatefulList::with_items(self.search.items.clone());
-        viewer.update_adjacent();
-
-        self.search = StatefulList::with_items(Vec::new());
-
-        Ok(viewer)
     }
 
     pub fn goto(&mut self, id: &str) -> Option<String> {
@@ -44,7 +28,6 @@ impl Viewer {
         }
     }
 
-    // TODO only show prev, next nodes contained in current list?
     pub fn update_adjacent(&mut self) {
         let id = self.current().unwrap();
 
