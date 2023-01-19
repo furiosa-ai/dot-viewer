@@ -7,17 +7,21 @@ use dot_graph::{
     structs::Graph,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Mode {
-    Navigate,
-    Input,
+    Navigate(Navigate),
+    Input(Input),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Focus {
+pub enum Navigate {
     Current,
     Prevs,
     Nexts,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Input {
     Search,
     Filter,
 }
@@ -38,8 +42,6 @@ pub struct Viewer {
 
     pub graph: Graph,
 
-    pub focus: Focus,
-
     pub current: StatefulList<String>,
     pub prevs: StatefulList<String>,
     pub nexts: StatefulList<String>,
@@ -58,7 +60,7 @@ impl App {
 
         App {
             quit: false,
-            mode: Mode::Navigate,
+            mode: Mode::Navigate(Navigate::Current),
             tabs,
             input: String::from(""),
             history: Vec::new(),
@@ -67,60 +69,21 @@ impl App {
     }
 
     pub fn to_nav_mode(&mut self) {
-        self.mode = Mode::Navigate;
+        self.mode = Mode::Navigate(Navigate::Current);
         self.input = "".to_string();
-
-        let viewer = self.tabs.selected();
-        viewer.focus = Focus::Current;
     }
 
-    pub fn to_input_mode(&mut self, focus: Focus) {
-        self.mode = Mode::Input;
+    pub fn to_input_mode(&mut self, input: Input) {
+        self.mode = Mode::Input(input.clone());
 
         let viewer = self.tabs.selected();
         let init: Vec<(String, Vec<usize>)> = viewer.current.items.iter().map(|id| (id.clone(), Vec::new())).collect();
-        viewer.focus = focus.clone();
-        match focus {
-            Focus::Search => {
+        match &input {
+            Input::Search => {
                 viewer.search = StatefulList::with_items(init.clone());
                 viewer.cache = StatefulList::with_items(init.clone());
             },
-            Focus::Filter => viewer.filter = StatefulList::with_items(init.clone()),
-            _ => {}
+            Input::Filter => viewer.filter = StatefulList::with_items(init.clone()),
         }
     }
-}
-
-impl Viewer {
-    pub fn new(title: String, graph: Graph) -> Viewer {
-        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();  
-
-        let mut viewer = Viewer {
-            title,
-            graph,
-            focus: Focus::Current,
-            current: StatefulList::with_items(nodes),
-            prevs: StatefulList::with_items(Vec::new()),
-            nexts: StatefulList::with_items(Vec::new()),
-            search: StatefulList::with_items(Vec::new()),
-            cache: StatefulList::with_items(Vec::new()),
-            filter: StatefulList::with_items(Vec::new()),
-        };
-
-        viewer.update_adjacent();
-
-        viewer 
-    }
-
-    pub fn current(&self) -> Option<String> {
-        self.current.selected()
-    }
-
-    pub fn idx(&self) -> Option<usize> {
-        self.current.state.selected()
-    }
-
-    pub fn count(&self) -> usize {
-        self.current.items.len()
-    } 
 }

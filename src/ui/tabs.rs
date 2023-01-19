@@ -19,7 +19,7 @@ pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .split(chunk);
     draw_nav(f, chunks[0], app);
     let viewer = app.tabs.selected();
-    draw_viewer(f, chunks[1], viewer);
+    draw_viewer(f, chunks[1], &app.mode, viewer);
 }
 
 pub fn draw_nav<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {

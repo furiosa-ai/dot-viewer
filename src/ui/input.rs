@@ -6,22 +6,24 @@ use tui::{
     widgets::{ Block, Borders, Paragraph },
     Frame,
 };
-use crate::app::app::{ App, Mode, Focus };
+use crate::app::app::{ App, Mode, Input };
 
 // input block
 pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
-    let viewer = app.tabs.selected();
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(match app.mode {
-            Mode::Input => Color::Yellow,
+            Mode::Input(_) => Color::Yellow,
             _ => Color::White,
         }))
-        .title(match viewer.focus {
-            Focus::Search => "Search",
-            Focus::Filter => "Filter",
-            _ => "Navigate"});
+        .title(match &app.mode {
+            Mode::Navigate(_) => "Navigate",
+            Mode::Input(input) => match input {
+                Input::Search => "Search",
+                Input::Filter => "Filter",
+            }
+        });
     f.render_widget(block, chunk);
 
     // inner blocks
@@ -37,8 +39,8 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .split(chunk);
     draw_help(f, chunks[0], app);
     match app.mode {
-        Mode::Navigate => draw_error(f, chunks[1], app),
-        Mode::Input => draw_form(f, chunks[1], app)
+        Mode::Navigate(_) => draw_error(f, chunks[1], app),
+        Mode::Input(_) => draw_form(f, chunks[1], app)
     };
 }
 
@@ -48,7 +50,7 @@ pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(match app.mode {
-            Mode::Input => Color::Yellow,
+            Mode::Input(_) => Color::Yellow,
             _ => Color::White,
         }))
         .title("Search");
@@ -67,15 +69,15 @@ pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .split(chunk);
     draw_help(f, chunks[0], app);
     match app.mode {
-        Mode::Navigate => draw_error(f, chunks[1], app),
-        Mode::Input => draw_input(f, chunks[1], app)
+        Mode::Navigate(_) => draw_error(f, chunks[1], app),
+        Mode::Input(_) => draw_input(f, chunks[1], app)
     };
 }
 
 // help block
 fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let (msg, style) = match app.mode {
-        Mode::Navigate => (
+        Mode::Navigate(_) => (
             vec![
                 Span::raw("Press "),
                 Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
@@ -88,7 +90,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             ],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
-        Mode::Input => (
+        Mode::Input(_) => (
             vec![
                 Span::raw("Press "),
                 Span::styled("Esc", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
@@ -123,15 +125,15 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let input = Paragraph::new(app.input.as_ref())
         .style(match app.mode {
-            Mode::Navigate => Style::default(),
-            Mode::Input => Style::default().fg(Color::Yellow),
+            Mode::Navigate(_) => Style::default(),
+            Mode::Input(_) => Style::default().fg(Color::Yellow),
         });
     f.render_widget(input, chunk);
     
     // cursor
     match app.mode {
-        Mode::Navigate => {}
-        Mode::Input => {
+        Mode::Navigate(_) => {}
+        Mode::Input(_) => {
             f.set_cursor(
                 chunk.x + app.input.len() as u16,
                 chunk.y,

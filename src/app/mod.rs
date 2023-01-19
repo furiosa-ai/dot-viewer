@@ -1,4 +1,4 @@
 pub mod app;
 pub mod utils;
-pub mod key;
-pub mod input;
+pub mod event;
+pub mod viewer;

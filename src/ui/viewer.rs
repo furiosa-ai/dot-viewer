@@ -10,10 +10,10 @@ use tui::{
     },
     Frame,
 };
-use crate::app::app::{ Viewer, Focus };
+use crate::app::app::{ Viewer, Mode, Navigate, Input };
 
 // current tab 
-pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -25,11 +25,11 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewe
             ].as_ref()
         )
         .split(chunk);
-    draw_left(f, chunks[0], viewer);
-    draw_right(f, chunks[1], viewer);
+    draw_left(f, chunks[0], mode, viewer);
+    draw_right(f, chunks[1], mode, viewer);
 }
 
-fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Graph Traversal");
     f.render_widget(block, chunk);
@@ -45,36 +45,33 @@ fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
             ].as_ref()
         )
         .split(chunk);
-    match viewer.focus {
-        Focus::Search => {
-            draw_search_match(f, chunks[0], viewer);
+    match &mode {
+        Mode::Navigate(_) => {
+            draw_current(f, chunks[0], mode, viewer);
+            draw_adjacent(f, chunks[1], mode, viewer);
         },
-        Focus::Filter => {
-            draw_filter_match(f, chunks[0], viewer);
-        }
-        _ => {
-            draw_current(f, chunks[0], viewer);
-            draw_adjacent(f, chunks[1], viewer);
+        Mode::Input(input) => match input {
+            Input::Search => {
+                draw_search_match(f, chunks[0], mode, viewer);
+            },
+            Input::Filter => {
+                draw_filter_match(f, chunks[0], mode, viewer);
+            }
         },
     }
 }
 
-fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
-    match viewer.focus {
-        Focus::Search | Focus::Filter => {},
-        _ => draw_metadata(f, chunk, viewer)
+fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
+    match &mode {
+        Mode::Navigate(_) => draw_metadata(f, chunk, mode, viewer),
+        Mode::Input(_) => {},
     }
 }
 
-fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block 
-    let title = {
-        let idx = viewer.idx().unwrap();
-        let len = viewer.count();
-        let percentage = (idx as f32 / len as f32) * 100 as f32;
-        format!("Nodes [{} / {} ({:.3}%)]", idx, len, percentage)
-    };
-    let block = draw_highlighted_block(viewer.focus.clone(), Focus::Current, title);
+    let title = viewer.progress();
+    let block = draw_highlighted_block(mode.clone(), Mode::Navigate(Navigate::Current), title);
 
     let (froms, tos) = match &viewer.current() {
         Some(id) => (viewer.graph.froms(&id).clone(), viewer.graph.tos(&id)),
@@ -106,7 +103,7 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) 
 }
 
 // adjacent nodes block
-fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -117,14 +114,14 @@ fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer)
             ].as_ref()
         )
         .split(chunk);
-    draw_prevs(f, chunks[0], viewer);
-    draw_nexts(f, chunks[1], viewer);
+    draw_prevs(f, chunks[0], mode, viewer);
+    draw_nexts(f, chunks[1], mode, viewer);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
-    let block = draw_highlighted_block(viewer.focus.clone(), Focus::Prevs, "Prev Nodes".to_string());
+    let block = draw_highlighted_block(mode.clone(), Mode::Navigate(Navigate::Prevs), "Prev Nodes".to_string());
 
     let list: Vec<ListItem> = viewer 
         .prevs
@@ -142,9 +139,9 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
-    let block = draw_highlighted_block(viewer.focus.clone(), Focus::Nexts, "Next Nodes".to_string());
+    let block = draw_highlighted_block(mode.clone(), Mode::Navigate(Navigate::Nexts), "Next Nodes".to_string());
 
     let list: Vec<ListItem> = viewer 
         .nexts
@@ -162,7 +159,7 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
 }
 
 // node attr block
-fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, _mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Attrs");
 
@@ -176,9 +173,9 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer)
 }
 
 // search result block
-fn draw_search_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+fn draw_search_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
-    let block = draw_highlighted_block(viewer.focus.clone(), Focus::Search, "Searching...".to_string());
+    let block = draw_highlighted_block(mode.clone(), Mode::Input(Input::Search), "Searching...".to_string());
 
     let list: Vec<ListItem> = viewer
         .search
@@ -211,9 +208,9 @@ fn draw_search_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Vie
 }
 
 // search result block
-fn draw_filter_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Viewer) {
+fn draw_filter_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
-    let block = draw_highlighted_block(viewer.focus.clone(), Focus::Filter, "Filtering...".to_string());
+    let block = draw_highlighted_block(mode.clone(), Mode::Input(Input::Filter), "Filtering...".to_string());
 
     let list: Vec<ListItem> = viewer
         .filter
@@ -245,7 +242,7 @@ fn draw_filter_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, viewer: &mut Vie
     f.render_stateful_widget(list, chunk, &mut viewer.filter.state);
 }
 
-fn draw_highlighted_block(current: Focus, expected: Focus, title: String) -> Block<'static> {
+fn draw_highlighted_block(current: Mode, expected: Mode, title: String) -> Block<'static> {
     let color = if current == expected { Color::Yellow } else { Color::White };
 
     Block::default()
