@@ -123,7 +123,10 @@ impl Viewer {
 
     pub fn up(&mut self) {
         match self.focus {
-            Focus::Current => self.current.previous(),
+            Focus::Current => {
+                self.current.previous();
+                self.update_adjacent();
+            },
             Focus::Prevs => self.prevs.previous(),
             Focus::Nexts => self.nexts.previous(),
             Focus::Search => self.search.previous(),
@@ -132,7 +135,10 @@ impl Viewer {
 
     pub fn down(&mut self) {
         match self.focus {
-            Focus::Current => self.current.next(),
+            Focus::Current => {
+                self.current.next();
+                self.update_adjacent();
+            },
             Focus::Prevs => self.prevs.next(),
             Focus::Nexts => self.nexts.next(),
             Focus::Search => self.search.next(),
