@@ -23,7 +23,7 @@ impl Viewer {
         }
 
         // TODO instead of cloning the graph, make a subgraph
-        let mut viewer = Viewer::new(keyword, self.graph.clone());
+        let mut viewer = Viewer::new(format!("{} > {}", self.title, keyword), self.graph.clone());
         viewer.current = StatefulList::with_items(self.search.items.clone());
         viewer.update_adjacent();
 

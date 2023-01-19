@@ -29,6 +29,7 @@ impl App {
     fn nav_char(&mut self, c: char) {
         match c {
             'q' => self.quit = true,
+            'c' => self.tabs.close(),
             '/' => self.to_search_mode(),
             _ => {},
         }
@@ -62,7 +63,7 @@ impl App {
         let viewer = &mut self.tabs.selected();
         match viewer.search(keyword) {
             Ok(viewer) => {
-                self.tabs.insert(viewer);
+                self.tabs.open(viewer);
             }, 
             Err(msg) => {
                 self.errormsg = Some(msg);

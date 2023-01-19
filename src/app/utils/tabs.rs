@@ -38,9 +38,19 @@ impl<T> StatefulTabs<T> {
         };
     }
 
-    pub fn insert(&mut self, tab: T) {
+    pub fn open(&mut self, tab: T) {
         self.tabs.push(tab);
         self.state = self.tabs.len() - 1;
+    }
+
+    pub fn close(&mut self) {
+        // TODO currently disallow closing the first tab
+        if self.state > 0 {
+            self.tabs.remove(self.state);
+            if self.state == self.tabs.len() {
+                self.state -= 1;
+            }
+        }
     }
 
     pub fn select(&mut self, state: usize) {
