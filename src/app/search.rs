@@ -27,7 +27,7 @@ impl Viewer {
         self.nexts = StatefulList::with_items(nexts);
     }
 
-    pub fn update_search_fwd(&mut self, mut key: String) {
+    pub fn update_search_fwd(&mut self, key: String) {
         let matcher = SkimMatcherV2::default();
 
         self.cache = StatefulList::with_items(self.search.items.clone());

@@ -1,4 +1,7 @@
-use crate::app::utils::list::StatefulList;
+use crate::app::utils::{
+    list::StatefulList,
+    tabs::StatefulTabs,
+};
 use dot_graph::{
     parser::parse,
     structs::Graph,
@@ -22,7 +25,7 @@ pub struct App {
     pub quit: bool,
     pub mode: Mode,
 
-    pub viewer: Viewer,
+    pub tabs: StatefulTabs<Viewer>,
 
     pub input: String, 
     pub errormsg: Option<String>,
@@ -46,11 +49,12 @@ impl App {
     pub fn new(path: &str) -> App {                
         let graph = parse(path);
         let viewer = Viewer::new("DAG".to_string(), graph);
+        let tabs = StatefulTabs::with_tabs(vec![viewer]);
 
         App {
             quit: false,
             mode: Mode::Navigate,
-            viewer,
+            tabs,
             input: String::from(""),
             history: Vec::new(),
             errormsg: None,
@@ -59,17 +63,20 @@ impl App {
 
     pub fn to_nav_mode(&mut self) {
         self.mode = Mode::Navigate;
-        self.viewer.focus = Focus::Current;
         self.input = "".to_string();
+
+        let viewer = self.tabs.selected();
+        viewer.focus = Focus::Current;
     }
 
     pub fn to_search_mode(&mut self) {
         self.mode = Mode::Search;
-        self.viewer.focus = Focus::Search;
 
-        let init: Vec<(String, Vec<usize>)> = self.viewer.current.items.iter().map(|id| (id.clone(), Vec::new())).collect();
-        self.viewer.search = StatefulList::with_items(init.clone());
-        self.viewer.search = StatefulList::with_items(init.clone());
+        let viewer = self.tabs.selected();
+        let init: Vec<(String, Vec<usize>)> = viewer.current.items.iter().map(|id| (id.clone(), Vec::new())).collect();
+        viewer.focus = Focus::Search;
+        viewer.search = StatefulList::with_items(init.clone());
+        viewer.search = StatefulList::with_items(init.clone());
     }
 }
 

@@ -37,11 +37,13 @@ impl App {
     fn search_char(&mut self, c: char) {
         self.input.push(c);
 
-        self.viewer.update_search_fwd(self.input.clone());
+        let viewer = self.tabs.selected();
+        viewer.update_search_fwd(self.input.clone());
     }
 
     fn enter(&mut self) {
-        self.viewer.enter();
+        let viewer = self.tabs.selected();
+        viewer.enter();
 
         match self.mode {
             Mode::Search => self.to_nav_mode(),
@@ -54,7 +56,8 @@ impl App {
             Mode::Search => {
                 self.input.pop();
 
-                self.viewer.update_search_bwd(self.input.clone());
+                let viewer = self.tabs.selected();
+                viewer.update_search_bwd(self.input.clone());
             },
             _ => {},
         } 
@@ -83,19 +86,23 @@ impl App {
     }
 
     fn up(&mut self) {
-        self.viewer.up()
+        let viewer = self.tabs.selected();
+        viewer.up()
     }
 
     fn down(&mut self) {
-        self.viewer.down()
+        let viewer = self.tabs.selected();
+        viewer.down()
     } 
 
     fn right(&mut self) {
-        self.viewer.right()
+        let viewer = self.tabs.selected();
+        viewer.right()
     }
 
     fn left(&mut self) {
-        self.viewer.left()
+        let viewer = self.tabs.selected();
+        viewer.left()
     }
 }
 
