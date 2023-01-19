@@ -84,7 +84,7 @@ impl App {
         match self.mode {
             Mode::Search => {
                 self.input = String::from("");
-                self.mode = Mode::Navigate;
+                self.to_nav_mode();
             },
             _ => {},
         } 
