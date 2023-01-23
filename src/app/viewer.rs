@@ -103,12 +103,9 @@ impl Viewer {
             return Err(format!("Err: no match for key {:?}", key));
         }
 
-        // TODO instead of cloning the graph, make a subgraph
-        let mut viewer = Viewer::new(format!("{} > {}", self.title, key), self.graph.clone());
-        viewer.current = StatefulList::with_items(self.filter.items.iter().map(|item| item.0.clone()).collect());
-        viewer.update_adjacent();
-
-        self.filter = StatefulList::with_items(Vec::new());
+        let ids = self.filter.items.iter().map(|item| item.0.clone()).collect();
+        let graph = self.graph.sub(&ids);
+        let viewer = Self::new(format!("{} > {}", self.title, key), graph);
 
         Ok(viewer)
     }
