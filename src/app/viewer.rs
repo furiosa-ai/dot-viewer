@@ -69,12 +69,20 @@ impl Viewer {
         viewer 
     }
 
-    pub fn progress(&self) -> String {
+    pub fn progress_current(&self) -> String {
         let idx = self.current.state.selected().unwrap();
         let len = self.current.items.len();
         let percentage = (idx as f32 / len as f32) * 100 as f32;
 
         format!("Nodes [{} / {} ({:.3}%)]", idx, len, percentage)
+    }
+
+    pub fn progress_search(&self) -> String {
+        let idx = self.search.state.selected().unwrap();
+        let len = self.search.items.len();
+        let percentage = (idx as f32 / len as f32) * 100 as f32;
+
+        format!("Searching... [{} / {} ({:.3}%)]", idx, len, percentage)
     }
 
     pub fn current(&self) -> Option<String> {

@@ -70,7 +70,7 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
 
 fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block 
-    let title = viewer.progress();
+    let title = viewer.progress_current();
     let block = draw_highlighted_block(mode.clone(), Mode::Navigate(Navigate::Current), title);
 
     let (froms, tos) = match &viewer.current() {
@@ -175,7 +175,8 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, _mode: &Mode, viewer
 // search result block
 fn draw_search_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
-    let block = draw_highlighted_block(mode.clone(), Mode::Input(Input::Search), "Searching...".to_string());
+    let title = viewer.progress_search();
+    let block = draw_highlighted_block(mode.clone(), Mode::Input(Input::Search), title);
 
     let list: Vec<ListItem> = viewer
         .search
@@ -187,7 +188,7 @@ fn draw_search_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, vie
             let highlight = &item.1;
             for (idx, c) in id.chars().enumerate() {
                 let span = if highlight.contains(&idx) {
-                    Span::styled(c.to_string(), Style::default().bg(Color::DarkGray).add_modifier(Modifier::BOLD))
+                    Span::styled(c.to_string(), Style::default().bg(Color::Black).add_modifier(Modifier::BOLD))
                 } else {
                     Span::raw(c.to_string())
                 };
@@ -222,7 +223,7 @@ fn draw_filter_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, vie
             let highlight = &item.1;
             for (idx, c) in id.chars().enumerate() {
                 let span = if highlight.contains(&idx) {
-                    Span::styled(c.to_string(), Style::default().bg(Color::DarkGray).add_modifier(Modifier::BOLD))
+                    Span::styled(c.to_string(), Style::default().bg(Color::Black).add_modifier(Modifier::BOLD))
                 } else {
                     Span::raw(c.to_string())
                 };
