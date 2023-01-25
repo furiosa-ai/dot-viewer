@@ -40,10 +40,7 @@ impl App {
                     Input::Filter => viewer.filter.selected(),
                 };
 
-                match item {
-                    Some((item, _)) => Some(item),
-                    None => None
-                }
+                item.map(|(item, _)| item)
             },
         }
     }

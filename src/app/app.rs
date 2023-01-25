@@ -1,6 +1,9 @@
-use crate::app::utils::{
-    list::StatefulList,
-    tabs::StatefulTabs,
+use crate::app::{
+    error::ViewerError,
+    utils::{
+        list::StatefulList,
+        tabs::StatefulTabs,
+    }
 };
 use dot_graph::{
     parser::parse,
@@ -26,6 +29,8 @@ pub enum Input {
     Filter,
 }
 
+pub type Res = Result<Option<String>, ViewerError>;
+
 pub struct App {
     pub quit: bool,
     pub mode: Mode,
@@ -35,6 +40,8 @@ pub struct App {
     pub input: String, 
     pub errormsg: Option<String>,
     pub history: Vec<String>,
+
+    pub result: Res,
 }
 
 pub struct Viewer {
@@ -65,6 +72,7 @@ impl App {
             input: String::from(""),
             history: Vec::new(),
             errormsg: None,
+            result: Ok(None),
         }
     }
 
