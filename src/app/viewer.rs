@@ -111,8 +111,7 @@ impl Viewer {
             return Err(format!("Err: no match for key {:?}", key));
         }
 
-        let ids = self.filter.items.iter().map(|item| item.0.clone()).collect();
-        let graph = self.graph.sub(&ids);
+        let graph = self.graph.filter(&key);
         let viewer = Self::new(format!("{} > {}", self.title, key), graph);
 
         Ok(viewer)
