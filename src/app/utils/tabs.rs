@@ -1,3 +1,8 @@
+use crate::app::{
+    app::Res,
+    error::ViewerError
+};
+
 pub struct StatefulTabs<T> {
     pub state: usize,
     pub tabs: Vec<T>,
@@ -43,14 +48,18 @@ impl<T> StatefulTabs<T> {
         self.state = self.tabs.len() - 1;
     }
 
-    pub fn close(&mut self) {
+    pub fn close(&mut self) -> Res {
         // TODO currently disallow closing the first tab
-        if self.state > 0 {
-            self.tabs.remove(self.state);
-            if self.state == self.tabs.len() {
-                self.state -= 1;
-            }
+        if self.state == 0 {
+            return Err(ViewerError::TODOError("cannot close the first tab".to_string()));
         }
+
+        self.tabs.remove(self.state);
+        if self.state == self.tabs.len() {
+            self.state -= 1;
+        }
+
+        Ok(None)
     }
 
     pub fn select(&mut self, state: usize) {

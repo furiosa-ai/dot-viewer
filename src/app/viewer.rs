@@ -1,24 +1,25 @@
 use fuzzy_matcher::{ FuzzyMatcher, skim::SkimMatcherV2 };
 use dot_graph::structs::Graph;
 use crate::app::{
-    app::{ App, Viewer, Mode, Navigate, Input },
+    app::{ App, Viewer, Mode, Navigate, Input, Res },
     utils::list::StatefulList,
 };
 
+use super::error::ViewerError;
+
 impl App {
-    pub fn goto(&mut self) {
+    pub fn goto(&mut self) -> Res {
         let id = self.selected();
         let viewer = self.tabs.selected();
-        viewer.goto(id);
+        viewer.goto(id)
     }
 
-    pub fn filter(&mut self) {
+    pub fn filter(&mut self) -> Res {
         let viewer = self.tabs.selected();
-        let viewer = viewer.filter(self.input.clone());
-        match viewer {
-            Ok(viewer) => self.tabs.open(viewer),
-            Err(msg) => self.errormsg = Some(msg),
-        }
+        let viewer = viewer.filter(self.input.clone())?;
+        self.tabs.open(viewer);
+
+        Ok(None)
     }
 
     pub fn selected(&mut self) -> Option<String> {
@@ -75,18 +76,21 @@ impl Viewer {
     }
 
     pub fn progress_search(&self) -> String {
-        let idx = self.search.state.selected().unwrap();
-        let len = self.search.items.len();
-        let percentage = (idx as f32 / len as f32) * 100 as f32;
+        if let Some(idx) = self.search.state.selected() {
+            let len = self.search.items.len();
+            let percentage = (idx as f32 / len as f32) * 100 as f32;
 
-        format!("Searching... [{} / {} ({:.3}%)]", idx, len, percentage)
+            format!("Searching... [{} / {} ({:.3}%)]", idx, len, percentage)
+        } else {
+            "No Match...".to_string()
+        }
     }
 
     pub fn current(&self) -> Option<String> {
         self.current.selected()
     }
 
-    pub fn goto(&mut self, id: Option<String>) -> Option<String> {
+    pub fn goto(&mut self, id: Option<String>) -> Res {
         match id {
             Some(id) => {
                 let idx = self.current.find(id.to_string());
@@ -94,24 +98,26 @@ impl Viewer {
                     Some(idx) => {
                         self.current.select(idx);
                         self.update_adjacent();
-                        None
+                        
+                        Ok(None)
                     },
-                    None => Some(format!("Err: no such node {:?}", id))
+                    None => Err(ViewerError::GoToError(format!("no such node {:?}", id)))
                 }
             },
-            None => Some("Err: no node selected".to_string()),
+            None => Err(ViewerError::GoToError("no node selected".to_string())),
         }
     }
 
-    pub fn filter(&mut self, key: String) -> Result<Viewer, String> {
-        if self.filter.items.is_empty() {
-            return Err(format!("Err: no match for key {:?}", key));
-        }
-
+    pub fn filter(&mut self, key: String) -> Result<Viewer, ViewerError> {
         let graph = self.graph.filter(&key);
-        let viewer = Self::new(format!("{} > {}", self.title, key), graph);
 
-        Ok(viewer)
+        match graph {
+            Some(graph) => {
+                let viewer = Self::new(format!("{} > {}", self.title, key), graph);
+                Ok(viewer)
+            },
+            None => Err(ViewerError::FilterError(format!("no match for prefix {}", key))),
+        }
     }
 
     pub fn update_adjacent(&mut self) {

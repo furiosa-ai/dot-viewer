@@ -124,7 +124,13 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // error block
 fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    if let Some(msg) = &app.errormsg {
+    let msg = match &app.result {
+        Ok(Some(msg)) => Some(msg.clone()),
+        Err(err) => Some(format!("{}", err)),
+        _ => None
+    };
+
+    if let Some(msg) = msg {
         let msg = Paragraph::new(msg.to_string())
             .style(
                 Style::default()

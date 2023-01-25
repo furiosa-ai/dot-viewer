@@ -38,7 +38,6 @@ pub struct App {
     pub tabs: StatefulTabs<Viewer>,
 
     pub input: String, 
-    pub errormsg: Option<String>,
     pub history: Vec<String>,
 
     pub result: Res,
@@ -71,7 +70,6 @@ impl App {
             tabs,
             input: String::from(""),
             history: Vec::new(),
-            errormsg: None,
             result: Ok(None),
         }
     }

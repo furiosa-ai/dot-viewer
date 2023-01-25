@@ -1,5 +1,8 @@
 use crossterm::event::{ KeyCode, KeyEvent };
-use crate::app::app::{ App, Mode, Navigate, Input, Res };
+use crate::app::{
+    app::{ App, Mode, Navigate, Input, Res },
+    error::ViewerError,
+};
 
 impl App {    
     pub fn key(&mut self, key: KeyEvent) {
@@ -27,14 +30,21 @@ impl App {
 
     fn char_nav(&mut self, c: char) -> Res {
         match c {
-            'q' => self.quit = true,
-            '/' => self.to_input_mode(Input::Search),
-            'f' => self.to_input_mode(Input::Filter),
+            'q' => {
+                self.quit = true;
+                Ok(None)
+            },
+            '/' => {
+                self.to_input_mode(Input::Search);
+                Ok(None)
+            },
+            'f' => {
+                self.to_input_mode(Input::Filter);
+                Ok(None)
+            },
             'c' => self.tabs.close(),
-            _ => {},
-        };
-
-        Ok(None)
+            _ => Err(ViewerError::KeyError(KeyCode::Char(c))),
+        }
     }
 
     fn char_input(&mut self, c: char, input: &Input) -> Res {
@@ -53,15 +63,15 @@ impl App {
         match &self.mode {
             Mode::Navigate(_) => self.goto(), 
             Mode::Input(input) => {
-                match input {
+                let res = match input {
                     Input::Search => self.goto(),
                     Input::Filter => self.filter(),
                 };
                 self.to_nav_mode();
-            },
-        };
 
-        Ok(None)
+                res
+            },
+        }
     }
 
     fn backspace(&mut self) -> Res {
@@ -74,11 +84,11 @@ impl App {
                     Input::Search => viewer.update_search_bwd(self.input.clone()),
                     Input::Filter => viewer.update_filter(self.input.clone()),
                 };
-            },
-            _ => {},
-        }; 
 
-        Ok(None)
+                Ok(None)
+            },
+            _ => Err(ViewerError::KeyError(KeyCode::Backspace)),
+        } 
     }
 
     fn esc(&mut self) -> Res {
@@ -86,29 +96,31 @@ impl App {
             Mode::Input(_) => {
                 self.input = String::from("");
                 self.to_nav_mode();
-            },
-            _ => {},
-        }; 
 
-        Ok(None)
+                Ok(None)
+            },
+            _ => Err(ViewerError::KeyError(KeyCode::Esc)),
+        }
     }
 
     fn tab(&mut self) -> Res {
         match &self.mode {
-            Mode::Navigate(_) => self.tabs.next(),
-            _ => {},
-        };
-
-        Ok(None)
+            Mode::Navigate(_) => {
+                self.tabs.next();
+                Ok(None)
+            },
+            _ => Err(ViewerError::KeyError(KeyCode::Tab)),
+        }
     }
 
     fn backtab(&mut self) -> Res {
         match &self.mode {
-            Mode::Navigate(_) => self.tabs.previous(),
-            _ => {},
-        };
-
-        Ok(None)
+            Mode::Navigate(_) => {
+                self.tabs.previous();
+                Ok(None)
+            },
+            _ => Err(ViewerError::KeyError(KeyCode::BackTab)),
+        }
     }
 
     fn up(&mut self) -> Res {
