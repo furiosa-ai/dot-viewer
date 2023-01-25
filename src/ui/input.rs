@@ -76,7 +76,7 @@ pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // help block
 fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let (msg, style) = match app.mode {
+    let (msg, style) = match &app.mode {
         Mode::Navigate(_) => (
             vec![
                 Span::raw("Press "),
@@ -84,22 +84,36 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
                 Span::raw(" to exit, "),
                 Span::styled("/", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to start search, "),
+                Span::styled("f", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::raw(" to apply filter, "),
                 Span::styled("tab", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to navigate blocks."),
 
             ],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
-        Mode::Input(_) => (
-            vec![
-                Span::raw("Press "),
-                Span::styled("Esc", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-                Span::raw(" to stop search, "),
-                Span::styled("Enter", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-                Span::raw(" to search"),
-            ],
-            Style::default(),
-        ),
+        Mode::Input(input) => match input { 
+            Input::Search => (
+                vec![
+                    Span::raw("Press "),
+                    Span::styled("Esc", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                    Span::raw(" to stop search, "),
+                    Span::styled("Enter", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                    Span::raw(" to search."),
+                ],
+                Style::default(),
+            ),
+            Input::Filter => (
+                vec![
+                    Span::raw("Press "),
+                    Span::styled("Esc", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                    Span::raw(" to stop filter, "),
+                    Span::styled("Enter", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                    Span::raw(" to apply filter."),
+                ],
+                Style::default(),
+            ),
+        },
     };
     let mut text = Text::from(Spans::from(msg));
     text.patch_style(style);
