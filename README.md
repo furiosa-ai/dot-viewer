@@ -46,4 +46,4 @@ Key | Effect
 `tab`/`backtab` | navigate tabs
 `enter` | when traversing in prev/next/search-match node list, goto the selected node
 `/[node-id-pattern]` (e.g. `/g1s35t`) | search for node by fuzzy matcher
-`f[node-prefix]` (e.g. `/graph1_subgraph34`) | apply filter with prefix
+`f[node-prefix]` (e.g. `fgraph1_subgraph34`) | apply filter with prefix
