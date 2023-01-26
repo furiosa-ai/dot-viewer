@@ -39,6 +39,8 @@ Users may interact with dot-viewer in TUI to traverse the graph.
 Key | Effect
 --- | ---
 `q` | quit
+`e` | export the current tab to dot
+`0-9` | export the subgraph containing neighbors of the currently selected node with given depth (in digits)
 `up` | traverse the focused node list
 `down` | traverse the focused node list
 `right` | move focus between lists (highlighted in yellow borders)
@@ -47,3 +49,5 @@ Key | Effect
 `enter` | when traversing in prev/next/search-match node list, goto the selected node
 `/[node-id-pattern]` (e.g. `/g1s35t`) | search for node by fuzzy matcher
 `f[node-prefix]` (e.g. `fgraph1_subgraph34`) | apply filter with prefix
+
+All exported files are saved in `exports` directory in the project root.
