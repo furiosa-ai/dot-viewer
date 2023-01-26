@@ -1,3 +1,8 @@
+use std::{
+    io::Stdout,
+    thread,
+    sync::{ Arc, Mutex },
+};
 use crate::{ 
     app::app::App, 
     ui::ui 
@@ -16,8 +21,7 @@ use tui::{
     Terminal,
 };
 
-pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
-    // setup terminal
+pub fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(
@@ -26,13 +30,12 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
         EnableMouseCapture
     )?;
     let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
+    let terminal = Terminal::new(backend)?;
 
-    // create and run app
-    let app = App::new(&path);
-    let res = run(&mut terminal, app);
+    Ok(terminal)
+}
 
-    // restore terminal 
+pub fn cleanup<B: Backend>(terminal: &mut Terminal<B>) -> Result<(), Box<dyn Error>> {
     terminal.clear()?;
     let mut stdout = io::stdout();
     execute!(
@@ -42,10 +45,34 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
     )?;
     disable_raw_mode()?;
     terminal.show_cursor()?;
+    
+    Ok(())
+}
 
-    if let Err(err) = res {
-        println!("Error: {:?}", err)
-    }
+pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
+    // setup terminal
+    let terminal = setup()?;
+    let terminal = Arc::new(Mutex::new(terminal));
+    let recovery = terminal.clone();
+
+    // create and run app in a child thread
+    // https://stackoverflow.com/questions/43441047/whats-the-best-way-to-register-a-function-to-run-during-an-unexpected-exit-of-a
+    let child = thread::spawn(move || {
+        let mut terminal = terminal.lock().unwrap();
+        let app = App::new(&path);
+        let _ = run(&mut terminal, app);
+    });
+
+    match child.join() {
+        Ok(_) => {},
+        Err(_) => {
+            let mut terminal = match recovery.lock() {
+                Ok(guard) => guard,
+                Err(poisoned) => poisoned.into_inner(),
+            };
+            cleanup(&mut terminal)?;
+        }
+    };
 
     Ok(())
 }
@@ -62,7 +89,11 @@ fn run<B: Backend>(
         }
 
         if app.quit {
-            return Ok(());
+            break;
         }
     }
+
+    let _ = cleanup(terminal);
+
+    Ok(())
 }
