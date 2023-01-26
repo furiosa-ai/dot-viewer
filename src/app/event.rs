@@ -43,6 +43,7 @@ impl App {
                 Ok(None)
             },
             'c' => self.tabs.close(),
+            'e' => self.export(),
             _ => Err(ViewerError::KeyError(KeyCode::Char(c))),
         }
     }

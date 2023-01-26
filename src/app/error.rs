@@ -5,6 +5,7 @@ pub enum ViewerError {
     KeyError(KeyCode),
     GoToError(String),
     FilterError(String),
+    IOError(String),
     TODOError(String),
 }
 
@@ -16,6 +17,7 @@ impl std::fmt::Display for ViewerError {
             ViewerError::KeyError(key) => write!(f, "KeyErr: Wrong key {:?}", key),
             ViewerError::GoToError(msg) => write!(f, "GoToErr: {}", msg),
             ViewerError::FilterError(msg) => write!(f, "FilterErr: {}", msg),
+            ViewerError::IOError(msg) => write!(f, "IOErr: {}", msg),
             ViewerError::TODOError(msg) => write!(f, "TODOErr: {}", msg),
         }
     }

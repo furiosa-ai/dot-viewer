@@ -1,3 +1,4 @@
+use std::io::Write;
 use fuzzy_matcher::{ FuzzyMatcher, skim::SkimMatcherV2 };
 use dot_graph::structs::Graph;
 use crate::app::{
@@ -22,6 +23,17 @@ impl App {
         Ok(None)
     }
 
+    pub fn export(&mut self) -> Res {
+        let viewer = self.tabs.selected();
+        let graph = &viewer.graph;
+
+        let filename: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
+        match Self::write(filename, graph.to_dot()) {
+            Ok(succ) => Ok(Some(succ)),
+            Err(msg) => Err(ViewerError::IOError(msg.to_string())),
+        }
+    }
+
     pub fn selected(&mut self) -> Option<String> {
         match &self.mode {
             Mode::Navigate(nav) => {
@@ -44,6 +56,14 @@ impl App {
                 item.map(|(item, _)| item)
             },
         }
+    }
+
+    fn write(filename: String, contents: String) -> Result<String, std::io::Error> {
+        std::fs::create_dir_all("./exports")?;
+        let mut file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open(format!("./exports/{}.dot", filename))?;
+        file.write_all(contents.as_bytes())?;
+
+        Ok(format!("file successfully written to {}", filename))
     }
 }
 
@@ -94,7 +114,7 @@ impl Viewer {
 
         match graph {
             Some(graph) => {
-                let viewer = Self::new(format!("{} > {}", self.title, key), graph);
+                let viewer = Self::new(format!("{} - {}", self.title, key), graph);
                 Ok(viewer)
             },
             None => Err(ViewerError::FilterError(format!("no match for prefix {}", key))),
