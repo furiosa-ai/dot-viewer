@@ -63,7 +63,10 @@ impl App {
 
     fn enter(&mut self) -> Res { 
         match &self.mode {
-            Mode::Navigate(_) => self.goto(), 
+            Mode::Navigate(nav) => match nav {
+                Navigate::Prevs | Navigate::Nexts => self.goto(), 
+                Navigate::Current => Ok(None),
+            },
             Mode::Input(input) => {
                 let res = match input {
                     Input::Search => self.goto(),

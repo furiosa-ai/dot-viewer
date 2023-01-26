@@ -66,6 +66,8 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
     match child.join() {
         Ok(_) => {},
         Err(_) => {
+            println!("Err: dot-viewer paniced");
+
             let mut terminal = match recovery.lock() {
                 Ok(guard) => guard,
                 Err(poisoned) => poisoned.into_inner(),

@@ -119,6 +119,14 @@ impl Viewer {
                         self.current.select(idx);
                         self.update_adjacent();
                         
+                        // TODO 
+                        // manually set offset to keep goto-ed node in the middle of the list
+                        // with modified (forked) tui-rs
+                        let offset = self.current.state.offset_mut();
+                        if idx >= 10 {
+                            *offset = idx - 10;
+                        }
+
                         Ok(None)
                     },
                     None => Err(ViewerError::GoToError(format!("no such node {:?}", id)))
