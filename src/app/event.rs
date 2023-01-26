@@ -1,10 +1,10 @@
-use crossterm::event::{ KeyCode, KeyEvent };
 use crate::app::{
-    app::{ App, Mode, Navigate, Input, Res },
+    app::{App, Input, Mode, Navigate, Res},
     error::ViewerError,
 };
+use crossterm::event::{KeyCode, KeyEvent};
 
-impl App {    
+impl App {
     pub fn key(&mut self, key: KeyEvent) {
         self.result = match key.code {
             KeyCode::Char(c) => self.char(c),
@@ -25,7 +25,7 @@ impl App {
         match &self.mode {
             Mode::Navigate(_) => self.char_nav(c),
             Mode::Input(input) => self.char_input(c, &input.clone()),
-        } 
+        }
     }
 
     fn char_nav(&mut self, c: char) -> Res {
@@ -33,18 +33,18 @@ impl App {
             'q' => {
                 self.quit = true;
                 Ok(None)
-            },
+            }
             '/' => {
                 self.to_input_mode(Input::Search);
                 Ok(None)
-            },
+            }
             'f' => {
                 self.to_input_mode(Input::Filter);
                 Ok(None)
-            },
+            }
             'c' => self.tabs.close(),
             'e' => self.export(),
-            d if d.is_digit(10) => self.neighbors(d.to_digit(10).unwrap() as usize),
+            d if d.is_ascii_digit() => self.neighbors(d.to_digit(10).unwrap() as usize),
             _ => Err(ViewerError::KeyError(KeyCode::Char(c))),
         }
     }
@@ -61,10 +61,10 @@ impl App {
         Ok(None)
     }
 
-    fn enter(&mut self) -> Res { 
+    fn enter(&mut self) -> Res {
         match &self.mode {
             Mode::Navigate(nav) => match nav {
-                Navigate::Prevs | Navigate::Nexts => self.goto(), 
+                Navigate::Prevs | Navigate::Nexts => self.goto(),
                 Navigate::Current => Ok(None),
             },
             Mode::Input(input) => {
@@ -75,13 +75,13 @@ impl App {
                 self.to_nav_mode();
 
                 res
-            },
+            }
         }
     }
 
     fn backspace(&mut self) -> Res {
         let viewer = self.tabs.selected();
-        
+
         match &self.mode {
             Mode::Input(input) => {
                 self.input.pop();
@@ -91,9 +91,9 @@ impl App {
                 };
 
                 Ok(None)
-            },
+            }
             _ => Err(ViewerError::KeyError(KeyCode::Backspace)),
-        } 
+        }
     }
 
     fn esc(&mut self) -> Res {
@@ -103,7 +103,7 @@ impl App {
                 self.to_nav_mode();
 
                 Ok(None)
-            },
+            }
             _ => Err(ViewerError::KeyError(KeyCode::Esc)),
         }
     }
@@ -113,7 +113,7 @@ impl App {
             Mode::Navigate(_) => {
                 self.tabs.next();
                 Ok(None)
-            },
+            }
             _ => Err(ViewerError::KeyError(KeyCode::Tab)),
         }
     }
@@ -123,7 +123,7 @@ impl App {
             Mode::Navigate(_) => {
                 self.tabs.previous();
                 Ok(None)
-            },
+            }
             _ => Err(ViewerError::KeyError(KeyCode::BackTab)),
         }
     }
@@ -136,7 +136,7 @@ impl App {
                 Navigate::Current => {
                     viewer.current.previous();
                     viewer.update_adjacent();
-                },
+                }
                 Navigate::Prevs => viewer.prevs.previous(),
                 Navigate::Nexts => viewer.nexts.previous(),
             },
@@ -157,7 +157,7 @@ impl App {
                 Navigate::Current => {
                     viewer.current.next();
                     viewer.update_adjacent();
-                },
+                }
                 Navigate::Prevs => viewer.prevs.next(),
                 Navigate::Nexts => viewer.nexts.next(),
             },

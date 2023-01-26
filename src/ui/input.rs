@@ -1,12 +1,12 @@
+use crate::app::app::{App, Input, Mode};
 use tui::{
     backend::Backend,
-    layout::{ Constraint, Direction, Layout, Rect },
-    style::{ Color, Modifier, Style },
-    text::{ Span, Spans, Text },
-    widgets::{ Block, Borders, Paragraph },
+    layout::{Constraint, Direction, Layout, Rect},
+    style::{Color, Modifier, Style},
+    text::{Span, Spans, Text},
+    widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use crate::app::app::{ App, Mode, Input };
 
 // input block
 pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
@@ -22,7 +22,7 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             Mode::Input(input) => match input {
                 Input::Search => "Search",
                 Input::Filter => "Filter",
-            }
+            },
         });
     f.render_widget(block, chunk);
 
@@ -30,17 +30,12 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
-        .constraints(
-            [
-                Constraint::Percentage(50),
-                Constraint::Percentage(50),
-            ].as_ref()
-        )
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
     draw_help(f, chunks[0], app);
     match app.mode {
         Mode::Navigate(_) => draw_error(f, chunks[1], app),
-        Mode::Input(_) => draw_form(f, chunks[1], app)
+        Mode::Input(_) => draw_form(f, chunks[1], app),
     };
 }
 
@@ -60,17 +55,12 @@ pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
-        .constraints(
-            [
-                Constraint::Percentage(50),
-                Constraint::Percentage(50),
-            ].as_ref()
-        )
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
     draw_help(f, chunks[0], app);
     match app.mode {
         Mode::Navigate(_) => draw_error(f, chunks[1], app),
-        Mode::Input(_) => draw_input(f, chunks[1], app)
+        Mode::Input(_) => draw_input(f, chunks[1], app),
     };
 }
 
@@ -80,25 +70,42 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         Mode::Navigate(_) => (
             vec![
                 Span::raw("Press "),
-                Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    "q",
+                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" to exit, "),
-                Span::styled("/", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    "/",
+                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" to start search, "),
-                Span::styled("f", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    "f",
+                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" to apply filter, "),
-                Span::styled("tab", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    "tab",
+                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(" to navigate blocks."),
-
             ],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
-        Mode::Input(input) => match input { 
+        Mode::Input(input) => match input {
             Input::Search => (
                 vec![
                     Span::raw("Press "),
-                    Span::styled("Esc", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                    Span::styled(
+                        "Esc",
+                        Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                    ),
                     Span::raw(" to stop search, "),
-                    Span::styled("Enter", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                    Span::styled(
+                        "Enter",
+                        Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                    ),
                     Span::raw(" to search."),
                 ],
                 Style::default(),
@@ -106,9 +113,15 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             Input::Filter => (
                 vec![
                     Span::raw("Press "),
-                    Span::styled("Esc", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                    Span::styled(
+                        "Esc",
+                        Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                    ),
                     Span::raw(" to stop filter, "),
-                    Span::styled("Enter", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                    Span::styled(
+                        "Enter",
+                        Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                    ),
                     Span::raw(" to apply filter."),
                 ],
                 Style::default(),
@@ -127,37 +140,27 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let msg = match &app.result {
         Ok(Some(msg)) => Some(msg.clone()),
         Err(err) => Some(format!("{}", err)),
-        _ => None
+        _ => None,
     };
 
     if let Some(msg) = msg {
-        let msg = Paragraph::new(msg.to_string())
-            .style(
-                Style::default()
-                    .fg(Color::Red)
-                    .add_modifier(Modifier::BOLD)
-            );
+        let msg =
+            Paragraph::new(msg).style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD));
         f.render_widget(msg, chunk);
     }
 }
 
 // input block
 fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let input = Paragraph::new(app.input.as_ref())
-        .style(match app.mode {
-            Mode::Navigate(_) => Style::default(),
-            Mode::Input(_) => Style::default().fg(Color::Yellow),
-        });
+    let input = Paragraph::new(app.input.as_ref()).style(match app.mode {
+        Mode::Navigate(_) => Style::default(),
+        Mode::Input(_) => Style::default().fg(Color::Yellow),
+    });
     f.render_widget(input, chunk);
-    
+
     // cursor
     match app.mode {
         Mode::Navigate(_) => {}
-        Mode::Input(_) => {
-            f.set_cursor(
-                chunk.x + app.input.len() as u16,
-                chunk.y,
-            )
-        }
+        Mode::Input(_) => f.set_cursor(chunk.x + app.input.len() as u16, chunk.y),
     }
 }

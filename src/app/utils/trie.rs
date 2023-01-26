@@ -1,5 +1,5 @@
 use std::str;
-use trie_rs::{ Trie, TrieBuilder };
+use trie_rs::{Trie, TrieBuilder};
 
 pub struct SearchTrie {
     pub trie: Trie<u8>,
@@ -23,7 +23,10 @@ impl SearchTrie {
 
     fn predict(&self, str: &str) -> Vec<String> {
         let result = self.trie.predictive_search(str);
-        let result: Vec<String> = result.iter().map(|s| str::from_utf8(s).unwrap().to_string()).collect();
+        let result: Vec<String> = result
+            .iter()
+            .map(|s| str::from_utf8(s).unwrap().to_string())
+            .collect();
 
         result
     }
@@ -31,7 +34,7 @@ impl SearchTrie {
     // TODO faster search needed
     // https://leetcode.com/problems/longest-common-prefix/solutions/1134124/faster-than-100-in-memory-and-runtime-by-rust/
     fn longest_common_prefix(strs: Vec<String>) -> Option<String> {
-        if strs.len() == 0 || strs[0].len() == 0 {
+        if strs.is_empty() || strs[0].is_empty() {
             return None;
         }
 

@@ -12,7 +12,7 @@ impl<T: Clone + Eq> StatefulList<T> {
             items,
         };
 
-        if list.items.len() > 0 {
+        if !list.items.is_empty() {
             list.state.select(Some(0));
         }
 
@@ -20,7 +20,7 @@ impl<T: Clone + Eq> StatefulList<T> {
     }
 
     pub fn next(&mut self) {
-        if self.items.len() > 0 {
+        if !self.items.is_empty() {
             let i = match self.state.selected() {
                 Some(i) => {
                     if i >= self.items.len() - 1 {
@@ -36,7 +36,7 @@ impl<T: Clone + Eq> StatefulList<T> {
     }
 
     pub fn previous(&mut self) {
-        if self.items.len() > 0 {
+        if !self.items.is_empty() {
             let i = match self.state.selected() {
                 Some(i) => {
                     if i == 0 {
@@ -58,15 +58,10 @@ impl<T: Clone + Eq> StatefulList<T> {
     }
 
     pub fn selected(&self) -> Option<T> {
-        match self.state.selected() {
-            Some(i) => Some(self.items[i].clone()),
-            None => None,
-        }
+        self.state.selected().map(|i| self.items[i].clone())
     }
 
     pub fn find(&self, key: T) -> Option<usize> {
-        self.items.iter().position(|item| *item == key) 
+        self.items.iter().position(|item| *item == key)
     }
 }
-
-

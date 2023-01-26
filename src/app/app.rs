@@ -1,14 +1,8 @@
 use crate::app::{
     error::ViewerError,
-    utils::{
-        list::StatefulList,
-        tabs::StatefulTabs,
-    }
+    utils::{list::StatefulList, tabs::StatefulTabs},
 };
-use dot_graph::{
-    parser::parse,
-    structs::Graph,
-};
+use dot_graph::{parser::parse, structs::Graph};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Mode {
@@ -37,7 +31,7 @@ pub struct App {
 
     pub tabs: StatefulTabs<Viewer>,
 
-    pub input: String, 
+    pub input: String,
     pub history: Vec<String>,
 
     pub result: Res,
@@ -59,7 +53,7 @@ pub struct Viewer {
 }
 
 impl App {
-    pub fn new(path: &str) -> App {                
+    pub fn new(path: &str) -> App {
         let graph = parse(path);
         let viewer = Viewer::new("DAG".to_string(), graph);
         let tabs = StatefulTabs::with_tabs(vec![viewer]);
@@ -83,13 +77,18 @@ impl App {
         self.mode = Mode::Input(input.clone());
 
         let viewer = self.tabs.selected();
-        let init: Vec<(String, Vec<usize>)> = viewer.current.items.iter().map(|id| (id.clone(), Vec::new())).collect();
+        let init: Vec<(String, Vec<usize>)> = viewer
+            .current
+            .items
+            .iter()
+            .map(|id| (id.clone(), Vec::new()))
+            .collect();
         match &input {
             Input::Search => {
                 viewer.search = StatefulList::with_items(init.clone());
-                viewer.cache = StatefulList::with_items(init.clone());
-            },
-            Input::Filter => viewer.filter = StatefulList::with_items(init.clone()),
+                viewer.cache = StatefulList::with_items(init);
+            }
+            Input::Filter => viewer.filter = StatefulList::with_items(init),
         }
     }
 }

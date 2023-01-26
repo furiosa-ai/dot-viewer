@@ -1,7 +1,4 @@
-use crate::app::{
-    app::Res,
-    error::ViewerError
-};
+use crate::app::{app::Res, error::ViewerError};
 
 pub struct StatefulTabs<T> {
     pub state: usize,
@@ -15,32 +12,21 @@ impl<T> StatefulTabs<T> {
             panic!("Err: empty tabs");
         }
 
-        StatefulTabs {
-            state: 0,
-            tabs,
-        }
+        StatefulTabs { state: 0, tabs }
     }
 
     pub fn next(&mut self) {
         let state = self.state;
         let len = self.tabs.len();
-        
-        self.state = if state < len - 1 {
-            state + 1
-        } else {
-            0
-        };
+
+        self.state = if state < len - 1 { state + 1 } else { 0 };
     }
 
     pub fn previous(&mut self) {
         let state = self.state;
         let len = self.tabs.len();
-        
-        self.state = if state == 0 {
-            len - 1
-        } else {
-            state - 1
-        };
+
+        self.state = if state == 0 { len - 1 } else { state - 1 };
     }
 
     pub fn open(&mut self, tab: T) {
@@ -51,7 +37,9 @@ impl<T> StatefulTabs<T> {
     pub fn close(&mut self) -> Res {
         // TODO currently disallow closing the first tab
         if self.state == 0 {
-            return Err(ViewerError::TODOError("cannot close the first tab".to_string()));
+            return Err(ViewerError::TODOError(
+                "cannot close the first tab".to_string(),
+            ));
         }
 
         self.tabs.remove(self.state);

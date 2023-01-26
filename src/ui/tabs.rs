@@ -1,13 +1,13 @@
-use tui::{
-    backend::Backend,
-    layout::{ Constraint, Direction, Layout, Rect },
-    style::{ Color, Modifier, Style },
-    text::{ Span, Spans },
-    widgets::{ Block, Borders, Tabs },
-    Frame,
-};
 use crate::app::app::App;
 use crate::ui::viewer::draw_viewer;
+use tui::{
+    backend::Backend,
+    layout::{Constraint, Direction, Layout, Rect},
+    style::{Color, Modifier, Style},
+    text::{Span, Spans},
+    widgets::{Block, Borders, Tabs},
+    Frame,
+};
 
 // main block
 pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
@@ -26,17 +26,30 @@ pub fn draw_nav<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Tabs");
 
-    let titles: Vec<String> = app.tabs.tabs.iter().map(|viewer| viewer.title.clone()).collect();
-    let titles = titles.iter()
-        .map(|title| Spans::from(vec![
-                Span::styled(title, Style::default().fg(Color::Yellow))
-        ]))
+    let titles: Vec<String> = app
+        .tabs
+        .tabs
+        .iter()
+        .map(|viewer| viewer.title.clone())
+        .collect();
+    let titles = titles
+        .iter()
+        .map(|title| {
+            Spans::from(vec![Span::styled(
+                title,
+                Style::default().fg(Color::Yellow),
+            )])
+        })
         .collect();
 
     let tabs = Tabs::new(titles)
         .block(block)
         .select(app.tabs.state)
-        .highlight_style(Style::default().add_modifier(Modifier::BOLD).bg(Color::Black));
+        .highlight_style(
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .bg(Color::Black),
+        );
 
     f.render_widget(tabs, chunk)
 }

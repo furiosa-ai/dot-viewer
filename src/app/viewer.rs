@@ -1,10 +1,10 @@
-use std::io::Write;
-use fuzzy_matcher::{ FuzzyMatcher, skim::SkimMatcherV2 };
-use dot_graph::structs::Graph;
 use crate::app::{
-    app::{ App, Viewer, Mode, Navigate, Input, Res },
+    app::{App, Input, Mode, Navigate, Res, Viewer},
     utils::list::StatefulList,
 };
+use dot_graph::structs::Graph;
+use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
+use std::io::Write;
 
 use super::error::ViewerError;
 
@@ -27,7 +27,11 @@ impl App {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
-        let filename: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
+        let filename: String = viewer
+            .title
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect();
         match Self::write(filename, graph.to_dot()) {
             Ok(succ) => Ok(Some(succ)),
             Err(msg) => Err(ViewerError::IOError(msg.to_string())),
@@ -48,9 +52,9 @@ impl App {
                     Ok(succ) => Ok(Some(succ)),
                     Err(msg) => Err(ViewerError::IOError(msg.to_string())),
                 }
-            },
-            None => Err(ViewerError::TODOError("empty graph".to_string()))
-        } 
+            }
+            None => Err(ViewerError::TODOError("empty graph".to_string())),
+        }
     }
 
     pub fn selected(&mut self) -> Option<String> {
@@ -63,7 +67,7 @@ impl App {
                     Navigate::Prevs => viewer.prevs.selected(),
                     Navigate::Nexts => viewer.nexts.selected(),
                 }
-            },
+            }
             Mode::Input(input) => {
                 let viewer = self.tabs.selected();
 
@@ -73,18 +77,25 @@ impl App {
                 };
 
                 item.map(|(item, _)| item)
-            },
+            }
         }
     }
 
     fn write(filename: String, contents: String) -> Result<String, std::io::Error> {
         std::fs::create_dir_all("./exports")?;
-        let mut file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open(format!("./exports/{}.dot", filename))?;
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open(format!("./exports/{}.dot", filename))?;
         file.write_all(contents.as_bytes())?;
 
-        let mut file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open("./exports/current.dot")?;
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open("./exports/current.dot")?;
         file.write_all(contents.as_bytes())?;
-
 
         Ok(format!("file successfully written to {}", filename))
     }
@@ -92,7 +103,7 @@ impl App {
 
 impl Viewer {
     pub fn new(title: String, graph: Graph) -> Viewer {
-        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();  
+        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();
 
         let mut viewer = Viewer {
             title,
@@ -107,7 +118,7 @@ impl Viewer {
 
         viewer.update_adjacent();
 
-        viewer 
+        viewer
     }
 
     pub fn current(&self) -> Option<String> {
@@ -122,8 +133,8 @@ impl Viewer {
                     Some(idx) => {
                         self.current.select(idx);
                         self.update_adjacent();
-                        
-                        // TODO 
+
+                        // TODO
                         // manually set offset to keep goto-ed node in the middle of the list
                         // with modified (forked) tui-rs
                         let offset = self.current.state.offset_mut();
@@ -132,10 +143,10 @@ impl Viewer {
                         }
 
                         Ok(None)
-                    },
-                    None => Err(ViewerError::GoToError(format!("no such node {:?}", id)))
+                    }
+                    None => Err(ViewerError::GoToError(format!("no such node {:?}", id))),
                 }
-            },
+            }
             None => Err(ViewerError::GoToError("no node selected".to_string())),
         }
     }
@@ -147,15 +158,23 @@ impl Viewer {
             Some(graph) => {
                 let viewer = Self::new(format!("{} - {}", self.title, key), graph);
                 Ok(viewer)
-            },
-            None => Err(ViewerError::FilterError(format!("no match for prefix {}", key))),
+            }
+            None => Err(ViewerError::FilterError(format!(
+                "no match for prefix {}",
+                key
+            ))),
         }
     }
 
     pub fn update_adjacent(&mut self) {
         let id = self.current().unwrap();
 
-        let prevs = self.graph.froms(&id).iter().map(|n| n.to_string()).collect();
+        let prevs = self
+            .graph
+            .froms(&id)
+            .iter()
+            .map(|n| n.to_string())
+            .collect();
         self.prevs = StatefulList::with_items(prevs);
 
         let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();
@@ -170,7 +189,7 @@ impl Viewer {
         let mut search: Vec<(String, Vec<usize>)> = Vec::new();
         for id in &self.search.items {
             let id = &id.0;
-            let res = matcher.fuzzy_indices(&id, &key);
+            let res = matcher.fuzzy_indices(id, &key);
             if let Some((_, idxs)) = res {
                 search.push((id.clone(), idxs));
             }
@@ -187,7 +206,7 @@ impl Viewer {
 
         let mut cache: Vec<(String, Vec<usize>)> = Vec::new();
         for id in &self.current.items {
-            let res = matcher.fuzzy_indices(&id, &key);
+            let res = matcher.fuzzy_indices(id, &key);
             if let Some((_, idxs)) = res {
                 cache.push((id.clone(), idxs));
             }
@@ -211,7 +230,7 @@ impl Viewer {
     pub fn progress_current(&self) -> String {
         let idx = self.current.state.selected().unwrap();
         let len = self.current.items.len();
-        let percentage = (idx as f32 / len as f32) * 100 as f32;
+        let percentage = (idx as f32 / len as f32) * 100_f32;
 
         format!("Nodes [{} / {} ({:.3}%)]", idx, len, percentage)
     }
@@ -219,7 +238,7 @@ impl Viewer {
     pub fn progress_search(&self) -> String {
         if let Some(idx) = self.search.state.selected() {
             let len = self.search.items.len();
-            let percentage = (idx as f32 / len as f32) * 100 as f32;
+            let percentage = (idx as f32 / len as f32) * 100_f32;
 
             format!("Searching... [{} / {} ({:.3}%)]", idx, len, percentage)
         } else {

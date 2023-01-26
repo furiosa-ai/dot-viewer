@@ -1,34 +1,24 @@
+use crate::{app::app::App, ui::ui};
+use crossterm::{
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use std::{error::Error, io};
 use std::{
     io::Stdout,
+    sync::{Arc, Mutex},
     thread,
-    sync::{ Arc, Mutex },
-};
-use crate::{ 
-    app::app::App, 
-    ui::ui 
-};
-use crossterm::{
-    event::{ self, DisableMouseCapture, EnableMouseCapture, Event },
-    execute,
-    terminal::{ disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen },
-};
-use std::{
-    error::Error,
-    io,
 };
 use tui::{
-    backend::{ Backend, CrosstermBackend },
+    backend::{Backend, CrosstermBackend},
     Terminal,
 };
 
 pub fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
-    execute!(
-        stdout, 
-        EnterAlternateScreen, 
-        EnableMouseCapture
-    )?;
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
     let backend = CrosstermBackend::new(stdout);
     let terminal = Terminal::new(backend)?;
 
@@ -38,14 +28,10 @@ pub fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
 pub fn cleanup<B: Backend>(terminal: &mut Terminal<B>) -> Result<(), Box<dyn Error>> {
     terminal.clear()?;
     let mut stdout = io::stdout();
-    execute!(
-        stdout,
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
+    execute!(stdout, LeaveAlternateScreen, DisableMouseCapture)?;
     disable_raw_mode()?;
     terminal.show_cursor()?;
-    
+
     Ok(())
 }
 
@@ -64,7 +50,7 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
     });
 
     match child.join() {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(_) => {
             println!("Err: dot-viewer paniced");
 
@@ -79,10 +65,7 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run<B: Backend>(
-    terminal: &mut Terminal<B>,
-    mut app: App,
-) -> io::Result<()> {
+fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
     loop {
         terminal.draw(|f| ui::draw(f, &mut app))?;
 

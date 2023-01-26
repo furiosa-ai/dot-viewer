@@ -1,8 +1,8 @@
 extern crate dot_viewer;
 
-use std::error::Error;
-use clap::{ arg, Parser };
+use clap::{arg, Parser};
 use dot_viewer::terminal::launch;
+use std::error::Error;
 
 #[derive(Parser, Debug)]
 struct Cli {

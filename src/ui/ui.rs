@@ -1,13 +1,10 @@
+use crate::app::app::App;
+use crate::ui::{input::draw_input, tabs::draw_tabs};
 use tui::{
     backend::Backend,
-    layout::{ Alignment, Constraint, Direction, Layout },
-    widgets::{ Block, Borders, BorderType },
+    layout::{Alignment, Constraint, Direction, Layout},
+    widgets::{Block, BorderType, Borders},
     Frame,
-};
-use crate::app::app::App;
-use crate::ui::{
-    tabs::draw_tabs,
-    input::draw_input,
 };
 
 pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
@@ -25,12 +22,7 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
-        .constraints(
-            [
-                Constraint::Percentage(90),
-                Constraint::Percentage(10),
-            ].as_ref()
-        )
+        .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())
         .split(size);
     draw_tabs(f, chunks[0], app);
     draw_input(f, chunks[1], app);
