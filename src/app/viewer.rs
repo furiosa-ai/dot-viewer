@@ -82,6 +82,10 @@ impl App {
         let mut file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open(format!("./exports/{}.dot", filename))?;
         file.write_all(contents.as_bytes())?;
 
+        let mut file = std::fs::OpenOptions::new().write(true).truncate(true).create(true).open("./exports/current.dot")?;
+        file.write_all(contents.as_bytes())?;
+
+
         Ok(format!("file successfully written to {}", filename))
     }
 }
