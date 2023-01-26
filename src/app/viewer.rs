@@ -34,6 +34,25 @@ impl App {
         }
     }
 
+    pub fn neighbors(&mut self, depth: usize) -> Res {
+        let viewer = self.tabs.selected();
+        let graph = &viewer.graph;
+        let node = &viewer.current().unwrap();
+
+        let filename = format!("{}-{}", node.clone(), depth);
+        let neighbors = graph.neighbors(node, depth);
+        match neighbors {
+            Some(neighbors) => {
+                let contents = neighbors.to_dot();
+                match Self::write(filename, contents) {
+                    Ok(succ) => Ok(Some(succ)),
+                    Err(msg) => Err(ViewerError::IOError(msg.to_string())),
+                }
+            },
+            None => Err(ViewerError::TODOError("empty graph".to_string()))
+        } 
+    }
+
     pub fn selected(&mut self) -> Option<String> {
         match &self.mode {
             Mode::Navigate(nav) => {

@@ -44,6 +44,7 @@ impl App {
             },
             'c' => self.tabs.close(),
             'e' => self.export(),
+            d if d.is_digit(10) => self.neighbors(d.to_digit(10).unwrap() as usize),
             _ => Err(ViewerError::KeyError(KeyCode::Char(c))),
         }
     }
