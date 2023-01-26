@@ -51,3 +51,4 @@ Key | Effect
 `f[node-prefix]` (e.g. `fgraph1_subgraph34`) | apply filter with prefix
 
 All exported files are saved in `exports` directory in the project root.
+Most recently exported file is copied in `exports/current.dot`.
