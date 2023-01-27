@@ -48,7 +48,7 @@ impl App {
 
             match xdot {
                 Ok(_) => Ok(None),
-                Err(_) => Err(ViewerError::XdotError)
+                Err(_) => Err(ViewerError::XdotError),
             }
         } else {
             Err(ViewerError::IOError("no exports/current.dot".to_string()))

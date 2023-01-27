@@ -46,7 +46,7 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
                 .split(chunk);
             draw_adjacent(f, chunks[0], mode, viewer);
             draw_metadata(f, chunks[1], mode, viewer);
-        },
+        }
         Mode::Input(_) => {}
     }
 }
