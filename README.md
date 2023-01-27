@@ -7,13 +7,27 @@ Dot debugger in TUI
 
 dot-viewer parses a dot format file using C bindings to Graphviz.
 
-Thus, it is required that [Graphviz is installed (compiled)](https://graphviz.org/download/source/) beforehand such that the followings can be included.
+#### 1. Installing Graphviz
+
+Coming from Linux,
+```console
+$ sudo apt install graphviz-dev
+```
+
+Coming from Mac,
+```console
+$ brew install graphviz
+```
+
+#### 2. Graphviz Library
+
+It is required that [Graphviz is installed (compiled)](https://graphviz.org/download/source/) beforehand such that the followings can be included.
 ```C
 #include <graphviz/gvc.h>
 #include <graphviz/cgraph.h>
 ```
 
-### Xdot.py
+### xdot.py
 
 dot-viewer renders a subgraph with xdot.py, an interactive dot visualizer.
 
