@@ -14,37 +14,23 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewe
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .margin(1)
-        .constraints([Constraint::Percentage(60), Constraint::Percentage(40)].as_ref())
+        .constraints([Constraint::Percentage(35), Constraint::Percentage(65)].as_ref())
         .split(chunk);
     draw_left(f, chunks[0], mode, viewer);
     draw_right(f, chunks[1], mode, viewer);
 }
 
 fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
-    // surrounding block
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .title("Graph Traversal");
-    f.render_widget(block, chunk);
-
-    // inner blocks
-    let chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .margin(1)
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-        .split(chunk);
     match &mode {
         Mode::Navigate(_) => {
-            draw_current(f, chunks[0], mode, viewer);
-            draw_adjacent(f, chunks[1], mode, viewer);
+            draw_current(f, chunk, mode, viewer);
         }
         Mode::Input(input) => match input {
             Input::Search => {
-                draw_search_match(f, chunks[0], mode, viewer);
+                draw_search_match(f, chunk, mode, viewer);
             }
             Input::Filter => {
-                draw_filter_match(f, chunks[0], mode, viewer);
+                draw_filter_match(f, chunk, mode, viewer);
             }
         },
     }
@@ -52,7 +38,15 @@ fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mu
 
 fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     match &mode {
-        Mode::Navigate(_) => draw_metadata(f, chunk, mode, viewer),
+        Mode::Navigate(_) => {
+            // inner blocks
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+                .split(chunk);
+            draw_adjacent(f, chunks[0], mode, viewer);
+            draw_metadata(f, chunks[1], mode, viewer);
+        },
         Mode::Input(_) => {}
     }
 }
