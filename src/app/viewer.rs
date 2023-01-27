@@ -38,6 +38,23 @@ impl App {
         }
     }
 
+    pub fn xdot(&mut self) -> Res {
+        let exists = std::path::Path::new("./exports/current.dot").exists();
+
+        if exists {
+            let xdot = std::process::Command::new("xdot")
+                .arg("./exports/current.dot")
+                .spawn();
+
+            match xdot {
+                Ok(_) => Ok(None),
+                Err(_) => Err(ViewerError::XdotError)
+            }
+        } else {
+            Err(ViewerError::IOError("no exports/current.dot".to_string()))
+        }
+    }
+
     pub fn neighbors(&mut self, depth: usize) -> Res {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;

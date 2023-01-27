@@ -6,6 +6,7 @@ pub enum ViewerError {
     GoToError(String),
     FilterError(String),
     IOError(String),
+    XdotError,
     TODOError(String),
 }
 
@@ -18,6 +19,7 @@ impl std::fmt::Display for ViewerError {
             ViewerError::GoToError(msg) => write!(f, "GoToErr: {}", msg),
             ViewerError::FilterError(msg) => write!(f, "FilterErr: {}", msg),
             ViewerError::IOError(msg) => write!(f, "IOErr: {}", msg),
+            ViewerError::XdotError => write!(f, "XdotErr: cannot launch xdot"),
             ViewerError::TODOError(msg) => write!(f, "TODOErr: {}", msg),
         }
     }
