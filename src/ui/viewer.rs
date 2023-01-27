@@ -1,4 +1,7 @@
-use crate::app::app::{Input, Mode, Navigate, Viewer};
+use crate::app::{
+    app::{Input, Mode, Navigate},
+    viewer::Viewer,
+};
 use std::collections::HashSet;
 use tui::{
     backend::Backend,
