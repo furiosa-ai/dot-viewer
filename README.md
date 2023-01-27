@@ -3,12 +3,23 @@ Dot debugger in TUI
 
 ## Prerequisites
 
+### Graphviz
+
 dot-viewer parses a dot format file using C bindings to Graphviz.
 
 Thus, it is required that [Graphviz is installed (compiled)](https://graphviz.org/download/source/) beforehand such that the followings can be included.
 ```C
 #include <graphviz/gvc.h>
 #include <graphviz/cgraph.h>
+```
+
+### Xdot.py
+
+dot-viewer renders a subgraph with xdot.py, an interactive dot visualizer.
+
+It is required that [xdot is executable in command-line](https://github.com/jrfonseca/xdot.py) beforehand such that the following works.
+```console
+$ xdot *.dot
 ```
 
 ## Usage
@@ -39,7 +50,9 @@ Users may interact with dot-viewer in TUI to traverse the graph.
 Key | Effect
 --- | ---
 `q` | quit
+`c` | close the current tab (except for the root tab)
 `e` | export the current tab to dot
+`x` | launch xdot, showing `./exports/current.dot`
 `0-9` | export the subgraph containing neighbors of the currently selected node with given depth (in digits)
 `up` | traverse the focused node list
 `down` | traverse the focused node list
