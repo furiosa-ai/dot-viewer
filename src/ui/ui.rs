@@ -21,7 +21,6 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .margin(1)
         .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())
         .split(size);
     draw_tabs(f, chunks[0], app);
