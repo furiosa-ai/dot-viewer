@@ -19,6 +19,6 @@ pub enum Input {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Search {
-    Prefix,
+    Fuzzy,
     Regex,
 }

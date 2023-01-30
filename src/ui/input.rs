@@ -16,7 +16,7 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         Mode::Navigate(_) => "Navigate",
         Mode::Input(input) => match input {
             Input::Search(search) => match search {
-                Search::Prefix => "Prefix Search",
+                Search::Fuzzy => "Fuzzy Search",
                 Search::Regex => "Regex Search",
             }
             Input::Filter => "Filter",

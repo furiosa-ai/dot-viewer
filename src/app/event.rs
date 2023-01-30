@@ -36,7 +36,7 @@ impl App {
                 Ok(None)
             }
             '/' => {
-                self.to_input_mode(Input::Search(Search::Prefix));
+                self.to_input_mode(Input::Search(Search::Fuzzy));
                 Ok(None)
             }
             'r' => {
@@ -62,7 +62,7 @@ impl App {
         let key = self.input.clone();
         match input {
             Input::Search(search) => match search {
-                Search::Prefix => viewer.update_prefix_fwd(key),
+                Search::Fuzzy => viewer.update_prefix_fwd(key),
                 Search::Regex => viewer.update_regex(key),
             }
             Input::Filter => viewer.update_filter(key),
@@ -99,7 +99,7 @@ impl App {
 
                 match input {
                     Input::Search(search) => match search {
-                        Search::Prefix => viewer.update_prefix_bwd(key),
+                        Search::Fuzzy => viewer.update_prefix_bwd(key),
                         Search::Regex => viewer.update_regex(key),
                     },
                     Input::Filter => viewer.update_filter(key),
