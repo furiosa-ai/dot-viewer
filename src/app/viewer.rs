@@ -1,6 +1,5 @@
 use crate::app::{
-    app::Res,
-    error::ViewerError,
+    error::{Res, ViewerError},
     utils::list::StatefulList,
 };
 use dot_graph::Graph;

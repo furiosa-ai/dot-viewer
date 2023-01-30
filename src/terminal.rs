@@ -1,4 +1,4 @@
-use crate::{app::app::App, ui::ui};
+use crate::{app::App, ui::ui};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event},
     execute,

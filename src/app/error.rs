@@ -1,5 +1,7 @@
 use crossterm::event::KeyCode;
 
+pub type Res = Result<Option<String>, ViewerError>;
+
 #[derive(Debug)]
 pub enum ViewerError {
     KeyError(KeyCode),

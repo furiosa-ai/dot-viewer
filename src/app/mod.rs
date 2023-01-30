@@ -1,5 +1,12 @@
 pub mod app;
+pub mod viewer;
+pub mod modes;
 pub mod error;
 pub mod event;
 pub mod utils;
-pub mod viewer;
+
+pub use crate::app::{
+    app::App,
+    modes::{Input, Mode, Navigate},
+    viewer::Viewer,
+};

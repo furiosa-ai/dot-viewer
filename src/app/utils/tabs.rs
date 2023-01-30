@@ -1,4 +1,4 @@
-use crate::app::{app::Res, error::ViewerError};
+use crate::app::{error::Res, error::ViewerError};
 
 pub struct StatefulTabs<T> {
     pub state: usize,

@@ -1,6 +1,7 @@
 use crate::app::{
-    app::{App, Input, Mode, Navigate, Res},
-    error::ViewerError,
+    app::App,
+    error::{Res, ViewerError},
+    modes::{Input, Navigate, Mode}, 
 };
 use crossterm::event::{KeyCode, KeyEvent};
 

@@ -1,31 +1,11 @@
 use crate::app::{
-    error::ViewerError,
+    error::{Res, ViewerError},
+    modes::{Input, Navigate, Mode},
     utils::{list::StatefulList, tabs::StatefulTabs},
     viewer::Viewer,
 };
 use dot_graph::parser::parse;
 use std::io::Write;
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Mode {
-    Navigate(Navigate),
-    Input(Input),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Navigate {
-    Current,
-    Prevs,
-    Nexts,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Input {
-    Search,
-    Filter,
-}
-
-pub type Res = Result<Option<String>, ViewerError>;
 
 pub struct App {
     pub quit: bool,

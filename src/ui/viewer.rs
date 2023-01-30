@@ -1,9 +1,6 @@
 use crate::{
-    app::{
-        app::{Input, Mode, Navigate},
-        viewer::Viewer,
-    },
-    ui::utils::htmlparser::parse_html,
+    app::{Input, Navigate, Mode, Viewer},
+    ui::utils::htmlparser::parse_html
 };
 use std::collections::HashSet;
 use dot_graph::Node;
@@ -185,11 +182,13 @@ fn pretty_metadata(node: &Node) -> String {
     let attrs = parse_html(attrs);
     
     for attr in attrs {
+        if attr.starts_with("Input") {
+            continue;
+        }
+
         let vals = attr.split("\\l");
         for val in vals {
-            if !val.starts_with("Input") {
-                metadata.push_str(&format!("{}\n", val));
-            }
+            metadata.push_str(&format!("{}\n", val));
         }
     }
 
