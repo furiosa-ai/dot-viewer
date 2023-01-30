@@ -15,4 +15,5 @@ pub enum Navigate {
 pub enum Input {
     Search,
     Filter,
+    Regex,
 }

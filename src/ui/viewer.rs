@@ -30,7 +30,7 @@ fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mu
             draw_current(f, chunk, mode, viewer);
         }
         Mode::Input(input) => match input {
-            Input::Search => {
+            Input::Search | Input::Regex => {
                 draw_search_match(f, chunk, mode, viewer);
             }
             Input::Filter => {

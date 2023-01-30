@@ -20,7 +20,7 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .title(match &app.mode {
             Mode::Navigate(_) => "Navigate",
             Mode::Input(input) => match input {
-                Input::Search => "Search",
+                Input::Search | Input::Regex => "Search",
                 Input::Filter => "Filter",
             },
         });
@@ -109,7 +109,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
         Mode::Input(input) => match input {
-            Input::Search => (
+            Input::Search | Input::Regex => (
                 vec![
                     Span::raw("Press "),
                     Span::styled(

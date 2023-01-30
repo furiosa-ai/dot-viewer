@@ -50,7 +50,7 @@ impl App {
                 let viewer = self.tabs.selected();
 
                 let item = match input {
-                    Input::Search => viewer.search.selected(),
+                    Input::Search | Input::Regex => viewer.search.selected(),
                     Input::Filter => viewer.filter.selected(),
                 };
 
@@ -139,7 +139,7 @@ impl App {
             .map(|id| (id.clone(), Vec::new()))
             .collect();
         match &input {
-            Input::Search => {
+            Input::Search | Input::Regex => {
                 viewer.search = StatefulList::with_items(init.clone());
                 viewer.cache = StatefulList::with_items(init);
             }

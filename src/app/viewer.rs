@@ -4,6 +4,7 @@ use crate::app::{
 };
 use dot_graph::Graph;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
+use regex::Regex;
 
 pub struct Viewer {
     pub title: String,
@@ -130,6 +131,23 @@ impl Viewer {
         }
 
         self.filter = StatefulList::with_items(filter);
+    }
+
+    pub fn update_regex(&mut self, key: String) {
+        if let Ok(matcher) = Regex::new(&key) {
+            let mut search = Vec::new();
+            for id in &self.current.items {
+                let &idx = self.graph.nlookup.get_by_left(id).unwrap();
+                let node = &self.graph.nodes[idx];
+                let raw = node.to_dot(0);
+
+                if matcher.is_match(&raw) {
+                    search.push((id.clone(), Vec::new()));
+                }
+            }
+
+            self.search = StatefulList::with_items(search);
+        }
     }
 
     pub fn progress_current(&self) -> String {

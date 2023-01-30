@@ -39,6 +39,10 @@ impl App {
                 self.to_input_mode(Input::Search);
                 Ok(None)
             }
+            'r' => {
+                self.to_input_mode(Input::Regex);
+                Ok(None)
+            }
             'f' => {
                 self.to_input_mode(Input::Filter);
                 Ok(None)
@@ -58,6 +62,7 @@ impl App {
         match input {
             Input::Search => viewer.update_search_fwd(self.input.clone()),
             Input::Filter => viewer.update_filter(self.input.clone()),
+            Input::Regex => viewer.update_regex(self.input.clone()),
         };
 
         Ok(None)
@@ -71,7 +76,7 @@ impl App {
             },
             Mode::Input(input) => {
                 let res = match input {
-                    Input::Search => self.goto(),
+                    Input::Search | Input::Regex => self.goto(),
                     Input::Filter => self.filter(),
                 };
                 self.to_nav_mode();
@@ -90,6 +95,7 @@ impl App {
                 match input {
                     Input::Search => viewer.update_search_bwd(self.input.clone()),
                     Input::Filter => viewer.update_filter(self.input.clone()),
+                    Input::Regex => viewer.update_regex(self.input.clone()),
                 };
 
                 Ok(None)
@@ -143,7 +149,7 @@ impl App {
                 Navigate::Nexts => viewer.nexts.previous(),
             },
             Mode::Input(input) => match input {
-                Input::Search => viewer.search.previous(),
+                Input::Search | Input::Regex => viewer.search.previous(),
                 Input::Filter => viewer.filter.previous(),
             },
         };
@@ -164,7 +170,7 @@ impl App {
                 Navigate::Nexts => viewer.nexts.next(),
             },
             Mode::Input(input) => match input {
-                Input::Search => viewer.search.next(),
+                Input::Search | Input::Regex => viewer.search.next(),
                 Input::Filter => viewer.filter.next(),
             },
         };
