@@ -1,31 +1,11 @@
 use crate::app::{
-    error::ViewerError,
+    error::{Res, DotViewerError},
+    modes::{Input, Navigate, Mode},
     utils::{list::StatefulList, tabs::StatefulTabs},
     viewer::Viewer,
 };
 use dot_graph::parser::parse;
 use std::io::Write;
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Mode {
-    Navigate(Navigate),
-    Input(Input),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Navigate {
-    Current,
-    Prevs,
-    Nexts,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Input {
-    Search,
-    Filter,
-}
-
-pub type Res = Result<Option<String>, ViewerError>;
 
 pub struct App {
     pub quit: bool,
@@ -40,19 +20,19 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(path: &str) -> App {
-        let graph = parse(path);
+    pub fn new(path: &str) -> Result<App, DotViewerError>  {
+        let graph = parse(path).map_err(|e| DotViewerError::ParseError(e))?;
         let viewer = Viewer::new("DAG".to_string(), graph);
-        let tabs = StatefulTabs::with_tabs(vec![viewer]);
+        let tabs = StatefulTabs::with_tabs(vec![viewer])?;
 
-        App {
+        Ok(App {
             quit: false,
             mode: Mode::Navigate(Navigate::Current),
             tabs,
             input: String::from(""),
             history: Vec::new(),
             result: Ok(None),
-        }
+        })
     } 
 
     pub fn selected(&mut self) -> Option<String> {
@@ -81,8 +61,12 @@ impl App {
 
     pub fn goto(&mut self) -> Res {
         let id = self.selected();
-        let viewer = self.tabs.selected();
-        viewer.goto(id)
+        id.map_or(
+            Err(DotViewerError::GraphError("no node selected".to_string())),
+            |id| {
+                let viewer = self.tabs.selected();
+                viewer.goto(&id)
+            })
     }
 
     pub fn filter(&mut self) -> Res {
@@ -102,27 +86,22 @@ impl App {
             .chars()
             .filter(|c| !c.is_whitespace())
             .collect();
-        match Self::write(filename, graph.to_dot()) {
-            Ok(succ) => Ok(Some(succ)),
-            Err(msg) => Err(ViewerError::IOError(msg.to_string())),
-        }
+
+        Self::write(filename, graph.to_dot())
+            .map(|succ| Some(succ))
+            .map_err(|e| DotViewerError::IOError(e.to_string()))
     }
 
     pub fn xdot(&mut self) -> Res {
-        let exists = std::path::Path::new("./exports/current.dot").exists();
-
-        if exists {
-            let xdot = std::process::Command::new("xdot")
-                .arg("./exports/current.dot")
-                .spawn();
-
-            match xdot {
-                Ok(_) => Ok(None),
-                Err(_) => Err(ViewerError::XdotError),
-            }
-        } else {
-            Err(ViewerError::IOError("no exports/current.dot".to_string()))
+        if !std::path::Path::new("./exports/current.dot").exists() {
+            return Err(DotViewerError::XdotError);
         }
+
+        let xdot = std::process::Command::new("xdot")
+            .arg("./exports/current.dot")
+            .spawn();
+
+        xdot.map(|_| None).map_err(|_| DotViewerError::XdotError)
     }
 
     pub fn neighbors(&mut self, depth: usize) -> Res {
@@ -132,15 +111,15 @@ impl App {
 
         let filename = format!("{}-{}", node.clone(), depth);
         let neighbors = graph.neighbors(node, depth);
+
         match neighbors {
             Some(neighbors) => {
                 let contents = neighbors.to_dot();
-                match Self::write(filename, contents) {
-                    Ok(succ) => Ok(Some(succ)),
-                    Err(msg) => Err(ViewerError::IOError(msg.to_string())),
-                }
+                Self::write(filename, contents)
+                    .map(|succ| Some(succ))
+                    .map_err(|e| DotViewerError::IOError(e.to_string()))   
             }
-            None => Err(ViewerError::TODOError("empty graph".to_string())),
+            None => Err(DotViewerError::GraphError("empty graph".to_string()))
         }
     }
 

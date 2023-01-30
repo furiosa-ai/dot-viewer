@@ -1,4 +1,4 @@
-use crate::app::app::{App, Input, Mode};
+use crate::app::{App, Input, Mode};
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},

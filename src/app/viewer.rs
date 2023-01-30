@@ -1,6 +1,5 @@
 use crate::app::{
-    app::Res,
-    error::ViewerError,
+    error::{Res, DotViewerError},
     utils::list::StatefulList,
 };
 use dot_graph::Graph;
@@ -45,56 +44,42 @@ impl Viewer {
         self.current.selected()
     }
 
-    pub fn goto(&mut self, id: Option<String>) -> Res {
-        match id {
-            Some(id) => {
-                let idx = self.current.find(id.to_string());
-                match idx {
-                    Some(idx) => {
-                        self.current.select(idx);
-                        self.update_adjacent();
+    pub fn goto(&mut self, id: &str) -> Res { 
+        let idx = self.current.find(id.to_string());
 
-                        // TODO
-                        // manually set offset to keep goto-ed node in the middle of the list
-                        // with modified (forked) tui-rs
-                        let offset = self.current.state.offset_mut();
-                        if idx >= 10 {
-                            *offset = idx - 10;
-                        }
+        idx.map_or(
+            Err(DotViewerError::GraphError(format!("no such node {:?}", id))),
+            |idx| {
+                self.current.select(idx);
+                self.update_adjacent();
 
-                        Ok(None)
-                    }
-                    None => Err(ViewerError::GoToError(format!("no such node {:?}", id))),
+                // TODO
+                // manually set offset to keep goto-ed node in the middle of the list
+                // with modified (forked) tui-rs
+                let offset = self.current.state.offset_mut();
+                if idx >= 10 {
+                    *offset = idx - 10;
                 }
-            }
-            None => Err(ViewerError::GoToError("no node selected".to_string())),
-        }
+
+                Ok(None)
+            })
     }
 
-    pub fn filter(&mut self, key: String) -> Result<Viewer, ViewerError> {
+    pub fn filter(&mut self, key: String) -> Result<Viewer, DotViewerError> {
         let graph = self.graph.filter(&key);
 
-        match graph {
-            Some(graph) => {
+        graph.map_or(
+            Err(DotViewerError::GraphError(format!("no match for prefix {}", key))),
+            |graph| {
                 let viewer = Self::new(format!("{} - {}", self.title, key), graph);
                 Ok(viewer)
-            }
-            None => Err(ViewerError::FilterError(format!(
-                "no match for prefix {}",
-                key
-            ))),
-        }
+            })
     }
 
     pub fn update_adjacent(&mut self) {
         let id = self.current().unwrap();
 
-        let prevs = self
-            .graph
-            .froms(&id)
-            .iter()
-            .map(|n| n.to_string())
-            .collect();
+        let prevs = self.graph.froms(&id).iter().map(|n| n.to_string()).collect();
         self.prevs = StatefulList::with_items(prevs);
 
         let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();

@@ -1,4 +1,4 @@
-use crate::app::{app::Res, error::ViewerError};
+use crate::app::{error::Res, error::DotViewerError};
 
 pub struct StatefulTabs<T> {
     pub state: usize,
@@ -6,13 +6,12 @@ pub struct StatefulTabs<T> {
 }
 
 impl<T> StatefulTabs<T> {
-    pub fn with_tabs(tabs: Vec<T>) -> StatefulTabs<T> {
-        // TODO there should be at least one tab in tabs now
+    pub fn with_tabs(tabs: Vec<T>) -> Result<StatefulTabs<T>, DotViewerError> {
         if tabs.is_empty() {
-            panic!("Err: empty tabs");
+            return Err(DotViewerError::TabError("no tab given to tabs constructor".to_string())); 
         }
 
-        StatefulTabs { state: 0, tabs }
+        Ok(StatefulTabs { state: 0, tabs })
     }
 
     pub fn next(&mut self) {
@@ -35,11 +34,8 @@ impl<T> StatefulTabs<T> {
     }
 
     pub fn close(&mut self) -> Res {
-        // TODO currently disallow closing the first tab
         if self.state == 0 {
-            return Err(ViewerError::TODOError(
-                "cannot close the first tab".to_string(),
-            ));
+            return Err(DotViewerError::TabError("cannot close the first tab".to_string()));
         }
 
         self.tabs.remove(self.state);

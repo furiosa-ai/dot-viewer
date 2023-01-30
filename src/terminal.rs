@@ -1,4 +1,4 @@
-use crate::{app::app::App, ui::ui};
+use crate::{app::App, ui::ui};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event},
     execute,
@@ -46,7 +46,7 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
     let child = thread::spawn(move || {
         let mut terminal = terminal.lock().unwrap();
         let app = App::new(&path);
-        let _ = run(&mut terminal, app);
+        let _ = app.map(|app| run(&mut terminal, app));
     });
 
     match child.join() {
