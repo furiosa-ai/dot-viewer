@@ -274,6 +274,7 @@ version = "0.1.0"
 dependencies = [
  "bimap",
  "bindgen",
+ "thiserror",
 ]
 
 [[package]]
@@ -285,6 +286,7 @@ dependencies = [
  "dot-graph",
  "fuzzy-matcher",
  "html_parser",
+ "thiserror",
  "trie-rs",
  "tui",
 ]

@@ -1,28 +1,21 @@
 use crossterm::event::KeyCode;
+use dot_graph::DotGraphError;
+use thiserror::Error;
 
-pub type Res = Result<Option<String>, ViewerError>;
+pub type Res = Result<Option<String>, DotViewerError>;
 
-#[derive(Debug)]
-pub enum ViewerError {
+#[derive(Error, Debug)]
+pub enum DotViewerError {
+    #[error("Err: parse failed in dot-graph, {}", .0)]
+    ParseError(DotGraphError),
+    #[error("Err: graph manipulation failed with, `{0}`")]
+    GraphError(String),
+    #[error("Err: no keybinding for {:?}", .0)]
     KeyError(KeyCode),
-    GoToError(String),
-    FilterError(String),
+    #[error("Err: file io failed with, `{0}`")]
     IOError(String),
+    #[error("Err: failed to launch xdot.py")]
     XdotError,
-    TODOError(String),
-}
-
-impl std::error::Error for ViewerError {}
-
-impl std::fmt::Display for ViewerError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            ViewerError::KeyError(key) => write!(f, "KeyErr: Wrong key {:?}", key),
-            ViewerError::GoToError(msg) => write!(f, "GoToErr: {}", msg),
-            ViewerError::FilterError(msg) => write!(f, "FilterErr: {}", msg),
-            ViewerError::IOError(msg) => write!(f, "IOErr: {}", msg),
-            ViewerError::XdotError => write!(f, "XdotErr: cannot launch xdot"),
-            ViewerError::TODOError(msg) => write!(f, "TODOErr: {}", msg),
-        }
-    }
+    #[error("Err: tab manipulation failed with, `{0}`")]
+    TabError(String),
 }

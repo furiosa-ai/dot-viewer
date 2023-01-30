@@ -1,6 +1,6 @@
 use crate::app::{
     app::App,
-    error::{Res, ViewerError},
+    error::{Res, DotViewerError},
     modes::{Input, Navigate, Mode}, 
 };
 use crossterm::event::{KeyCode, KeyEvent};
@@ -47,7 +47,7 @@ impl App {
             'e' => self.export(),
             'x' => self.xdot(),
             d if d.is_ascii_digit() => self.neighbors(d.to_digit(10).unwrap() as usize),
-            _ => Err(ViewerError::KeyError(KeyCode::Char(c))),
+            _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),
         }
     }
 
@@ -94,7 +94,7 @@ impl App {
 
                 Ok(None)
             }
-            _ => Err(ViewerError::KeyError(KeyCode::Backspace)),
+            _ => Err(DotViewerError::KeyError(KeyCode::Backspace)),
         }
     }
 
@@ -106,7 +106,7 @@ impl App {
 
                 Ok(None)
             }
-            _ => Err(ViewerError::KeyError(KeyCode::Esc)),
+            _ => Err(DotViewerError::KeyError(KeyCode::Esc)),
         }
     }
 
@@ -116,7 +116,7 @@ impl App {
                 self.tabs.next();
                 Ok(None)
             }
-            _ => Err(ViewerError::KeyError(KeyCode::Tab)),
+            _ => Err(DotViewerError::KeyError(KeyCode::Tab)),
         }
     }
 
@@ -126,7 +126,7 @@ impl App {
                 self.tabs.previous();
                 Ok(None)
             }
-            _ => Err(ViewerError::KeyError(KeyCode::BackTab)),
+            _ => Err(DotViewerError::KeyError(KeyCode::BackTab)),
         }
     }
 
