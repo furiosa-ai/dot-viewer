@@ -1,29 +1,36 @@
-use crate::app::{App, Input, Mode};
+use crate::app::{App, Input, Mode, Search};
+use crate::ui::ui::surrounding_block;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Span, Spans, Text},
-    widgets::{Block, Borders, Paragraph},
+    widgets::Paragraph,
     Frame,
 };
 
 // input block
 pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(match app.mode {
-            Mode::Input(_) => Color::Yellow,
-            _ => Color::White,
-        }))
-        .title(match &app.mode {
-            Mode::Navigate(_) => "Navigate",
-            Mode::Input(input) => match input {
-                Input::Search | Input::Regex => "Search",
-                Input::Filter => "Filter",
-            },
-        });
+    let title = match &app.mode {
+        Mode::Navigate(_) => "Navigate",
+        Mode::Input(input) => match input {
+            Input::Search(search) => match search {
+                Search::Prefix => "Prefix Search",
+                Search::Regex => "Regex Search",
+            }
+            Input::Filter => "Filter",
+        }
+    };
+
+    let block = surrounding_block(
+        title.to_string(), 
+        match app.mode {
+            Mode::Input(_) => true,
+            _ => false,
+        }
+    );
+
     f.render_widget(block, chunk);
 
     // inner blocks
@@ -42,13 +49,13 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 // search block
 pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(match app.mode {
-            Mode::Input(_) => Color::Yellow,
-            _ => Color::White,
-        }))
-        .title("Search");
+    let block = surrounding_block(
+        "Search".to_string(), 
+        match app.mode {
+            Mode::Input(_) => true,
+            _ => false,
+        }
+    );
     f.render_widget(block, chunk);
 
     // inner blocks
@@ -109,7 +116,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
         Mode::Input(input) => match input {
-            Input::Search | Input::Regex => (
+            Input::Search(_) => (
                 vec![
                     Span::raw("Press "),
                     Span::styled(

@@ -87,7 +87,7 @@ impl Viewer {
         self.nexts = StatefulList::with_items(nexts);
     }
 
-    pub fn update_search_fwd(&mut self, key: String) {
+    pub fn update_prefix_fwd(&mut self, key: String) {
         let matcher = SkimMatcherV2::default();
 
         self.cache = StatefulList::with_items(self.search.items.clone());
@@ -103,7 +103,7 @@ impl Viewer {
         self.search = StatefulList::with_items(search);
     }
 
-    pub fn update_search_bwd(&mut self, mut key: String) {
+    pub fn update_prefix_bwd(&mut self, mut key: String) {
         let matcher = SkimMatcherV2::default();
 
         self.search = StatefulList::with_items(self.cache.items.clone());
@@ -118,19 +118,6 @@ impl Viewer {
             }
         }
         self.cache = StatefulList::with_items(cache);
-    }
-
-    pub fn update_filter(&mut self, key: String) {
-        let mut filter: Vec<(String, Vec<usize>)> = Vec::new();
-        let nodes = self.current.items.clone();
-        let highlight: Vec<usize> = (0..key.len()).collect();
-        for id in nodes {
-            if id.starts_with(&key) {
-                filter.push((id.clone(), highlight.clone()));
-            }
-        }
-
-        self.filter = StatefulList::with_items(filter);
     }
 
     pub fn update_regex(&mut self, key: String) {
@@ -148,6 +135,19 @@ impl Viewer {
 
             self.search = StatefulList::with_items(search);
         }
+    }
+
+    pub fn update_filter(&mut self, key: String) {
+        let mut filter: Vec<(String, Vec<usize>)> = Vec::new();
+        let nodes = self.current.items.clone();
+        let highlight: Vec<usize> = (0..key.len()).collect();
+        for id in nodes {
+            if id.starts_with(&key) {
+                filter.push((id.clone(), highlight.clone()));
+            }
+        }
+
+        self.filter = StatefulList::with_items(filter);
     }
 
     pub fn progress_current(&self) -> String {

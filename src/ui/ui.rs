@@ -3,6 +3,7 @@ use crate::ui::{input::draw_input, tabs::draw_tabs};
 use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout},
+    style::{Color, Style},
     widgets::{Block, BorderType, Borders},
     Frame,
 };
@@ -25,4 +26,13 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .split(size);
     draw_tabs(f, chunks[0], app);
     draw_input(f, chunks[1], app);
+}
+
+pub fn surrounding_block(title: String, highlight: bool) -> Block<'static> {
+    let color = if highlight { Color::Yellow } else { Color::White };
+
+    Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(color))
+        .title(title)
 }

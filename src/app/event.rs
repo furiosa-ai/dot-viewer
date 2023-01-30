@@ -1,7 +1,7 @@
 use crate::app::{
     app::App,
     error::{Res, DotViewerError},
-    modes::{Input, Navigate, Mode}, 
+    modes::{Input, Navigate, Mode, Search}, 
 };
 use crossterm::event::{KeyCode, KeyEvent};
 
@@ -36,11 +36,11 @@ impl App {
                 Ok(None)
             }
             '/' => {
-                self.to_input_mode(Input::Search);
+                self.to_input_mode(Input::Search(Search::Prefix));
                 Ok(None)
             }
             'r' => {
-                self.to_input_mode(Input::Regex);
+                self.to_input_mode(Input::Search(Search::Regex));
                 Ok(None)
             }
             'f' => {
@@ -59,10 +59,13 @@ impl App {
         self.input.push(c);
 
         let viewer = self.tabs.selected();
+        let key = self.input.clone();
         match input {
-            Input::Search => viewer.update_search_fwd(self.input.clone()),
-            Input::Filter => viewer.update_filter(self.input.clone()),
-            Input::Regex => viewer.update_regex(self.input.clone()),
+            Input::Search(search) => match search {
+                Search::Prefix => viewer.update_prefix_fwd(key),
+                Search::Regex => viewer.update_regex(key),
+            }
+            Input::Filter => viewer.update_filter(key),
         };
 
         Ok(None)
@@ -76,7 +79,7 @@ impl App {
             },
             Mode::Input(input) => {
                 let res = match input {
-                    Input::Search | Input::Regex => self.goto(),
+                    Input::Search(_) => self.goto(),
                     Input::Filter => self.filter(),
                 };
                 self.to_nav_mode();
@@ -92,10 +95,14 @@ impl App {
         match &self.mode {
             Mode::Input(input) => {
                 self.input.pop();
+                let key = self.input.clone();
+
                 match input {
-                    Input::Search => viewer.update_search_bwd(self.input.clone()),
-                    Input::Filter => viewer.update_filter(self.input.clone()),
-                    Input::Regex => viewer.update_regex(self.input.clone()),
+                    Input::Search(search) => match search {
+                        Search::Prefix => viewer.update_prefix_bwd(key),
+                        Search::Regex => viewer.update_regex(key),
+                    },
+                    Input::Filter => viewer.update_filter(key),
                 };
 
                 Ok(None)
@@ -149,7 +156,7 @@ impl App {
                 Navigate::Nexts => viewer.nexts.previous(),
             },
             Mode::Input(input) => match input {
-                Input::Search | Input::Regex => viewer.search.previous(),
+                Input::Search(_) => viewer.search.previous(),
                 Input::Filter => viewer.filter.previous(),
             },
         };
@@ -170,7 +177,7 @@ impl App {
                 Navigate::Nexts => viewer.nexts.next(),
             },
             Mode::Input(input) => match input {
-                Input::Search | Input::Regex => viewer.search.next(),
+                Input::Search(_) => viewer.search.next(),
                 Input::Filter => viewer.filter.next(),
             },
         };
