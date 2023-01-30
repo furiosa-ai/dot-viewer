@@ -3,7 +3,7 @@ use crate::app::{
     error::ViewerError,
     utils::list::StatefulList,
 };
-use dot_graph::structs::Graph;
+use dot_graph::Graph;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 
 pub struct Viewer {

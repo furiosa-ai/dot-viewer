@@ -1,8 +1,12 @@
-use crate::app::{
-    app::{Input, Mode, Navigate},
-    viewer::Viewer,
+use crate::{
+    app::{
+        app::{Input, Mode, Navigate},
+        viewer::Viewer,
+    },
+    ui::utils::htmlparser::parse_html,
 };
 use std::collections::HashSet;
+use dot_graph::Node;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
@@ -162,13 +166,34 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, _mode: &Mode, viewer
 
     if let Some(id) = viewer.current() {
         let node = viewer.graph.search(&id).unwrap();
-        let paragraph = Paragraph::new(node.to_string())
+        let paragraph = Paragraph::new(pretty_metadata(node))
             .block(block)
             .wrap(Wrap { trim: true });
         f.render_widget(paragraph, chunk);
     } else {
         f.render_widget(block, chunk);
     }
+}
+
+fn pretty_metadata(node: &Node) -> String {
+    let mut metadata = "".to_string();
+
+    metadata.push_str(&format!("[{}]\n\n", node.id));
+
+    let empty = "".to_string();
+    let attrs = node.attrs.get("label").unwrap_or(&empty);
+    let attrs = parse_html(attrs);
+    
+    for attr in attrs {
+        let vals = attr.split("\\l");
+        for val in vals {
+            if !val.starts_with("Input") {
+                metadata.push_str(&format!("{}\n", val));
+            }
+        }
+    }
+
+    metadata
 }
 
 // search result block
