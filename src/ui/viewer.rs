@@ -6,7 +6,7 @@ use crate::{
     ui::utils::htmlparser::parse_html,
 };
 use std::collections::HashSet;
-use dot_graph::structs::Node;
+use dot_graph::Node;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
