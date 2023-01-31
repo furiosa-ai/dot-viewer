@@ -210,7 +210,9 @@ fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &Input, viewer
         .map(|(id, highlight)| {
             let mut spans: Vec<Span> = id.chars().map(|c| Span::raw(c.to_string())).collect();
             for &idx in highlight {
-                spans[idx].style = Style::default().bg(Color::Black).add_modifier(Modifier::BOLD); 
+                spans[idx].style = Style::default()
+                    .bg(Color::Black)
+                    .add_modifier(Modifier::BOLD);
             }
 
             ListItem::new(Spans(spans))
