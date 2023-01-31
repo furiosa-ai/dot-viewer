@@ -88,7 +88,7 @@ impl Viewer {
         self.nexts = StatefulList::with_items(nexts);
     }
 
-    pub fn update_prefix_fwd(&mut self, key: String) {
+    pub fn update_fuzzy_fwd(&mut self, key: String) {
         let matcher = SkimMatcherV2::default();
 
         self.cache = StatefulList::with_items(self.matches.items.clone());
@@ -104,7 +104,7 @@ impl Viewer {
         self.matches = StatefulList::with_items(matches);
     }
 
-    pub fn update_prefix_bwd(&mut self, mut key: String) {
+    pub fn update_fuzzy_bwd(&mut self, mut key: String) {
         let matcher = SkimMatcherV2::default();
 
         self.matches = StatefulList::with_items(self.cache.items.clone());
@@ -121,12 +121,13 @@ impl Viewer {
         self.cache = StatefulList::with_items(cache);
     }
 
-    pub fn update_regex(&mut self, key: String) {
+    pub fn update_regex_fwd(&mut self, key: String) {
+        self.cache = StatefulList::with_items(self.matches.items.clone());
+
         if let Ok(matcher) = Regex::new(&key) {
             let mut matches = Vec::new();
             for id in &self.current.items {
-                let &idx = self.graph.nlookup.get_by_left(id).unwrap();
-                let node = &self.graph.nodes[idx];
+                let node = self.graph.search(id).unwrap();
                 let raw = node.to_dot(0);
 
                 if matcher.is_match(&raw) {
@@ -138,17 +139,52 @@ impl Viewer {
         }
     }
 
-    pub fn update_filter(&mut self, key: String) {
+    pub fn update_regex_bwd(&mut self, mut key: String) {
+        self.matches = StatefulList::with_items(self.cache.items.clone());
+
+        key.pop();
+
+        if let Ok(matcher) = Regex::new(&key) {
+            let mut cache = Vec::new();
+            for id in &self.current.items {
+                let node = self.graph.search(id).unwrap();
+                let raw = node.to_dot(0);
+
+                if matcher.is_match(&raw) {
+                    cache.push((id.clone(), Vec::new()));
+                }
+            }
+
+            self.cache = StatefulList::with_items(cache);
+        }
+    }
+
+    pub fn update_filter_fwd(&mut self, key: String) {
+        self.cache = StatefulList::with_items(self.matches.items.clone());
+
         let mut matches: Vec<(String, Vec<usize>)> = Vec::new();
-        let nodes = self.current.items.clone();
         let highlight: Vec<usize> = (0..key.len()).collect();
-        for id in nodes {
+        for id in &self.current.items {
             if id.starts_with(&key) {
                 matches.push((id.clone(), highlight.clone()));
             }
         }
-
         self.matches = StatefulList::with_items(matches);
+    }
+
+    pub fn update_filter_bwd(&mut self, mut key: String) {
+        self.matches = StatefulList::with_items(self.cache.items.clone());
+
+        key.pop();
+
+        let mut cache: Vec<(String, Vec<usize>)> = Vec::new();
+        let highlight: Vec<usize> = (0..key.len()).collect();
+        for id in &self.current.items {
+            if id.starts_with(&key) {
+                cache.push((id.clone(), highlight.clone()));
+            }
+        }
+        self.cache = StatefulList::with_items(cache);
     }
 
     pub fn progress_current(&self) -> String {
