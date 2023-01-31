@@ -42,6 +42,10 @@ impl Viewer {
         self.current.selected()
     }
 
+    pub fn matched(&self) -> Option<String> {
+        self.matches.selected().map(|(item, _)| item)
+    }
+
     pub fn goto(&mut self, id: &str) -> Res { 
         let idx = self.current.find(id.to_string());
 

@@ -45,7 +45,7 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
             draw_adjacent(f, chunks[0], mode, viewer);
             draw_metadata(f, chunks[1], mode, viewer);
         }
-        Mode::Input(_) => {},
+        Mode::Input(_) => draw_metadata(f, chunk, mode, viewer),
     }
 }
 
@@ -143,15 +143,21 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
 }
 
 // node attr block
-fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, _mode: &Mode, viewer: &mut Viewer) {
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
     let block = surrounding_block("Attrs".to_string(), false);
 
-    if let Some(id) = viewer.current() {
+    let id = match mode {
+        Mode::Navigate(_) => viewer.current(),
+        Mode::Input(_) => viewer.matched(),
+    };
+
+    if let Some(id) = id {
         let node = viewer.graph.search(&id).unwrap();
         let paragraph = Paragraph::new(pretty_metadata(node))
             .block(block)
             .wrap(Wrap { trim: true });
+
         f.render_widget(paragraph, chunk);
     } else {
         f.render_widget(block, chunk);
