@@ -286,6 +286,7 @@ dependencies = [
  "dot-graph",
  "fuzzy-matcher",
  "html_parser",
+ "rayon",
  "regex",
  "thiserror",
  "trie-rs",

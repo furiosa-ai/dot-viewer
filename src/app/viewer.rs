@@ -4,6 +4,7 @@ use crate::app::{
 };
 use dot_graph::Graph;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
+use rayon::prelude::*;
 use regex::Regex;
 
 pub struct Viewer {
@@ -103,14 +104,14 @@ impl Viewer {
 
         self.cache = StatefulList::with_items(self.matches.items.clone());
 
-        let mut matches: Vec<(String, Vec<usize>)> = Vec::new();
-        for id in &self.matches.items {
-            let id = &id.0;
-            let res = matcher.fuzzy_indices(id, &key);
-            if let Some((_, idxs)) = res {
-                matches.push((id.clone(), idxs));
-            }
-        }
+        let matches: Vec<(String, Vec<usize>)> = self.matches.items.par_iter()
+            .filter_map(|(id, _)| if let Some((_, idxs)) = matcher.fuzzy_indices(id, &key) {
+                Some((id.clone(), idxs))
+            } else {
+                None
+            })
+            .collect();
+
         self.matches = StatefulList::with_items(matches);
     }
 
@@ -121,13 +122,14 @@ impl Viewer {
 
         key.pop();
 
-        let mut cache: Vec<(String, Vec<usize>)> = Vec::new();
-        for id in &self.current.items {
-            let res = matcher.fuzzy_indices(id, &key);
-            if let Some((_, idxs)) = res {
-                cache.push((id.clone(), idxs));
-            }
-        }
+        let cache: Vec<(String, Vec<usize>)> = self.current.items.par_iter()
+            .filter_map(|id| if let Some((_, idxs)) = matcher.fuzzy_indices(id, &key) {
+                Some((id.clone(), idxs))
+            } else {
+                None
+            })
+            .collect();
+        
         self.cache = StatefulList::with_items(cache);
     }
 
@@ -135,15 +137,18 @@ impl Viewer {
         self.cache = StatefulList::with_items(self.matches.items.clone());
 
         if let Ok(matcher) = Regex::new(&key) {
-            let mut matches = Vec::new();
-            for id in &self.current.items {
-                let node = self.graph.search(id).unwrap();
-                let raw = node.to_dot(0);
+            let matches: Vec<(String, Vec<usize>)> = self.current.items.par_iter()
+                .filter_map(|id| {
+                    let node = self.graph.search(id).unwrap();
+                    let raw = node.to_dot(0);
 
-                if matcher.is_match(&raw) {
-                    matches.push((id.clone(), Vec::new()));
-                }
-            }
+                    if matcher.is_match(&raw) {
+                        Some((id.clone(), Vec::new()))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
 
             self.matches = StatefulList::with_items(matches);
         }
@@ -155,15 +160,18 @@ impl Viewer {
         key.pop();
 
         if let Ok(matcher) = Regex::new(&key) {
-            let mut cache = Vec::new();
-            for id in &self.current.items {
-                let node = self.graph.search(id).unwrap();
-                let raw = node.to_dot(0);
+            let cache: Vec<(String, Vec<usize>)> = self.current.items.par_iter()
+                .filter_map(|id| {
+                    let node = self.graph.search(id).unwrap();
+                    let raw = node.to_dot(0);
 
-                if matcher.is_match(&raw) {
-                    cache.push((id.clone(), Vec::new()));
-                }
-            }
+                    if matcher.is_match(&raw) {
+                        Some((id.clone(), Vec::new()))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
 
             self.cache = StatefulList::with_items(cache);
         }
@@ -171,14 +179,16 @@ impl Viewer {
 
     pub fn update_filter_fwd(&mut self, key: String) {
         self.cache = StatefulList::with_items(self.matches.items.clone());
+ 
+        let matches: Vec<(String, Vec<usize>)> = self.matches.items.par_iter()
+            .filter_map(|(id, _)| if id.starts_with(&key) {
+                let highlight: Vec<usize> = (0..key.len()).collect();
+                Some((id.clone(), highlight))
+            } else {
+                None
+            })
+            .collect();
 
-        let mut matches: Vec<(String, Vec<usize>)> = Vec::new();
-        let highlight: Vec<usize> = (0..key.len()).collect();
-        for id in &self.current.items {
-            if id.starts_with(&key) {
-                matches.push((id.clone(), highlight.clone()));
-            }
-        }
         self.matches = StatefulList::with_items(matches);
     }
 
@@ -186,14 +196,16 @@ impl Viewer {
         self.matches = StatefulList::with_items(self.cache.items.clone());
 
         key.pop();
-
-        let mut cache: Vec<(String, Vec<usize>)> = Vec::new();
-        let highlight: Vec<usize> = (0..key.len()).collect();
-        for id in &self.current.items {
-            if id.starts_with(&key) {
-                cache.push((id.clone(), highlight.clone()));
-            }
-        }
+ 
+        let cache: Vec<(String, Vec<usize>)> = self.current.items.par_iter()
+            .filter_map(|id| if id.starts_with(&key) {
+                let highlight: Vec<usize> = (0..key.len()).collect();
+                Some((id.clone(), highlight))
+            } else {
+                None
+            })
+            .collect();
+        
         self.cache = StatefulList::with_items(cache);
     }
 
