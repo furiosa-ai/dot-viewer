@@ -1,5 +1,5 @@
 use crate::app::{
-    error::{Res, DotViewerError},
+    error::{DotViewerError, Res},
     utils::list::StatefulList,
 };
 use dot_graph::Graph;
@@ -46,7 +46,7 @@ impl Viewer {
         self.matches.selected().map(|(item, _)| item)
     }
 
-    pub fn goto(&mut self, id: &str) -> Res { 
+    pub fn goto(&mut self, id: &str) -> Res {
         let idx = self.current.find(id.to_string());
 
         idx.map_or(
@@ -64,24 +64,34 @@ impl Viewer {
                 }
 
                 Ok(None)
-            })
+            },
+        )
     }
 
     pub fn filter(&mut self, key: String) -> Result<Viewer, DotViewerError> {
         let graph = self.graph.filter(&key);
 
         graph.map_or(
-            Err(DotViewerError::GraphError(format!("no match for prefix {}", key))),
+            Err(DotViewerError::GraphError(format!(
+                "no match for prefix {}",
+                key
+            ))),
             |graph| {
                 let viewer = Self::new(format!("{} - {}", self.title, key), graph);
                 Ok(viewer)
-            })
+            },
+        )
     }
 
     pub fn update_adjacent(&mut self) {
         let id = self.current().unwrap();
 
-        let prevs = self.graph.froms(&id).iter().map(|n| n.to_string()).collect();
+        let prevs = self
+            .graph
+            .froms(&id)
+            .iter()
+            .map(|n| n.to_string())
+            .collect();
         self.prevs = StatefulList::with_items(prevs);
 
         let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();

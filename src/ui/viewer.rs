@@ -1,12 +1,9 @@
 use crate::{
-    app::{Input, Navigate, Mode, Search, Viewer},
-    ui::{
-        ui::surrounding_block,
-        utils::htmlparser::parse_html,
-    },
+    app::{Input, Mode, Navigate, Search, Viewer},
+    ui::{ui::surrounding_block, utils::htmlparser::parse_html},
 };
-use std::collections::HashSet;
 use dot_graph::Node;
+use std::collections::HashSet;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
@@ -101,7 +98,10 @@ fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer:
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
-    let block = surrounding_block("Prev Nodes".to_string(), *mode == Mode::Navigate(Navigate::Prevs));
+    let block = surrounding_block(
+        "Prev Nodes".to_string(),
+        *mode == Mode::Navigate(Navigate::Prevs),
+    );
 
     let list: Vec<ListItem> = viewer
         .prevs
@@ -121,7 +121,10 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
-    let block = surrounding_block("Next Nodes".to_string(), *mode == Mode::Navigate(Navigate::Nexts));
+    let block = surrounding_block(
+        "Next Nodes".to_string(),
+        *mode == Mode::Navigate(Navigate::Nexts),
+    );
 
     let list: Vec<ListItem> = viewer
         .nexts
@@ -172,7 +175,7 @@ fn pretty_metadata(node: &Node) -> String {
     let empty = "".to_string();
     let attrs = node.attrs.get("label").unwrap_or(&empty);
     let attrs = parse_html(attrs);
-    
+
     for attr in attrs {
         if attr.starts_with("Input") {
             continue;

@@ -1,7 +1,7 @@
 use crate::app::{
     app::App,
-    error::{Res, DotViewerError},
-    modes::{Input, Navigate, Mode, Search}, 
+    error::{DotViewerError, Res},
+    modes::{Input, Mode, Navigate, Search},
 };
 use crossterm::event::{KeyCode, KeyEvent};
 
@@ -64,7 +64,7 @@ impl App {
             Input::Search(search) => match search {
                 Search::Fuzzy => viewer.update_fuzzy_fwd(key),
                 Search::Regex => viewer.update_regex_fwd(key),
-            }
+            },
             Input::Filter => viewer.update_filter_fwd(key),
         };
 

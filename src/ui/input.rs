@@ -18,17 +18,17 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             Input::Search(search) => match search {
                 Search::Fuzzy => "Fuzzy Search",
                 Search::Regex => "Regex Search",
-            }
+            },
             Input::Filter => "Filter",
-        }
+        },
     };
 
     let block = surrounding_block(
-        title.to_string(), 
+        title.to_string(),
         match app.mode {
             Mode::Input(_) => true,
             _ => false,
-        }
+        },
     );
 
     f.render_widget(block, chunk);
@@ -50,11 +50,11 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
     let block = surrounding_block(
-        "Search".to_string(), 
+        "Search".to_string(),
         match app.mode {
             Mode::Input(_) => true,
             _ => false,
-        }
+        },
     );
     f.render_widget(block, chunk);
 

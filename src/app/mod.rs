@@ -1,9 +1,9 @@
 pub mod app;
-pub mod viewer;
-pub mod modes;
 pub mod error;
 pub mod event;
+pub mod modes;
 pub mod utils;
+pub mod viewer;
 
 pub use crate::app::{
     app::App,

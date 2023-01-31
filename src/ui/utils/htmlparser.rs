@@ -1,11 +1,11 @@
-use html_parser::{Dom, Node, Element};
+use html_parser::{Dom, Element, Node};
 
 pub fn parse_html(html: &str) -> Vec<String> {
     let dom = Dom::parse(html);
 
     match dom {
         Ok(dom) => parse_dom(dom),
-        Err(_) => Vec::new()
+        Err(_) => Vec::new(),
     }
 }
 

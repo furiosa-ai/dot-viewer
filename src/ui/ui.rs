@@ -29,7 +29,11 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 }
 
 pub fn surrounding_block(title: String, highlight: bool) -> Block<'static> {
-    let color = if highlight { Color::Yellow } else { Color::White };
+    let color = if highlight {
+        Color::Yellow
+    } else {
+        Color::White
+    };
 
     Block::default()
         .borders(Borders::ALL)
