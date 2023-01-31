@@ -1,7 +1,7 @@
 use crate::app::{
     error::{DotViewerError, Res},
     modes::{Input, Mode, Navigate},
-    utils::{list::StatefulList, tabs::StatefulTabs},
+    utils::{StatefulList, StatefulTabs},
     viewer::Viewer,
 };
 use dot_graph::parser::parse;

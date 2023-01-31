@@ -1,22 +1,26 @@
 use std::str;
-use trie_rs::{Trie, TrieBuilder};
+use trie_rs::TrieBuilder;
 
-pub struct SearchTrie {
-    pub trie: Trie<u8>,
+pub struct Trie {
+    pub trie: trie_rs::Trie<u8>,
 }
 
-impl SearchTrie {
-    pub fn new(ids: &Vec<String>) -> SearchTrie {
+impl Trie {
+    pub fn new(ids: &[String]) -> Trie {
         let mut builder = TrieBuilder::new();
         for id in ids {
             builder.push(id.clone());
         }
         let trie = builder.build();
 
-        SearchTrie { trie }
+        Trie { trie }
     }
 
     pub fn autocomplete(&self, str: &str) -> Option<String> {
+        if str.is_empty() {
+            return None;
+        }
+
         let predictions = self.predict(str);
         Self::longest_common_prefix(predictions)
     }
@@ -31,7 +35,6 @@ impl SearchTrie {
         result
     }
 
-    // TODO faster search needed
     // https://leetcode.com/problems/longest-common-prefix/solutions/1134124/faster-than-100-in-memory-and-runtime-by-rust/
     fn longest_common_prefix(strs: Vec<String>) -> Option<String> {
         if strs.is_empty() || strs[0].is_empty() {

@@ -52,7 +52,7 @@ $ git submodule update
 Then run crate.
 
 ```console
-$ cargo run -- --path [path-to-dot-file]
+$ cargo run --release -- --path [path-to-dot-file]
 ```
 
 This will open a TUI screen on the terminal.
@@ -72,7 +72,7 @@ Key | Effect
 `down`/`j` | traverse the focused node list
 `right`/`l` | move focus between lists (highlighted in yellow borders)
 `left`/`h` | move focus between lists (highlighted in yellow borders)
-`tab`/`backtab` | navigate tabs
+`tab`/`backtab` | navigate tabs or autocomplete input keyword
 `enter` | when traversing in prev/next/search-match node list, goto the selected node
 `/[node-id-pattern]` (e.g. `/g1s35t`) | search for node by fuzzy matcher
 `r[node-prefix]` (e.g. `r(H: ., D: .)`) | search for node by regex matcher (matched on raw dot file)
