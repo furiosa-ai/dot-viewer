@@ -68,10 +68,10 @@ Key | Effect
 `e` | export the current tab to dot
 `x` | launch xdot, showing `./exports/current.dot`
 `0-9` | export the subgraph containing neighbors of the currently selected node with given depth (in digits)
-`up` | traverse the focused node list
-`down` | traverse the focused node list
-`right` | move focus between lists (highlighted in yellow borders)
-`left` | move focus between lists (highlighted in yellow borders)
+`up`/`k` | traverse the focused node list
+`down`/`j` | traverse the focused node list
+`right`/`l` | move focus between lists (highlighted in yellow borders)
+`left`/`h` | move focus between lists (highlighted in yellow borders)
 `tab`/`backtab` | navigate tabs
 `enter` | when traversing in prev/next/search-match node list, goto the selected node
 `/[node-id-pattern]` (e.g. `/g1s35t`) | search for node by fuzzy matcher
