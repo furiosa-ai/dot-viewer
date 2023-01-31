@@ -86,14 +86,8 @@ impl Viewer {
         )
     }
 
-    pub fn autocomplete(&mut self, key: &str) -> Result<String, DotViewerError> {
-        self.trie.autocomplete(key).map_or(
-            Err(DotViewerError::GraphError(format!(
-                "no autocomplete for key {}",
-                key
-            ))),
-            |key| Ok(key)
-        )
+    pub fn autocomplete(&mut self, key: &str) -> Option<String> {
+        self.trie.autocomplete(key)
     }
 
     pub fn update_adjacent(&mut self) {
@@ -109,6 +103,42 @@ impl Viewer {
 
         let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();
         self.nexts = StatefulList::with_items(nexts);
+    }
+
+    pub fn update_fuzzy(&mut self, mut key: String) {
+        let matcher = SkimMatcherV2::default();
+
+        let matches: Vec<(String, Vec<usize>)> = self
+            .matches
+            .items
+            .par_iter()
+            .filter_map(|(id, _)| {
+                if let Some((_, idxs)) = matcher.fuzzy_indices(id, &key) {
+                    Some((id.clone(), idxs))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        self.matches = StatefulList::with_items(matches);
+
+        key.pop();
+
+        let cache: Vec<(String, Vec<usize>)> = self
+            .current
+            .items
+            .par_iter()
+            .filter_map(|id| {
+                if let Some((_, idxs)) = matcher.fuzzy_indices(id, &key) {
+                    Some((id.clone(), idxs))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        self.cache = StatefulList::with_items(cache);
     }
 
     pub fn update_fuzzy_fwd(&mut self, key: String) {
@@ -153,6 +183,48 @@ impl Viewer {
             .collect();
 
         self.cache = StatefulList::with_items(cache);
+    }
+
+    pub fn update_regex(&mut self, mut key: String) {
+        if let Ok(matcher) = Regex::new(&key) {
+            let matches: Vec<(String, Vec<usize>)> = self
+                .current
+                .items
+                .par_iter()
+                .filter_map(|id| {
+                    let node = self.graph.search(id).unwrap();
+                    let raw = node.to_dot(0);
+
+                    if matcher.is_match(&raw) {
+                        Some((id.clone(), Vec::new()))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            self.matches = StatefulList::with_items(matches);
+
+            key.pop();
+
+            let cache: Vec<(String, Vec<usize>)> = self
+                .current
+                .items
+                .par_iter()
+                .filter_map(|id| {
+                    let node = self.graph.search(id).unwrap();
+                    let raw = node.to_dot(0);
+
+                    if matcher.is_match(&raw) {
+                        Some((id.clone(), Vec::new()))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            self.cache = StatefulList::with_items(cache);
+        }
     }
 
     pub fn update_regex_fwd(&mut self, key: String) {
