@@ -69,7 +69,10 @@ impl App {
                 Search::Fuzzy => viewer.update_fuzzy_fwd(key),
                 Search::Regex => viewer.update_regex_fwd(key),
             },
-            Input::Filter => viewer.update_filter_fwd(key),
+            Input::Filter => {
+                viewer.update_filter_fwd(key);
+                viewer.update_trie();
+            },
         };
 
         Ok(None)
@@ -106,7 +109,10 @@ impl App {
                         Search::Fuzzy => viewer.update_fuzzy_bwd(key),
                         Search::Regex => viewer.update_regex_bwd(key),
                     },
-                    Input::Filter => viewer.update_filter_bwd(key),
+                    Input::Filter => { 
+                        viewer.update_filter_bwd(key);
+                        viewer.update_trie();
+                    }
                 };
 
                 Ok(None)
@@ -133,7 +139,17 @@ impl App {
                 self.tabs.next();
                 Ok(None)
             }
-            _ => Err(DotViewerError::KeyError(KeyCode::Tab)),
+            Mode::Input(input) => match input {
+                Input::Filter => {
+                    let viewer = self.tabs.selected();
+                    let key = viewer.autocomplete(&self.input)?;
+                    self.input = key;
+                    viewer.update_filter(self.input.clone());
+
+                    Ok(None)
+                },
+                _ => Err(DotViewerError::KeyError(KeyCode::Tab)),
+            }
         }
     }
 

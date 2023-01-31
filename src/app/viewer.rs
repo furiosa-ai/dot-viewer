@@ -1,6 +1,6 @@
 use crate::app::{
     error::{DotViewerError, Res},
-    utils::list::StatefulList,
+    utils::{StatefulList, Trie},
 };
 use dot_graph::Graph;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
@@ -18,6 +18,7 @@ pub struct Viewer {
 
     pub matches: StatefulList<(String, Vec<usize>)>,
     pub cache: StatefulList<(String, Vec<usize>)>,
+    pub trie: Trie,
 }
 
 impl Viewer {
@@ -32,6 +33,7 @@ impl Viewer {
             nexts: StatefulList::with_items(Vec::new()),
             matches: StatefulList::with_items(Vec::new()),
             cache: StatefulList::with_items(Vec::new()),
+            trie: Trie::new(&Vec::new()),
         };
 
         viewer.update_adjacent();
@@ -81,6 +83,16 @@ impl Viewer {
                 let viewer = Self::new(format!("{} - {}", self.title, key), graph);
                 Ok(viewer)
             },
+        )
+    }
+
+    pub fn autocomplete(&mut self, key: &str) -> Result<String, DotViewerError> {
+        self.trie.autocomplete(key).map_or(
+            Err(DotViewerError::GraphError(format!(
+                "no autocomplete for key {}",
+                key
+            ))),
+            |key| Ok(key)
         )
     }
 
@@ -193,6 +205,42 @@ impl Viewer {
         }
     }
 
+    pub fn update_filter(&mut self, mut key: String) {
+        let matches: Vec<(String, Vec<usize>)> = self
+            .matches
+            .items
+            .par_iter()
+            .filter_map(|(id, _)| {
+                if id.starts_with(&key) {
+                    let highlight: Vec<usize> = (0..key.len()).collect();
+                    Some((id.clone(), highlight))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        self.matches = StatefulList::with_items(matches);
+
+        key.pop();
+
+        let cache: Vec<(String, Vec<usize>)> = self
+            .current
+            .items
+            .par_iter()
+            .filter_map(|id| {
+                if id.starts_with(&key) {
+                    let highlight: Vec<usize> = (0..key.len()).collect();
+                    Some((id.clone(), highlight))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        self.cache = StatefulList::with_items(cache);
+    }
+
     pub fn update_filter_fwd(&mut self, key: String) {
         self.cache = StatefulList::with_items(self.matches.items.clone());
 
@@ -233,6 +281,11 @@ impl Viewer {
             .collect();
 
         self.cache = StatefulList::with_items(cache);
+    }
+
+    pub fn update_trie(&mut self) {
+        let nodes: Vec<String> = self.matches.items.par_iter().map(|(id, _)| id.clone()).collect();
+        self.trie = Trie::new(&nodes);
     }
 
     pub fn progress_current(&self) -> String {

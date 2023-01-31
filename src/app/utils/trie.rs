@@ -1,19 +1,19 @@
 use std::str;
-use trie_rs::{Trie, TrieBuilder};
+use trie_rs::TrieBuilder;
 
-pub struct SearchTrie {
-    pub trie: Trie<u8>,
+pub struct Trie {
+    pub trie: trie_rs::Trie<u8>,
 }
 
-impl SearchTrie {
-    pub fn new(ids: &Vec<String>) -> SearchTrie {
+impl Trie {
+    pub fn new(ids: &[String]) -> Trie {
         let mut builder = TrieBuilder::new();
         for id in ids {
             builder.push(id.clone());
         }
         let trie = builder.build();
 
-        SearchTrie { trie }
+        Trie { trie }
     }
 
     pub fn autocomplete(&self, str: &str) -> Option<String> {
