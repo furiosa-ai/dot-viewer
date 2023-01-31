@@ -31,7 +31,6 @@ impl Trie {
         result
     }
 
-    // TODO faster search needed
     // https://leetcode.com/problems/longest-common-prefix/solutions/1134124/faster-than-100-in-memory-and-runtime-by-rust/
     fn longest_common_prefix(strs: Vec<String>) -> Option<String> {
         if strs.is_empty() || strs[0].is_empty() {
