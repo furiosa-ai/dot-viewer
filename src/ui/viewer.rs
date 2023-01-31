@@ -3,6 +3,7 @@ use crate::{
     ui::{ui::surrounding_block, utils::htmlparser::parse_html},
 };
 use dot_graph::Node;
+use rayon::prelude::*;
 use std::collections::HashSet;
 use tui::{
     backend::Backend,
@@ -59,7 +60,7 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: 
     let list: Vec<ListItem> = viewer
         .current
         .items
-        .iter()
+        .par_iter()
         .map(|id| {
             let mut item = ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]);
             if froms.contains(id.as_str()) {
@@ -106,7 +107,7 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
     let list: Vec<ListItem> = viewer
         .prevs
         .items
-        .iter()
+        .par_iter()
         .map(|id| ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]))
         .collect();
 
@@ -129,7 +130,7 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
     let list: Vec<ListItem> = viewer
         .nexts
         .items
-        .iter()
+        .par_iter()
         .map(|id| ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]))
         .collect();
 
@@ -205,27 +206,16 @@ fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &Input, viewer
     let list: Vec<ListItem> = viewer
         .matches
         .items
-        .iter()
-        .map(|item| {
-            let mut spans = Vec::new();
-            let id = &item.0;
-            let highlight = &item.1;
-            for (idx, c) in id.chars().enumerate() {
-                let span = if highlight.contains(&idx) {
-                    Span::styled(
-                        c.to_string(),
-                        Style::default()
-                            .bg(Color::Black)
-                            .add_modifier(Modifier::BOLD),
-                    )
-                } else {
-                    Span::raw(c.to_string())
-                };
-
-                spans.push(span);
+        .par_iter()
+        .map(|(id, highlight)| {
+            let mut spans: Vec<Span> = id.chars().map(|c| Span::raw(c.to_string())).collect();
+            for &idx in highlight {
+                spans[idx].style = Style::default()
+                    .bg(Color::Black)
+                    .add_modifier(Modifier::BOLD);
             }
 
-            ListItem::new(vec![Spans::from(spans)])
+            ListItem::new(Spans(spans))
         })
         .collect();
 
