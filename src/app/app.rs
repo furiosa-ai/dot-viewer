@@ -1,6 +1,6 @@
 use crate::app::{
-    error::{Res, DotViewerError},
-    modes::{Input, Navigate, Mode},
+    error::{DotViewerError, Res},
+    modes::{Input, Mode, Navigate},
     utils::{list::StatefulList, tabs::StatefulTabs},
     viewer::Viewer,
 };
@@ -20,8 +20,8 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(path: &str) -> Result<App, DotViewerError>  {
-        let graph = parse(path).map_err(|e| DotViewerError::ParseError(e))?;
+    pub fn new(path: &str) -> Result<App, DotViewerError> {
+        let graph = parse(path).map_err(DotViewerError::ParseError)?;
         let viewer = Viewer::new("DAG".to_string(), graph);
         let tabs = StatefulTabs::with_tabs(vec![viewer])?;
 
@@ -33,7 +33,7 @@ impl App {
             history: Vec::new(),
             result: Ok(None),
         })
-    } 
+    }
 
     pub fn selected(&mut self) -> Option<String> {
         match &self.mode {
@@ -46,15 +46,10 @@ impl App {
                     Navigate::Nexts => viewer.nexts.selected(),
                 }
             }
-            Mode::Input(input) => {
+            Mode::Input(_) => {
                 let viewer = self.tabs.selected();
 
-                let item = match input {
-                    Input::Search => viewer.search.selected(),
-                    Input::Filter => viewer.filter.selected(),
-                };
-
-                item.map(|(item, _)| item)
+                viewer.matches.selected().map(|(item, _)| item)
             }
         }
     }
@@ -66,7 +61,8 @@ impl App {
             |id| {
                 let viewer = self.tabs.selected();
                 viewer.goto(&id)
-            })
+            },
+        )
     }
 
     pub fn filter(&mut self) -> Res {
@@ -88,7 +84,7 @@ impl App {
             .collect();
 
         Self::write(filename, graph.to_dot())
-            .map(|succ| Some(succ))
+            .map(Some)
             .map_err(|e| DotViewerError::IOError(e.to_string()))
     }
 
@@ -116,10 +112,10 @@ impl App {
             Some(neighbors) => {
                 let contents = neighbors.to_dot();
                 Self::write(filename, contents)
-                    .map(|succ| Some(succ))
-                    .map_err(|e| DotViewerError::IOError(e.to_string()))   
+                    .map(Some)
+                    .map_err(|e| DotViewerError::IOError(e.to_string()))
             }
-            None => Err(DotViewerError::GraphError("empty graph".to_string()))
+            None => Err(DotViewerError::GraphError("empty graph".to_string())),
         }
     }
 
@@ -129,22 +125,19 @@ impl App {
     }
 
     pub fn to_input_mode(&mut self, input: Input) {
-        self.mode = Mode::Input(input.clone());
+        self.mode = Mode::Input(input);
 
         let viewer = self.tabs.selected();
+
         let init: Vec<(String, Vec<usize>)> = viewer
             .current
             .items
             .iter()
             .map(|id| (id.clone(), Vec::new()))
             .collect();
-        match &input {
-            Input::Search => {
-                viewer.search = StatefulList::with_items(init.clone());
-                viewer.cache = StatefulList::with_items(init);
-            }
-            Input::Filter => viewer.filter = StatefulList::with_items(init),
-        }
+
+        viewer.matches = StatefulList::with_items(init.clone());
+        viewer.cache = StatefulList::with_items(init);
     }
 
     fn write(filename: String, contents: String) -> Result<String, std::io::Error> {
