@@ -155,10 +155,7 @@ impl App {
                 Navigate::Prevs => viewer.prevs.previous(),
                 Navigate::Nexts => viewer.nexts.previous(),
             },
-            Mode::Input(input) => match input {
-                Input::Search(_) => viewer.search.previous(),
-                Input::Filter => viewer.filter.previous(),
-            },
+            Mode::Input(_) => viewer.matches.previous(),
         };
 
         Ok(None)
@@ -176,10 +173,7 @@ impl App {
                 Navigate::Prevs => viewer.prevs.next(),
                 Navigate::Nexts => viewer.nexts.next(),
             },
-            Mode::Input(input) => match input {
-                Input::Search(_) => viewer.search.next(),
-                Input::Filter => viewer.filter.next(),
-            },
+            Mode::Input(_) => viewer.matches.next(),
         };
 
         Ok(None)

@@ -46,15 +46,10 @@ impl App {
                     Navigate::Nexts => viewer.nexts.selected(),
                 }
             }
-            Mode::Input(input) => {
+            Mode::Input(_) => {
                 let viewer = self.tabs.selected();
 
-                let item = match input {
-                    Input::Search(_) => viewer.search.selected(),
-                    Input::Filter => viewer.filter.selected(),
-                };
-
-                item.map(|(item, _)| item)
+                viewer.matches.selected().map(|(item, _)| item)
             }
         }
     }
@@ -132,19 +127,16 @@ impl App {
         self.mode = Mode::Input(input.clone());
 
         let viewer = self.tabs.selected();
+
         let init: Vec<(String, Vec<usize>)> = viewer
             .current
             .items
             .iter()
             .map(|id| (id.clone(), Vec::new()))
             .collect();
-        match &input {
-            Input::Search(_) => {
-                viewer.search = StatefulList::with_items(init.clone());
-                viewer.cache = StatefulList::with_items(init);
-            }
-            Input::Filter => viewer.filter = StatefulList::with_items(init),
-        }
+        
+        viewer.matches = StatefulList::with_items(init.clone());
+        viewer.cache = StatefulList::with_items(init);
     }
 
     fn write(filename: String, contents: String) -> Result<String, std::io::Error> {

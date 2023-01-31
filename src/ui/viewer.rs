@@ -1,5 +1,5 @@
 use crate::{
-    app::{Input, Navigate, Mode, Viewer},
+    app::{Input, Navigate, Mode, Search, Viewer},
     ui::{
         ui::surrounding_block,
         utils::htmlparser::parse_html,
@@ -30,10 +30,7 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewe
 fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     match &mode {
         Mode::Navigate(_) => draw_current(f, chunk, mode, viewer),
-        Mode::Input(input) => match input {
-            Input::Search(_) => draw_search_match(f, chunk, mode, viewer),
-            Input::Filter => draw_filter_match(f, chunk, mode, viewer),
-        },
+        Mode::Input(input) => draw_matches(f, chunk, input, viewer),
     }
 }
 
@@ -48,7 +45,7 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
             draw_adjacent(f, chunks[0], mode, viewer);
             draw_metadata(f, chunks[1], mode, viewer);
         }
-        Mode::Input(_) => {}
+        Mode::Input(_) => {},
     }
 }
 
@@ -184,23 +181,20 @@ fn pretty_metadata(node: &Node) -> String {
     metadata
 }
 
-// search result block
-fn draw_search_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
+// match result block
+fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &Input, viewer: &mut Viewer) {
     // surrounding block
-    let title = viewer.progress_search();
-    let block = surrounding_block(
-        title, 
-        match mode {
-            Mode::Input(input) => match input {
-                Input::Search(_) => true,
-                _ => false,
-            },
-            _ => false,
-        }
-    );
+    let title = match input {
+        Input::Search(search) => match search {
+            Search::Fuzzy => "Fuzzy Searching...".to_string(),
+            Search::Regex => "Regex Searching...".to_string(),
+        },
+        Input::Filter => "Filtering...".to_string(),
+    };
+    let block = surrounding_block(title, true);
 
     let list: Vec<ListItem> = viewer
-        .search
+        .matches
         .items
         .iter()
         .map(|item| {
@@ -235,49 +229,5 @@ fn draw_search_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, vie
         )
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut viewer.search.state);
-}
-
-// search result block
-fn draw_filter_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
-    // surrounding block
-    let block = surrounding_block("Filtering...".to_string(), *mode == Mode::Input(Input::Filter));
-
-    let list: Vec<ListItem> = viewer
-        .filter
-        .items
-        .iter()
-        .map(|item| {
-            let mut spans = Vec::new();
-            let id = &item.0;
-            let highlight = &item.1;
-            for (idx, c) in id.chars().enumerate() {
-                let span = if highlight.contains(&idx) {
-                    Span::styled(
-                        c.to_string(),
-                        Style::default()
-                            .bg(Color::Black)
-                            .add_modifier(Modifier::BOLD),
-                    )
-                } else {
-                    Span::raw(c.to_string())
-                };
-
-                spans.push(span);
-            }
-
-            ListItem::new(vec![Spans::from(spans)])
-        })
-        .collect();
-
-    let list = List::new(list)
-        .block(block)
-        .highlight_style(
-            Style::default()
-                .fg(Color::Green)
-                .add_modifier(Modifier::BOLD),
-        )
-        .highlight_symbol("> ");
-
-    f.render_stateful_widget(list, chunk, &mut viewer.filter.state);
+    f.render_stateful_widget(list, chunk, &mut viewer.matches.state);
 }
