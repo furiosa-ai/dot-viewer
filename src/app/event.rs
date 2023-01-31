@@ -50,6 +50,10 @@ impl App {
             'c' => self.tabs.close(),
             'e' => self.export(),
             'x' => self.xdot(),
+            'h' => self.left(),
+            'j' => self.down(),
+            'k' => self.up(),
+            'l' => self.right(),
             d if d.is_ascii_digit() => self.neighbors(d.to_digit(10).unwrap() as usize),
             _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),
         }
