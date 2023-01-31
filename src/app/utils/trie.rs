@@ -17,6 +17,10 @@ impl Trie {
     }
 
     pub fn autocomplete(&self, str: &str) -> Option<String> {
+        if str.is_empty() {
+            return None;
+        }
+
         let predictions = self.predict(str);
         Self::longest_common_prefix(predictions)
     }
