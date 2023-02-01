@@ -2,26 +2,30 @@ use std::str;
 use trie_rs::TrieBuilder;
 
 pub struct Trie {
+    pub items: Vec<String>,
     pub trie: trie_rs::Trie<u8>,
 }
 
 impl Trie {
     pub fn new(ids: &[String]) -> Trie {
+        let items = ids.to_vec();
+
         let mut builder = TrieBuilder::new();
         for id in ids {
             builder.push(id.clone());
         }
         let trie = builder.build();
 
-        Trie { trie }
+        Trie { items, trie }
     }
 
     pub fn autocomplete(&self, str: &str) -> Option<String> {
-        if str.is_empty() {
-            return None;
-        }
+        let predictions = if str.is_empty() {
+            self.items.clone()
+        } else {
+            self.predict(str)
+        };
 
-        let predictions = self.predict(str);
         Self::longest_common_prefix(predictions)
     }
 

@@ -27,11 +27,11 @@ impl Viewer {
         let mut viewer = Viewer {
             title,
             graph,
-            current: List::with_items(nodes),
+            current: List::with_items(nodes.clone()),
             prevs: List::with_items(Vec::new()),
             nexts: List::with_items(Vec::new()),
             matches: List::with_items(Vec::new()),
-            trie: Trie::new(&Vec::new()),
+            trie: Trie::new(&nodes),
         };
 
         viewer.update_adjacent();
