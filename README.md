@@ -1,5 +1,5 @@
 # dot-viewer
-Dot debugger in TUI
+dot debugger in TUI
 
 ## Prerequisites
 
@@ -60,7 +60,7 @@ $ git submodule update
 Then run crate.
 
 ```console
-$ cargo run --release -- [path-to-dot-file]
+$ cargo run --release [path-to-dot-file]
 ```
 
 This will open a TUI screen on the terminal.
