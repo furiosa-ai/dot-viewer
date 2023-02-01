@@ -135,9 +135,7 @@ impl App {
             .iter()
             .map(|id| (id.clone(), Vec::new()))
             .collect();
-
         viewer.matches = StatefulList::with_items(init.clone());
-        viewer.cache = StatefulList::with_items(init);
     }
 
     fn write(filename: String, contents: String) -> Result<String, std::io::Error> {

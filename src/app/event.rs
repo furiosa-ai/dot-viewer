@@ -66,10 +66,10 @@ impl App {
         let key = self.input.clone();
         match input {
             Input::Search(search) => match search {
-                Search::Fuzzy => viewer.update_fuzzy_fwd(key),
-                Search::Regex => viewer.update_regex_fwd(key),
+                Search::Fuzzy => viewer.update_fuzzy(key),
+                Search::Regex => viewer.update_regex(key),
             },
-            Input::Filter => viewer.update_filter_fwd(key),
+            Input::Filter => viewer.update_filter(key),
         };
         viewer.update_trie();
 
@@ -104,10 +104,10 @@ impl App {
                 let key = self.input.clone();
                 match input {
                     Input::Search(search) => match search {
-                        Search::Fuzzy => viewer.update_fuzzy_bwd(key),
-                        Search::Regex => viewer.update_regex_bwd(key),
+                        Search::Fuzzy => viewer.update_fuzzy(key),
+                        Search::Regex => viewer.update_regex(key),
                     },
-                    Input::Filter => viewer.update_filter_bwd(key),
+                    Input::Filter => viewer.update_filter(key),
                 };
                 viewer.update_trie();
 

@@ -17,7 +17,6 @@ pub struct Viewer {
     pub nexts: StatefulList<String>,
 
     pub matches: StatefulList<(String, Vec<usize>)>,
-    pub cache: StatefulList<(String, Vec<usize>)>,
     pub trie: Trie,
 }
 
@@ -32,7 +31,6 @@ impl Viewer {
             prevs: StatefulList::with_items(Vec::new()),
             nexts: StatefulList::with_items(Vec::new()),
             matches: StatefulList::with_items(Vec::new()),
-            cache: StatefulList::with_items(Vec::new()),
             trie: Trie::new(&Vec::new()),
         };
 
@@ -116,40 +114,14 @@ impl Viewer {
         self.matches = StatefulList::with_items(matches);
     }
 
-    fn update_cache(&mut self, matcher: fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>, key: &str, graph: &Option<Graph>) {
-        let cache: Vec<(String, Vec<usize>)> = self
-            .current
-            .items
-            .par_iter()
-            .filter_map(|item| matcher(item, key, graph))
-            .collect();
-
-        self.cache = StatefulList::with_items(cache);
-    }
-
     fn match_fuzzy(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
         let matcher = SkimMatcherV2::default();
 
         matcher.fuzzy_indices(id, key).map(|(_, idxs)| (id.to_string(), idxs))
     }
 
-    pub fn update_fuzzy(&mut self, mut key: String) {
+    pub fn update_fuzzy(&mut self, key: String) {
         self.update_matches(Self::match_fuzzy, &key, &None);
-
-        key.pop();
-        self.update_cache(Self::match_fuzzy, &key, &None);
-    }
-
-    pub fn update_fuzzy_fwd(&mut self, key: String) {
-        self.cache = StatefulList::with_items(self.matches.items.clone());
-        self.update_matches(Self::match_fuzzy, &key, &None);
-    }
-
-    pub fn update_fuzzy_bwd(&mut self, mut key: String) {
-        self.matches = StatefulList::with_items(self.cache.items.clone());
-
-        key.pop();
-        self.update_cache(Self::match_fuzzy, &key, &None);
     }
 
     fn match_regex(id: &str, key: &str, graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
@@ -168,23 +140,8 @@ impl Viewer {
         }
     }
 
-    pub fn update_regex(&mut self, mut key: String) {
+    pub fn update_regex(&mut self, key: String) {
         self.update_matches(Self::match_regex, &key, &Some(self.graph.clone()));
-
-        key.pop();
-        self.update_cache(Self::match_regex, &key, &Some(self.graph.clone()));
-    }
-
-    pub fn update_regex_fwd(&mut self, key: String) {
-        self.cache = StatefulList::with_items(self.matches.items.clone());
-        self.update_matches(Self::match_regex, &key, &Some(self.graph.clone()));
-    }
-
-    pub fn update_regex_bwd(&mut self, mut key: String) {
-        self.matches = StatefulList::with_items(self.cache.items.clone());
-
-        key.pop();
-        self.update_cache(Self::match_regex, &key, &Some(self.graph.clone()));
     }
 
     fn match_filter(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
@@ -196,23 +153,8 @@ impl Viewer {
         }
     }
 
-    pub fn update_filter(&mut self, mut key: String) {
+    pub fn update_filter(&mut self, key: String) {
         self.update_matches(Self::match_filter, &key, &None);
-
-        key.pop();
-        self.update_cache(Self::match_filter, &key, &None);
-    }
-    
-    pub fn update_filter_fwd(&mut self, key: String) {
-        self.cache = StatefulList::with_items(self.matches.items.clone());
-        self.update_matches(Self::match_filter, &key, &None);
-    }
-
-    pub fn update_filter_bwd(&mut self, mut key: String) {
-        self.matches = StatefulList::with_items(self.cache.items.clone());
-
-        key.pop();
-        self.update_cache(Self::match_filter, &key, &None);
     }
 
     pub fn update_trie(&mut self) {
