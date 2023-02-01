@@ -1,6 +1,6 @@
 use crate::app::{
     error::{DotViewerError, Res},
-    utils::{StatefulList, Trie},
+    utils::{List, Trie},
 };
 use dot_graph::Graph;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
@@ -12,11 +12,11 @@ pub struct Viewer {
 
     pub graph: Graph,
 
-    pub current: StatefulList<String>,
-    pub prevs: StatefulList<String>,
-    pub nexts: StatefulList<String>,
+    pub current: List<String>,
+    pub prevs: List<String>,
+    pub nexts: List<String>,
 
-    pub matches: StatefulList<(String, Vec<usize>)>,
+    pub matches: List<(String, Vec<usize>)>,
     pub trie: Trie,
 }
 
@@ -27,10 +27,10 @@ impl Viewer {
         let mut viewer = Viewer {
             title,
             graph,
-            current: StatefulList::with_items(nodes),
-            prevs: StatefulList::with_items(Vec::new()),
-            nexts: StatefulList::with_items(Vec::new()),
-            matches: StatefulList::with_items(Vec::new()),
+            current: List::with_items(nodes),
+            prevs: List::with_items(Vec::new()),
+            nexts: List::with_items(Vec::new()),
+            matches: List::with_items(Vec::new()),
             trie: Trie::new(&Vec::new()),
         };
 
@@ -97,10 +97,10 @@ impl Viewer {
             .iter()
             .map(|n| n.to_string())
             .collect();
-        self.prevs = StatefulList::with_items(prevs);
+        self.prevs = List::with_items(prevs);
 
         let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();
-        self.nexts = StatefulList::with_items(nexts);
+        self.nexts = List::with_items(nexts);
     }
 
     fn update_matches(&mut self, matcher: fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>, key: &str, graph: &Option<Graph>) {
@@ -111,7 +111,7 @@ impl Viewer {
             .filter_map(|(id, _)| matcher(id, key, graph))
             .collect();
 
-        self.matches = StatefulList::with_items(matches);
+        self.matches = List::with_items(matches);
     }
 
     fn match_fuzzy(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {

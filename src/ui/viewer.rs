@@ -1,5 +1,5 @@
 use crate::{
-    app::{Input, Mode, Navigate, Search, Viewer},
+    app::{InputMode, Mode, NavMode, SearchMode, Viewer},
     ui::{ui::surrounding_block, utils::htmlparser::parse_html},
 };
 use dot_graph::Node;
@@ -50,7 +50,7 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
 fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
     let title = viewer.progress_current();
-    let block = surrounding_block(title, *mode == Mode::Navigate(Navigate::Current));
+    let block = surrounding_block(title, *mode == Mode::Navigate(NavMode::Current));
 
     let (froms, tos) = match &viewer.current() {
         Some(id) => (viewer.graph.froms(id).clone(), viewer.graph.tos(id)),
@@ -101,7 +101,7 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
     // surrounding block
     let block = surrounding_block(
         "Prev Nodes".to_string(),
-        *mode == Mode::Navigate(Navigate::Prevs),
+        *mode == Mode::Navigate(NavMode::Prevs),
     );
 
     let list: Vec<ListItem> = viewer
@@ -124,7 +124,7 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
     // surrounding block
     let block = surrounding_block(
         "Next Nodes".to_string(),
-        *mode == Mode::Navigate(Navigate::Nexts),
+        *mode == Mode::Navigate(NavMode::Nexts),
     );
 
     let list: Vec<ListItem> = viewer
@@ -192,14 +192,14 @@ fn pretty_metadata(node: &Node) -> String {
 }
 
 // match result block
-fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &Input, viewer: &mut Viewer) {
+fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, viewer: &mut Viewer) {
     // surrounding block
     let title = match input {
-        Input::Search(search) => match search {
-            Search::Fuzzy => "Fuzzy Searching...".to_string(),
-            Search::Regex => "Regex Searching...".to_string(),
+        InputMode::Search(search) => match search {
+            SearchMode::Fuzzy => "Fuzzy Searching...".to_string(),
+            SearchMode::Regex => "Regex Searching...".to_string(),
         },
-        Input::Filter => "Filtering...".to_string(),
+        InputMode::Filter => "Filtering...".to_string(),
     };
     let block = surrounding_block(title, true);
 

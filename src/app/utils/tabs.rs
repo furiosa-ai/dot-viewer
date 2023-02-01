@@ -1,19 +1,19 @@
 use crate::app::{error::DotViewerError, error::Res};
 
-pub struct StatefulTabs<T> {
+pub struct Tabs<T> {
     pub state: usize,
     pub tabs: Vec<T>,
 }
 
-impl<T> StatefulTabs<T> {
-    pub fn with_tabs(tabs: Vec<T>) -> Result<StatefulTabs<T>, DotViewerError> {
+impl<T> Tabs<T> {
+    pub fn with_tabs(tabs: Vec<T>) -> Result<Tabs<T>, DotViewerError> {
         if tabs.is_empty() {
             return Err(DotViewerError::TabError(
                 "no tab given to tabs constructor".to_string(),
             ));
         }
 
-        Ok(StatefulTabs { state: 0, tabs })
+        Ok(Tabs { state: 0, tabs })
     }
 
     pub fn next(&mut self) {
