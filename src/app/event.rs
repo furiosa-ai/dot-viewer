@@ -144,10 +144,10 @@ impl App {
                         InputMode::Search(search) => match search {
                             SearchMode::Fuzzy => viewer.update_fuzzy(key),
                             SearchMode::Regex => viewer.update_regex(key),
-                        }
-                        InputMode::Filter => viewer.update_filter(key)
+                        },
+                        InputMode::Filter => viewer.update_filter(key),
                     };
-                } 
+                }
 
                 Ok(None)
             }
@@ -208,9 +208,9 @@ impl App {
                 self.mode = match nav {
                     NavMode::Current => Mode::Navigate(NavMode::Prevs),
                     NavMode::Prevs => Mode::Navigate(NavMode::Nexts),
-                    NavMode::Nexts => Mode::Navigate(NavMode::Current),   
+                    NavMode::Nexts => Mode::Navigate(NavMode::Current),
                 };
-            },
+            }
             Mode::Input(_) => self.input.front(),
         }
 
@@ -227,7 +227,7 @@ impl App {
                     NavMode::Prevs => Mode::Navigate(NavMode::Current),
                     NavMode::Nexts => Mode::Navigate(NavMode::Prevs),
                 };
-            },
+            }
             Mode::Input(_) => self.input.back(),
         }
 

@@ -1,7 +1,7 @@
 use crate::app::{
     error::{DotViewerError, Res},
     modes::{InputMode, Mode, NavMode},
-    utils::{List, Tabs, Input},
+    utils::{Input, List, Tabs},
     viewer::Viewer,
 };
 use dot_graph::parser::parse;
@@ -132,7 +132,7 @@ impl App {
             .iter()
             .map(|id| (id.clone(), Vec::new()))
             .collect();
-        viewer.matches = List::with_items(init.clone());
+        viewer.matches = List::with_items(init);
     }
 
     fn write(filename: String, contents: String) -> Result<String, std::io::Error> {

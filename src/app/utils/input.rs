@@ -29,7 +29,7 @@ impl Input {
     }
 
     pub fn back(&mut self) {
-        if self.cursor > 0{
+        if self.cursor > 0 {
             self.cursor -= 1;
         }
     }
@@ -40,7 +40,7 @@ impl Input {
     }
 
     pub fn delete(&mut self) {
-        if self.cursor > 0 { 
+        if self.cursor > 0 {
             self.cursor -= 1;
             self.key.remove(self.cursor);
         }

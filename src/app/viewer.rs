@@ -103,7 +103,12 @@ impl Viewer {
         self.nexts = List::with_items(nexts);
     }
 
-    fn update_matches(&mut self, matcher: fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>, key: &str, graph: &Option<Graph>) {
+    fn update_matches(
+        &mut self,
+        matcher: fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>,
+        key: &str,
+        graph: &Option<Graph>,
+    ) {
         let matches: Vec<(String, Vec<usize>)> = self
             .current
             .items
@@ -117,7 +122,9 @@ impl Viewer {
     fn match_fuzzy(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
         let matcher = SkimMatcherV2::default();
 
-        matcher.fuzzy_indices(id, key).map(|(_, idxs)| (id.to_string(), idxs))
+        matcher
+            .fuzzy_indices(id, key)
+            .map(|(_, idxs)| (id.to_string(), idxs))
     }
 
     pub fn update_fuzzy(&mut self, key: String) {
@@ -125,7 +132,7 @@ impl Viewer {
     }
 
     fn match_regex(id: &str, key: &str, graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
-        if let Ok(matcher) = Regex::new(&key) {
+        if let Ok(matcher) = Regex::new(key) {
             let graph = graph.as_ref().unwrap();
             let node = graph.search(id).unwrap();
             let raw = node.to_dot(0);
@@ -145,7 +152,7 @@ impl Viewer {
     }
 
     fn match_filter(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
-        if id.starts_with(&key) {
+        if id.starts_with(key) {
             let highlight: Vec<usize> = (0..key.len()).collect();
             Some((id.to_string(), highlight))
         } else {
@@ -158,7 +165,12 @@ impl Viewer {
     }
 
     pub fn update_trie(&mut self) {
-        let nodes: Vec<String> = self.matches.items.par_iter().map(|(id, _)| id.clone()).collect();
+        let nodes: Vec<String> = self
+            .matches
+            .items
+            .par_iter()
+            .map(|(id, _)| id.clone())
+            .collect();
         self.trie = Trie::new(&nodes);
     }
 
