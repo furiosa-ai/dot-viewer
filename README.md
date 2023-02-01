@@ -5,7 +5,14 @@ Dot debugger in TUI
 
 ### Graphviz
 
-dot-viewer parses a dot format file using C bindings to Graphviz (v.7.0.6).
+`dot-viewer` parses a dot format file using C bindings to [Graphviz (v7.0.6)](https://gitlab.com/graphviz/graphviz/-/tree/7.0.6/lib).
+
+The system environment should be able to find and include the following header files.
+
+```C
+#include <gvc.h>
+#include <cgraph.h>
+```
 
 #### Option 1. Installing Graphviz from Package Manager
 
@@ -19,27 +26,18 @@ Coming from Mac,
 $ brew install graphviz
 ```
 
-And coming from Apple Silicon Mac,
-```console
-$ brew install graphviz
-```
-
-and [add an environment variable](https://apple.stackexchange.com/questions/414622/installing-a-c-c-library-with-homebrew-on-m1-macs),
+And coming from Apple Silicon Mac, and [add an environment variable](https://apple.stackexchange.com/questions/414622/installing-a-c-c-library-with-homebrew-on-m1-macs),
 ```shell
 export CPATH=/opt/homebrew/include
 ```
 
 #### Option 2. Building Graphviz from Source
 
-It is required that [Graphviz is installed (compiled)](https://graphviz.org/download/source/) beforehand such that the followings can be included.
-```C
-#include <graphviz/gvc.h>
-#include <graphviz/cgraph.h>
-```
+Or, try building from the source code following the [guide](https://graphviz.org/download/source/).
 
 ### xdot.py
 
-dot-viewer renders a subgraph with xdot.py, an interactive dot visualizer.
+`dot-viewer` renders a subgraph with xdot.py, an interactive dot visualizer.
 
 It is required that [xdot is executable in command-line](https://github.com/jrfonseca/xdot.py) beforehand such that the following works.
 ```console
@@ -50,7 +48,7 @@ $ xdot *.dot
 
 ### Initialize
 
-First initialize and update the submodule dot-graph.
+First initialize and update the submodule `dot-graph`.
 
 ```console
 $ git submodule init
@@ -62,7 +60,7 @@ $ git submodule update
 Then run crate.
 
 ```console
-$ cargo run --release -- --path [path-to-dot-file]
+$ cargo run --release -- [path-to-dot-file]
 ```
 
 This will open a TUI screen on the terminal.
