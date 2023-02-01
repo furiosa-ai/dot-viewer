@@ -5,9 +5,9 @@ Dot debugger in TUI
 
 ### Graphviz
 
-dot-viewer parses a dot format file using C bindings to Graphviz.
+dot-viewer parses a dot format file using C bindings to Graphviz (v.7.0.6).
 
-#### 1. Installing Graphviz
+#### Option 1. Installing Graphviz from Package Manager
 
 Coming from Linux,
 ```console
@@ -19,7 +19,17 @@ Coming from Mac,
 $ brew install graphviz
 ```
 
-#### 2. Graphviz Library
+And coming from Apple Silicon Mac,
+```console
+$ brew install graphviz
+```
+
+and [add an environment variable](https://apple.stackexchange.com/questions/414622/installing-a-c-c-library-with-homebrew-on-m1-macs),
+```shell
+export CPATH=/opt/homebrew/include
+```
+
+#### Option 2. Building Graphviz from Source
 
 It is required that [Graphviz is installed (compiled)](https://graphviz.org/download/source/) beforehand such that the followings can be included.
 ```C
