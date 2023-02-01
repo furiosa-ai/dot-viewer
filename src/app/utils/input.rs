@@ -22,15 +22,27 @@ impl Input {
         self.cursor = self.key.len();
     }
 
-    pub fn push(&mut self, c: char) {
-        self.key.push(c);
+    pub fn front(&mut self) {
+        if self.cursor < self.key.len() {
+            self.cursor += 1;
+        }
+    }
+
+    pub fn back(&mut self) {
+        if self.cursor > 0{
+            self.cursor -= 1;
+        }
+    }
+
+    pub fn insert(&mut self, c: char) {
+        self.key.insert(self.cursor, c);
         self.cursor += 1;
     }
 
-    pub fn pop(&mut self) {
-        if !self.key.is_empty() {
-            self.key.pop();
+    pub fn delete(&mut self) {
+        if self.cursor > 0 { 
             self.cursor -= 1;
+            self.key.remove(self.cursor);
         }
     }
 

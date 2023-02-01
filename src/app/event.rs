@@ -60,7 +60,7 @@ impl App {
     }
 
     fn char_input(&mut self, c: char, input: &InputMode) -> Res {
-        self.input.push(c);
+        self.input.insert(c);
 
         let viewer = self.tabs.selected();
         let key = self.input.key();
@@ -99,7 +99,7 @@ impl App {
 
         match &self.mode {
             Mode::Input(input) => {
-                self.input.pop();
+                self.input.delete();
 
                 let key = self.input.key();
                 match input {
@@ -201,27 +201,35 @@ impl App {
     }
 
     fn right(&mut self) -> Res {
-        self.mode = match &self.mode {
-            Mode::Navigate(nav) => match nav {
-                NavMode::Current => Mode::Navigate(NavMode::Prevs),
-                NavMode::Prevs => Mode::Navigate(NavMode::Nexts),
-                NavMode::Nexts => Mode::Navigate(NavMode::Current),
+        let mode = self.mode.clone();
+
+        match mode {
+            Mode::Navigate(nav) => {
+                self.mode = match nav {
+                    NavMode::Current => Mode::Navigate(NavMode::Prevs),
+                    NavMode::Prevs => Mode::Navigate(NavMode::Nexts),
+                    NavMode::Nexts => Mode::Navigate(NavMode::Current),   
+                };
             },
-            Mode::Input(input) => Mode::Input(input.clone()),
-        };
+            Mode::Input(_) => self.input.front(),
+        }
 
         Ok(None)
     }
 
     fn left(&mut self) -> Res {
-        self.mode = match &self.mode {
-            Mode::Navigate(nav) => match nav {
-                NavMode::Current => Mode::Navigate(NavMode::Nexts),
-                NavMode::Prevs => Mode::Navigate(NavMode::Current),
-                NavMode::Nexts => Mode::Navigate(NavMode::Prevs),
+        let mode = self.mode.clone();
+
+        match mode {
+            Mode::Navigate(nav) => {
+                self.mode = match nav {
+                    NavMode::Current => Mode::Navigate(NavMode::Nexts),
+                    NavMode::Prevs => Mode::Navigate(NavMode::Current),
+                    NavMode::Nexts => Mode::Navigate(NavMode::Prevs),
+                };
             },
-            Mode::Input(input) => Mode::Input(input.clone()),
-        };
+            Mode::Input(_) => self.input.back(),
+        }
 
         Ok(None)
     }

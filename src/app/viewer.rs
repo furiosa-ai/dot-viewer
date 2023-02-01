@@ -105,10 +105,10 @@ impl Viewer {
 
     fn update_matches(&mut self, matcher: fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>, key: &str, graph: &Option<Graph>) {
         let matches: Vec<(String, Vec<usize>)> = self
-            .matches
+            .current
             .items
             .par_iter()
-            .filter_map(|(id, _)| matcher(id, key, graph))
+            .filter_map(|id| matcher(id, key, graph))
             .collect();
 
         self.matches = List::with_items(matches);
