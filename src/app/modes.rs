@@ -1,24 +1,24 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Mode {
-    Navigate(Navigate),
-    Input(Input),
+    Navigate(NavMode),
+    Input(InputMode),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Navigate {
+pub enum NavMode {
     Current,
     Prevs,
     Nexts,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Input {
-    Search(Search),
+pub enum InputMode {
+    Search(SearchMode),
     Filter,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Search {
+pub enum SearchMode {
     Fuzzy,
     Regex,
 }

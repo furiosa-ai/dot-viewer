@@ -1,7 +1,7 @@
 use crate::app::{
     error::{DotViewerError, Res},
-    modes::{Input, Mode, Navigate},
-    utils::{StatefulList, StatefulTabs},
+    modes::{InputMode, Mode, NavMode},
+    utils::{Input, List, Tabs},
     viewer::Viewer,
 };
 use dot_graph::parser::parse;
@@ -10,28 +10,25 @@ use std::io::Write;
 pub struct App {
     pub quit: bool,
     pub mode: Mode,
-
-    pub tabs: StatefulTabs<Viewer>,
-
-    pub input: String,
-    pub history: Vec<String>,
-
     pub result: Res,
+
+    pub tabs: Tabs<Viewer>,
+    pub input: Input,
 }
 
 impl App {
     pub fn new(path: &str) -> Result<App, DotViewerError> {
         let graph = parse(path).map_err(DotViewerError::ParseError)?;
         let viewer = Viewer::new("DAG".to_string(), graph);
-        let tabs = StatefulTabs::with_tabs(vec![viewer])?;
+        let tabs = Tabs::with_tabs(vec![viewer])?;
+        let input = Input::new();
 
         Ok(App {
             quit: false,
-            mode: Mode::Navigate(Navigate::Current),
-            tabs,
-            input: String::from(""),
-            history: Vec::new(),
+            mode: Mode::Navigate(NavMode::Current),
             result: Ok(None),
+            tabs,
+            input,
         })
     }
 
@@ -41,9 +38,9 @@ impl App {
                 let viewer = self.tabs.selected();
 
                 match nav {
-                    Navigate::Current => viewer.current.selected(),
-                    Navigate::Prevs => viewer.prevs.selected(),
-                    Navigate::Nexts => viewer.nexts.selected(),
+                    NavMode::Current => viewer.current.selected(),
+                    NavMode::Prevs => viewer.prevs.selected(),
+                    NavMode::Nexts => viewer.nexts.selected(),
                 }
             }
             Mode::Input(_) => {
@@ -67,7 +64,7 @@ impl App {
 
     pub fn filter(&mut self) -> Res {
         let viewer = self.tabs.selected();
-        let viewer = viewer.filter(self.input.clone())?;
+        let viewer = viewer.filter(self.input.key())?;
         self.tabs.open(viewer);
 
         Ok(None)
@@ -120,11 +117,11 @@ impl App {
     }
 
     pub fn to_nav_mode(&mut self) {
-        self.mode = Mode::Navigate(Navigate::Current);
-        self.input = "".to_string();
+        self.mode = Mode::Navigate(NavMode::Current);
+        self.input.clear();
     }
 
-    pub fn to_input_mode(&mut self, input: Input) {
+    pub fn to_input_mode(&mut self, input: InputMode) {
         self.mode = Mode::Input(input);
 
         let viewer = self.tabs.selected();
@@ -135,9 +132,7 @@ impl App {
             .iter()
             .map(|id| (id.clone(), Vec::new()))
             .collect();
-
-        viewer.matches = StatefulList::with_items(init.clone());
-        viewer.cache = StatefulList::with_items(init);
+        viewer.matches = List::with_items(init);
     }
 
     fn write(filename: String, contents: String) -> Result<String, std::io::Error> {

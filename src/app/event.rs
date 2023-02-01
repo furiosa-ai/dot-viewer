@@ -1,7 +1,7 @@
 use crate::app::{
     app::App,
     error::{DotViewerError, Res},
-    modes::{Input, Mode, Navigate, Search},
+    modes::{InputMode, Mode, NavMode, SearchMode},
 };
 use crossterm::event::{KeyCode, KeyEvent};
 
@@ -36,15 +36,15 @@ impl App {
                 Ok(None)
             }
             '/' => {
-                self.to_input_mode(Input::Search(Search::Fuzzy));
+                self.to_input_mode(InputMode::Search(SearchMode::Fuzzy));
                 Ok(None)
             }
             'r' => {
-                self.to_input_mode(Input::Search(Search::Regex));
+                self.to_input_mode(InputMode::Search(SearchMode::Regex));
                 Ok(None)
             }
             'f' => {
-                self.to_input_mode(Input::Filter);
+                self.to_input_mode(InputMode::Filter);
                 Ok(None)
             }
             'c' => self.tabs.close(),
@@ -59,17 +59,17 @@ impl App {
         }
     }
 
-    fn char_input(&mut self, c: char, input: &Input) -> Res {
-        self.input.push(c);
+    fn char_input(&mut self, c: char, input: &InputMode) -> Res {
+        self.input.insert(c);
 
         let viewer = self.tabs.selected();
-        let key = self.input.clone();
+        let key = self.input.key();
         match input {
-            Input::Search(search) => match search {
-                Search::Fuzzy => viewer.update_fuzzy_fwd(key),
-                Search::Regex => viewer.update_regex_fwd(key),
+            InputMode::Search(search) => match search {
+                SearchMode::Fuzzy => viewer.update_fuzzy(key),
+                SearchMode::Regex => viewer.update_regex(key),
             },
-            Input::Filter => viewer.update_filter_fwd(key),
+            InputMode::Filter => viewer.update_filter(key),
         };
         viewer.update_trie();
 
@@ -79,13 +79,13 @@ impl App {
     fn enter(&mut self) -> Res {
         match &self.mode {
             Mode::Navigate(nav) => match nav {
-                Navigate::Prevs | Navigate::Nexts => self.goto(),
-                Navigate::Current => Ok(None),
+                NavMode::Prevs | NavMode::Nexts => self.goto(),
+                NavMode::Current => Ok(None),
             },
             Mode::Input(input) => {
                 let res = match input {
-                    Input::Search(_) => self.goto(),
-                    Input::Filter => self.filter(),
+                    InputMode::Search(_) => self.goto(),
+                    InputMode::Filter => self.filter(),
                 };
                 self.to_nav_mode();
 
@@ -99,15 +99,15 @@ impl App {
 
         match &self.mode {
             Mode::Input(input) => {
-                self.input.pop();
+                self.input.delete();
 
-                let key = self.input.clone();
+                let key = self.input.key();
                 match input {
-                    Input::Search(search) => match search {
-                        Search::Fuzzy => viewer.update_fuzzy_bwd(key),
-                        Search::Regex => viewer.update_regex_bwd(key),
+                    InputMode::Search(search) => match search {
+                        SearchMode::Fuzzy => viewer.update_fuzzy(key),
+                        SearchMode::Regex => viewer.update_regex(key),
                     },
-                    Input::Filter => viewer.update_filter_bwd(key),
+                    InputMode::Filter => viewer.update_filter(key),
                 };
                 viewer.update_trie();
 
@@ -120,9 +120,7 @@ impl App {
     fn esc(&mut self) -> Res {
         match self.mode {
             Mode::Input(_) => {
-                self.input = String::from("");
                 self.to_nav_mode();
-
                 Ok(None)
             }
             _ => Err(DotViewerError::KeyError(KeyCode::Esc)),
@@ -138,17 +136,18 @@ impl App {
             Mode::Input(input) => {
                 let viewer = self.tabs.selected();
 
-                if let Some(key) = viewer.autocomplete(&self.input) {
-                    self.input = key;
-                    let key = self.input.clone();
+                if let Some(key) = viewer.autocomplete(&self.input.key()) {
+                    self.input.set(key);
+
+                    let key = self.input.key();
                     match input {
-                        Input::Search(search) => match search {
-                            Search::Fuzzy => viewer.update_fuzzy(key),
-                            Search::Regex => viewer.update_regex(key),
-                        }
-                        Input::Filter => viewer.update_filter(key)
+                        InputMode::Search(search) => match search {
+                            SearchMode::Fuzzy => viewer.update_fuzzy(key),
+                            SearchMode::Regex => viewer.update_regex(key),
+                        },
+                        InputMode::Filter => viewer.update_filter(key),
                     };
-                } 
+                }
 
                 Ok(None)
             }
@@ -170,12 +169,12 @@ impl App {
 
         match &self.mode {
             Mode::Navigate(nav) => match nav {
-                Navigate::Current => {
+                NavMode::Current => {
                     viewer.current.previous();
                     viewer.update_adjacent();
                 }
-                Navigate::Prevs => viewer.prevs.previous(),
-                Navigate::Nexts => viewer.nexts.previous(),
+                NavMode::Prevs => viewer.prevs.previous(),
+                NavMode::Nexts => viewer.nexts.previous(),
             },
             Mode::Input(_) => viewer.matches.previous(),
         };
@@ -188,12 +187,12 @@ impl App {
 
         match &self.mode {
             Mode::Navigate(nav) => match nav {
-                Navigate::Current => {
+                NavMode::Current => {
                     viewer.current.next();
                     viewer.update_adjacent();
                 }
-                Navigate::Prevs => viewer.prevs.next(),
-                Navigate::Nexts => viewer.nexts.next(),
+                NavMode::Prevs => viewer.prevs.next(),
+                NavMode::Nexts => viewer.nexts.next(),
             },
             Mode::Input(_) => viewer.matches.next(),
         };
@@ -202,27 +201,35 @@ impl App {
     }
 
     fn right(&mut self) -> Res {
-        self.mode = match &self.mode {
-            Mode::Navigate(nav) => match nav {
-                Navigate::Current => Mode::Navigate(Navigate::Prevs),
-                Navigate::Prevs => Mode::Navigate(Navigate::Nexts),
-                Navigate::Nexts => Mode::Navigate(Navigate::Current),
-            },
-            Mode::Input(input) => Mode::Input(input.clone()),
-        };
+        let mode = self.mode.clone();
+
+        match mode {
+            Mode::Navigate(nav) => {
+                self.mode = match nav {
+                    NavMode::Current => Mode::Navigate(NavMode::Prevs),
+                    NavMode::Prevs => Mode::Navigate(NavMode::Nexts),
+                    NavMode::Nexts => Mode::Navigate(NavMode::Current),
+                };
+            }
+            Mode::Input(_) => self.input.front(),
+        }
 
         Ok(None)
     }
 
     fn left(&mut self) -> Res {
-        self.mode = match &self.mode {
-            Mode::Navigate(nav) => match nav {
-                Navigate::Current => Mode::Navigate(Navigate::Nexts),
-                Navigate::Prevs => Mode::Navigate(Navigate::Current),
-                Navigate::Nexts => Mode::Navigate(Navigate::Prevs),
-            },
-            Mode::Input(input) => Mode::Input(input.clone()),
-        };
+        let mode = self.mode.clone();
+
+        match mode {
+            Mode::Navigate(nav) => {
+                self.mode = match nav {
+                    NavMode::Current => Mode::Navigate(NavMode::Nexts),
+                    NavMode::Prevs => Mode::Navigate(NavMode::Current),
+                    NavMode::Nexts => Mode::Navigate(NavMode::Prevs),
+                };
+            }
+            Mode::Input(_) => self.input.back(),
+        }
 
         Ok(None)
     }

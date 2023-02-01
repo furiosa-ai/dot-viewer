@@ -1,13 +1,13 @@
 use tui::widgets::ListState;
 
-pub struct StatefulList<T> {
+pub struct List<T> {
     pub state: ListState,
     pub items: Vec<T>,
 }
 
-impl<T: Clone + Eq> StatefulList<T> {
-    pub fn with_items(items: Vec<T>) -> StatefulList<T> {
-        let mut list = StatefulList {
+impl<T: Clone + Eq> List<T> {
+    pub fn with_items(items: Vec<T>) -> List<T> {
+        let mut list = List {
             state: ListState::default(),
             items,
         };

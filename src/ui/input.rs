@@ -1,4 +1,4 @@
-use crate::app::{App, Input, Mode, Search};
+use crate::app::{App, InputMode, Mode, SearchMode};
 use crate::ui::ui::surrounding_block;
 use tui::{
     backend::Backend,
@@ -15,11 +15,11 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let title = match &app.mode {
         Mode::Navigate(_) => "Navigate",
         Mode::Input(input) => match input {
-            Input::Search(search) => match search {
-                Search::Fuzzy => "Fuzzy Search",
-                Search::Regex => "Regex Search",
+            InputMode::Search(search) => match search {
+                SearchMode::Fuzzy => "Fuzzy Search",
+                SearchMode::Regex => "Regex Search",
             },
-            Input::Filter => "Filter",
+            InputMode::Filter => "Filter",
         },
     };
 
@@ -116,7 +116,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
         Mode::Input(input) => match input {
-            Input::Search(_) => (
+            InputMode::Search(_) => (
                 vec![
                     Span::raw("Press "),
                     Span::styled(
@@ -132,7 +132,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
                 ],
                 Style::default(),
             ),
-            Input::Filter => (
+            InputMode::Filter => (
                 vec![
                     Span::raw("Press "),
                     Span::styled(
@@ -174,7 +174,7 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // input block
 fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let input = Paragraph::new(app.input.as_ref()).style(match app.mode {
+    let input = Paragraph::new(app.input.key()).style(match app.mode {
         Mode::Navigate(_) => Style::default(),
         Mode::Input(_) => Style::default().fg(Color::Yellow),
     });
@@ -183,6 +183,6 @@ fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // cursor
     match app.mode {
         Mode::Navigate(_) => {}
-        Mode::Input(_) => f.set_cursor(chunk.x + app.input.len() as u16, chunk.y),
+        Mode::Input(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
     }
 }

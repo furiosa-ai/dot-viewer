@@ -1,12 +1,11 @@
 extern crate dot_viewer;
 
-use clap::{arg, Parser};
+use clap::Parser;
 use dot_viewer::terminal::launch;
 use std::error::Error;
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Default, Debug)]
 struct Cli {
-    #[arg(short, long)]
     path: String,
 }
 

@@ -1,6 +1,6 @@
 use crate::app::{
     error::{DotViewerError, Res},
-    utils::{StatefulList, Trie},
+    utils::{List, Trie},
 };
 use dot_graph::Graph;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
@@ -12,12 +12,11 @@ pub struct Viewer {
 
     pub graph: Graph,
 
-    pub current: StatefulList<String>,
-    pub prevs: StatefulList<String>,
-    pub nexts: StatefulList<String>,
+    pub current: List<String>,
+    pub prevs: List<String>,
+    pub nexts: List<String>,
 
-    pub matches: StatefulList<(String, Vec<usize>)>,
-    pub cache: StatefulList<(String, Vec<usize>)>,
+    pub matches: List<(String, Vec<usize>)>,
     pub trie: Trie,
 }
 
@@ -28,11 +27,10 @@ impl Viewer {
         let mut viewer = Viewer {
             title,
             graph,
-            current: StatefulList::with_items(nodes),
-            prevs: StatefulList::with_items(Vec::new()),
-            nexts: StatefulList::with_items(Vec::new()),
-            matches: StatefulList::with_items(Vec::new()),
-            cache: StatefulList::with_items(Vec::new()),
+            current: List::with_items(nodes),
+            prevs: List::with_items(Vec::new()),
+            nexts: List::with_items(Vec::new()),
+            matches: List::with_items(Vec::new()),
             trie: Trie::new(&Vec::new()),
         };
 
@@ -99,61 +97,42 @@ impl Viewer {
             .iter()
             .map(|n| n.to_string())
             .collect();
-        self.prevs = StatefulList::with_items(prevs);
+        self.prevs = List::with_items(prevs);
 
         let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();
-        self.nexts = StatefulList::with_items(nexts);
+        self.nexts = List::with_items(nexts);
     }
 
-    fn update_matches(&mut self, matcher: fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>, key: &str, graph: &Option<Graph>) {
+    fn update_matches(
+        &mut self,
+        matcher: fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>,
+        key: &str,
+        graph: &Option<Graph>,
+    ) {
         let matches: Vec<(String, Vec<usize>)> = self
-            .matches
-            .items
-            .par_iter()
-            .filter_map(|(id, _)| matcher(id, key, graph))
-            .collect();
-
-        self.matches = StatefulList::with_items(matches);
-    }
-
-    fn update_cache(&mut self, matcher: fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>, key: &str, graph: &Option<Graph>) {
-        let cache: Vec<(String, Vec<usize>)> = self
             .current
             .items
             .par_iter()
-            .filter_map(|item| matcher(item, key, graph))
+            .filter_map(|id| matcher(id, key, graph))
             .collect();
 
-        self.cache = StatefulList::with_items(cache);
+        self.matches = List::with_items(matches);
     }
 
     fn match_fuzzy(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
         let matcher = SkimMatcherV2::default();
 
-        matcher.fuzzy_indices(id, key).map(|(_, idxs)| (id.to_string(), idxs))
+        matcher
+            .fuzzy_indices(id, key)
+            .map(|(_, idxs)| (id.to_string(), idxs))
     }
 
-    pub fn update_fuzzy(&mut self, mut key: String) {
+    pub fn update_fuzzy(&mut self, key: String) {
         self.update_matches(Self::match_fuzzy, &key, &None);
-
-        key.pop();
-        self.update_cache(Self::match_fuzzy, &key, &None);
-    }
-
-    pub fn update_fuzzy_fwd(&mut self, key: String) {
-        self.cache = StatefulList::with_items(self.matches.items.clone());
-        self.update_matches(Self::match_fuzzy, &key, &None);
-    }
-
-    pub fn update_fuzzy_bwd(&mut self, mut key: String) {
-        self.matches = StatefulList::with_items(self.cache.items.clone());
-
-        key.pop();
-        self.update_cache(Self::match_fuzzy, &key, &None);
     }
 
     fn match_regex(id: &str, key: &str, graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
-        if let Ok(matcher) = Regex::new(&key) {
+        if let Ok(matcher) = Regex::new(key) {
             let graph = graph.as_ref().unwrap();
             let node = graph.search(id).unwrap();
             let raw = node.to_dot(0);
@@ -168,27 +147,12 @@ impl Viewer {
         }
     }
 
-    pub fn update_regex(&mut self, mut key: String) {
+    pub fn update_regex(&mut self, key: String) {
         self.update_matches(Self::match_regex, &key, &Some(self.graph.clone()));
-
-        key.pop();
-        self.update_cache(Self::match_regex, &key, &Some(self.graph.clone()));
-    }
-
-    pub fn update_regex_fwd(&mut self, key: String) {
-        self.cache = StatefulList::with_items(self.matches.items.clone());
-        self.update_matches(Self::match_regex, &key, &Some(self.graph.clone()));
-    }
-
-    pub fn update_regex_bwd(&mut self, mut key: String) {
-        self.matches = StatefulList::with_items(self.cache.items.clone());
-
-        key.pop();
-        self.update_cache(Self::match_regex, &key, &Some(self.graph.clone()));
     }
 
     fn match_filter(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
-        if id.starts_with(&key) {
+        if id.starts_with(key) {
             let highlight: Vec<usize> = (0..key.len()).collect();
             Some((id.to_string(), highlight))
         } else {
@@ -196,27 +160,17 @@ impl Viewer {
         }
     }
 
-    pub fn update_filter(&mut self, mut key: String) {
+    pub fn update_filter(&mut self, key: String) {
         self.update_matches(Self::match_filter, &key, &None);
-
-        key.pop();
-        self.update_cache(Self::match_filter, &key, &None);
-    }
-    
-    pub fn update_filter_fwd(&mut self, key: String) {
-        self.cache = StatefulList::with_items(self.matches.items.clone());
-        self.update_matches(Self::match_filter, &key, &None);
-    }
-
-    pub fn update_filter_bwd(&mut self, mut key: String) {
-        self.matches = StatefulList::with_items(self.cache.items.clone());
-
-        key.pop();
-        self.update_cache(Self::match_filter, &key, &None);
     }
 
     pub fn update_trie(&mut self) {
-        let nodes: Vec<String> = self.matches.items.par_iter().map(|(id, _)| id.clone()).collect();
+        let nodes: Vec<String> = self
+            .matches
+            .items
+            .par_iter()
+            .map(|(id, _)| id.clone())
+            .collect();
         self.trie = Trie::new(&nodes);
     }
 
