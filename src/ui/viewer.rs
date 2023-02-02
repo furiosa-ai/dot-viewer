@@ -49,7 +49,7 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
 
 fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
     // surrounding block
-    let title = viewer.progress_current();
+    let title = format!("Nodes {}", viewer.progress_current());
     let block = surrounding_block(title, *mode == Mode::Navigate(NavMode::Current));
 
     let (froms, tos) = match &viewer.current() {
@@ -201,6 +201,7 @@ fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, vi
         },
         InputMode::Filter => "Filtering...".to_string(),
     };
+    let title = format!("{} {}", title, viewer.progress_matches());
     let block = surrounding_block(title, true);
 
     let list: Vec<ListItem> = viewer

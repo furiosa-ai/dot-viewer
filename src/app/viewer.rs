@@ -179,7 +179,7 @@ impl Viewer {
         let len = self.current.items.len();
         let percentage = (idx as f32 / len as f32) * 100_f32;
 
-        format!("Nodes [{} / {} ({:.3}%)]", idx, len, percentage)
+        format!("[{} / {} ({:.3}%)]", idx + 1, len, percentage)
     }
 
     pub fn progress_matches(&self) -> String {
@@ -187,7 +187,7 @@ impl Viewer {
             let len = self.matches.items.len();
             let percentage = (idx as f32 / len as f32) * 100_f32;
 
-            format!("Searching... [{} / {} ({:.3}%)]", idx, len, percentage)
+            format!("[{} / {} ({:.3}%)]", idx + 1, len, percentage)
         } else {
             "No Match...".to_string()
         }
