@@ -91,6 +91,8 @@ impl App {
         }
 
         let xdot = std::process::Command::new("xdot")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
             .arg("./exports/current.dot")
             .spawn();
 
