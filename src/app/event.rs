@@ -26,6 +26,7 @@ impl App {
         match &self.mode {
             Mode::Navigate(_) => self.char_nav(c),
             Mode::Input(input) => self.char_input(c, &input.clone()),
+            _ => Ok(None),
         }
     }
 
@@ -90,7 +91,8 @@ impl App {
                 self.to_nav_mode();
 
                 res
-            }
+            },
+            _ => Ok(None),
         }
     }
 
@@ -151,6 +153,7 @@ impl App {
 
                 Ok(None)
             }
+            _ => Ok(None),
         }
     }
 
@@ -177,6 +180,7 @@ impl App {
                 NavMode::Nexts => viewer.nexts.previous(),
             },
             Mode::Input(_) => viewer.matches.previous(),
+            _ => {}
         };
 
         Ok(None)
@@ -195,6 +199,7 @@ impl App {
                 NavMode::Nexts => viewer.nexts.next(),
             },
             Mode::Input(_) => viewer.matches.next(),
+            _ => {},
         };
 
         Ok(None)
@@ -212,6 +217,7 @@ impl App {
                 };
             }
             Mode::Input(_) => self.input.front(),
+            _ => {},
         }
 
         Ok(None)
@@ -229,6 +235,7 @@ impl App {
                 };
             }
             Mode::Input(_) => self.input.back(),
+            _ => {},
         }
 
         Ok(None)
