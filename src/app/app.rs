@@ -138,6 +138,10 @@ impl App {
         viewer.matches = List::with_items(init);
     }
 
+    pub fn to_popup_mode(&mut self) {
+        self.mode = Mode::Popup;
+    }
+
     fn write(filename: String, contents: String) -> Result<String, std::io::Error> {
         std::fs::create_dir_all("./exports")?;
         let mut file = std::fs::OpenOptions::new()

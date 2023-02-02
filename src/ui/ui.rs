@@ -1,8 +1,8 @@
-use crate::app::app::App;
-use crate::ui::{input::draw_input, tabs::draw_tabs};
+use crate::app::{App, Mode};
+use crate::ui::{input::draw_input, tabs::draw_tabs, popup::draw_popup};
 use tui::{
     backend::Backend,
-    layout::{Alignment, Constraint, Direction, Layout},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Style},
     widgets::{Block, BorderType, Borders},
     Frame,
@@ -19,6 +19,13 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .border_type(BorderType::Rounded);
     f.render_widget(block, size);
 
+    match &app.mode {
+        Mode::Navigate(_) | Mode::Input(_) => draw_app(f, size, app),
+        Mode::Popup => draw_popup(f, size, app),
+    }
+}
+
+pub fn draw_app<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Vertical)

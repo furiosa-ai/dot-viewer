@@ -48,6 +48,10 @@ impl App {
                 self.to_input_mode(InputMode::Filter);
                 Ok(None)
             }
+            's' => {
+                self.to_popup_mode();
+                Ok(None)
+            }
             'c' => self.tabs.close(),
             'e' => self.export(),
             'x' => self.xdot(),
@@ -121,7 +125,7 @@ impl App {
 
     fn esc(&mut self) -> Res {
         match self.mode {
-            Mode::Input(_) => {
+            Mode::Input(_) | Mode::Popup => {
                 self.to_nav_mode();
                 Ok(None)
             }
