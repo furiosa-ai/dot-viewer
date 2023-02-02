@@ -96,7 +96,7 @@ impl App {
 
                 res
             },
-            _ => Ok(None),
+            Mode::Popup => Ok(None),
         }
     }
 
@@ -184,7 +184,7 @@ impl App {
                 NavMode::Nexts => viewer.nexts.previous(),
             },
             Mode::Input(_) => viewer.matches.previous(),
-            _ => {}
+            Mode::Popup => viewer.tree.up(),
         };
 
         Ok(None)
@@ -203,7 +203,7 @@ impl App {
                 NavMode::Nexts => viewer.nexts.next(),
             },
             Mode::Input(_) => viewer.matches.next(),
-            _ => {},
+            Mode::Popup => viewer.tree.down(),
         };
 
         Ok(None)
@@ -221,7 +221,10 @@ impl App {
                 };
             }
             Mode::Input(_) => self.input.front(),
-            _ => {},
+            Mode::Popup => {
+                let viewer = self.tabs.selected();
+                viewer.tree.right();
+            }
         }
 
         Ok(None)
@@ -239,7 +242,10 @@ impl App {
                 };
             }
             Mode::Input(_) => self.input.back(),
-            _ => {},
+            Mode::Popup => {
+                let viewer = self.tabs.selected();
+                viewer.tree.left();
+            }
         }
 
         Ok(None)
