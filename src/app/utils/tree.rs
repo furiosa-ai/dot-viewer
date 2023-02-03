@@ -33,6 +33,7 @@ impl Tree {
 
         if !tree.tree.is_empty() {
             tree.state.select_first();
+            tree.state.toggle_selected();
         }
 
         tree

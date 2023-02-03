@@ -26,7 +26,7 @@ impl App {
         match &self.mode {
             Mode::Navigate(_) => self.char_nav(c),
             Mode::Input(input) => self.char_input(c, &input.clone()),
-            _ => Ok(None),
+            Mode::Popup => self.char_popup(c),
         }
     }
 
@@ -79,6 +79,16 @@ impl App {
         viewer.update_trie();
 
         Ok(None)
+    }
+
+    fn char_popup(&mut self, c: char) -> Res {
+        match c {
+            'q' => {
+                self.quit = true;
+                Ok(None)
+            }
+            _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),
+        }
     }
 
     fn enter(&mut self) -> Res {
