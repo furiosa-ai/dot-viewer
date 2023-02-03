@@ -81,19 +81,22 @@ impl Viewer {
     }
 
     pub fn subgraph(&mut self) -> Result<Viewer, DotViewerError> {
-        let key = self.tree.selected();
-        let graph = self.graph.subgraph(&key);
+        self.tree.selected().map_or(
+            Err(DotViewerError::GraphError("no subgraph selected".to_string())),
+            |key| {
+                let graph = self.graph.subgraph(&key);
 
-        graph.map_or(
-            Err(DotViewerError::GraphError(format!(
-                "no match for prefix {}",
-                key
-            ))),
-            |graph| {
-                let viewer = Self::new(key, graph);
-                Ok(viewer)
-            },
-        )
+                graph.map_or(
+                    Err(DotViewerError::GraphError(format!(
+                        "no match for prefix {}",
+                        key
+                    ))),
+                    |graph| {
+                        let viewer = Self::new(key, graph);
+                        Ok(viewer)
+                    },
+                )
+            })
     }
 
     pub fn autocomplete(&mut self, key: &str) -> Option<String> {

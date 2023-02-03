@@ -74,8 +74,12 @@ impl Tree {
         Box::new(node)
     }
 
-    pub fn selected(&self) -> String {
+    pub fn selected(&self) -> Option<String> {
         let mut idxs = self.state.selected();
+
+        if idxs.is_empty() {
+            return None;
+        }
 
         let idx = idxs.remove(0);
         let mut node = &self.items[idx];
@@ -83,7 +87,7 @@ impl Tree {
             node = &node.children[idx];
         }
 
-        node.id.clone()
+        Some(node.id.clone())
     }
 
     pub fn first(&mut self) {
