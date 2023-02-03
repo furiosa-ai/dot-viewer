@@ -1,4 +1,4 @@
-use crate::app::{App, Mode};
+use crate::app::{App, MainMode, Mode};
 use crate::ui::{input::draw_input, popup::draw_popup, tabs::draw_tabs};
 use tui::{
     backend::Backend,
@@ -19,20 +19,21 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .border_type(BorderType::Rounded);
     f.render_widget(block, size);
 
-    match &app.mode {
-        Mode::Navigate(_) | Mode::Input(_) => draw_app(f, size, app),
+    let mode = app.mode.clone();
+    match &mode {
+        Mode::Main(main) => draw_app(f, size, main, app),
         Mode::Popup => draw_popup(f, size, app),
     }
 }
 
-pub fn draw_app<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
+pub fn draw_app<B: Backend>(f: &mut Frame<B>, size: Rect, mode: &MainMode, app: &mut App) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())
         .split(size);
-    draw_tabs(f, chunks[0], app);
-    draw_input(f, chunks[1], app);
+    draw_tabs(f, chunks[0], mode, app);
+    draw_input(f, chunks[1], mode, app);
 }
 
 pub fn surrounding_block(title: String, highlight: bool) -> Block<'static> {

@@ -1,6 +1,6 @@
 use crate::app::{
     error::{DotViewerError, Res},
-    modes::{InputMode, Mode, NavMode},
+    modes::{InputMode, MainMode, Mode, NavMode},
     utils::{Input, List, Tabs},
     viewer::Viewer,
 };
@@ -25,7 +25,7 @@ impl App {
 
         Ok(App {
             quit: false,
-            mode: Mode::Navigate(NavMode::Current),
+            mode: Mode::Main(MainMode::Navigate(NavMode::Current)),
             result: Ok(None),
             tabs,
             input,
@@ -34,21 +34,23 @@ impl App {
 
     pub fn selected(&mut self) -> Option<String> {
         match &self.mode {
-            Mode::Navigate(nav) => {
-                let viewer = self.tabs.selected();
+            Mode::Main(main) => match main {
+                MainMode::Navigate(nav) => {
+                    let viewer = self.tabs.selected();
 
-                match nav {
-                    NavMode::Current => viewer.current.selected(),
-                    NavMode::Prevs => viewer.prevs.selected(),
-                    NavMode::Nexts => viewer.nexts.selected(),
+                    match nav {
+                        NavMode::Current => viewer.current.selected(),
+                        NavMode::Prevs => viewer.prevs.selected(),
+                        NavMode::Nexts => viewer.nexts.selected(),
+                    }
+                }
+                MainMode::Input(_) => {
+                    let viewer = self.tabs.selected();
+
+                    viewer.matches.selected().map(|(item, _)| item)
                 }
             }
-            Mode::Input(_) => {
-                let viewer = self.tabs.selected();
-
-                viewer.matches.selected().map(|(item, _)| item)
-            }
-            _ => None,
+            Mode::Popup => None,
         }
     }
 
@@ -65,7 +67,7 @@ impl App {
 
     pub fn filter(&mut self) -> Res {
         let viewer = self.tabs.selected();
-        let viewer = viewer.filter(self.input.key())?;
+        let viewer = viewer.filter(&self.input.key())?;
         self.tabs.open(viewer);
 
         Ok(None)
@@ -128,12 +130,12 @@ impl App {
     }
 
     pub fn to_nav_mode(&mut self) {
-        self.mode = Mode::Navigate(NavMode::Current);
+        self.mode = Mode::Main(MainMode::Navigate(NavMode::Current));
         self.input.clear();
     }
 
-    pub fn to_input_mode(&mut self, input: InputMode) {
-        self.mode = Mode::Input(input);
+    pub fn to_input_mode(&mut self, mode: InputMode) {
+        self.mode = Mode::Main(MainMode::Input(mode));
 
         let viewer = self.tabs.selected();
 

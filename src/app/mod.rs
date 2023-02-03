@@ -7,6 +7,6 @@ pub mod viewer;
 
 pub use crate::app::{
     app::App,
-    modes::{InputMode, Mode, NavMode, SearchMode},
+    modes::{InputMode, MainMode, Mode, NavMode, SearchMode},
     viewer::Viewer,
 };

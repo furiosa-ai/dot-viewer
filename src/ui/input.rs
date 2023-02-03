@@ -1,4 +1,4 @@
-use crate::app::{App, InputMode, Mode, SearchMode};
+use crate::app::{App, InputMode, MainMode, SearchMode};
 use crate::ui::ui::surrounding_block;
 use tui::{
     backend::Backend,
@@ -10,24 +10,23 @@ use tui::{
 };
 
 // input block
-pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, app: &mut App) {
     // surrounding block
-    let title = match &app.mode {
-        Mode::Navigate(_) => "Navigate",
-        Mode::Input(input) => match input {
+    let title = match mode {
+        MainMode::Navigate(_) => "Navigate",
+        MainMode::Input(input) => match input {
             InputMode::Search(search) => match search {
                 SearchMode::Fuzzy => "Fuzzy Search",
                 SearchMode::Regex => "Regex Search",
             },
             InputMode::Filter => "Filter",
         },
-        _ => panic!("unreachable"),
     };
 
     let block = surrounding_block(
         title.to_string(),
-        match app.mode {
-            Mode::Input(_) => true,
+        match mode {
+            MainMode::Input(_) => true,
             _ => false,
         },
     );
@@ -40,44 +39,17 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         .margin(1)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
-    draw_help(f, chunks[0], app);
-    match app.mode {
-        Mode::Navigate(_) => draw_error(f, chunks[1], app),
-        Mode::Input(_) => draw_form(f, chunks[1], app),
-        _ => panic!("unreachable"),
-    };
-}
-
-// search block
-pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    // surrounding block
-    let block = surrounding_block(
-        "Search".to_string(),
-        match app.mode {
-            Mode::Input(_) => true,
-            _ => false,
-        },
-    );
-    f.render_widget(block, chunk);
-
-    // inner blocks
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(1)
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-        .split(chunk);
-    draw_help(f, chunks[0], app);
-    match app.mode {
-        Mode::Navigate(_) => draw_error(f, chunks[1], app),
-        Mode::Input(_) => draw_input(f, chunks[1], app),
-        _ => panic!("unreachable"),
+    draw_help(f, chunks[0], mode, app);
+    match mode {
+        MainMode::Navigate(_) => draw_error(f, chunks[1], mode, app),
+        MainMode::Input(_) => draw_form(f, chunks[1], mode, app),
     };
 }
 
 // help block
-fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let (msg, style) = match &app.mode {
-        Mode::Navigate(_) => (
+fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, _app: &mut App) {
+    let (msg, style) = match &mode {
+        MainMode::Navigate(_) => (
             vec![
                 Span::raw("Press "),
                 Span::styled(
@@ -118,7 +90,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             ],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
-        Mode::Input(input) => match input {
+        MainMode::Input(input) => match input {
             InputMode::Search(_) => (
                 vec![
                     Span::raw("Press "),
@@ -152,7 +124,6 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
                 Style::default(),
             ),
         },
-        _ => panic!("unreachable"),
     };
     let mut text = Text::from(Spans::from(msg));
     text.patch_style(style);
@@ -162,7 +133,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 }
 
 // error block
-fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, _mode: &MainMode, app: &mut App) {
     let msg = match &app.result {
         Ok(Some(msg)) => Some(msg.clone()),
         Err(err) => Some(format!("{}", err)),
@@ -177,18 +148,16 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 }
 
 // input block
-fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let input = Paragraph::new(app.input.key()).style(match app.mode {
-        Mode::Navigate(_) => Style::default(),
-        Mode::Input(_) => Style::default().fg(Color::Yellow),
-        _ => panic!("unreachable"),
+fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, app: &mut App) {
+    let input = Paragraph::new(app.input.key()).style(match mode {
+        MainMode::Navigate(_) => Style::default(),
+        MainMode::Input(_) => Style::default().fg(Color::Yellow),
     });
     f.render_widget(input, chunk);
 
     // cursor
-    match app.mode {
-        Mode::Navigate(_) => {}
-        Mode::Input(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
-        _ => {}
+    match mode {
+        MainMode::Navigate(_) => {}
+        MainMode::Input(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
     }
 }

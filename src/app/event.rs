@@ -1,7 +1,7 @@
 use crate::app::{
     app::App,
     error::{DotViewerError, Res},
-    modes::{InputMode, Mode, NavMode, SearchMode},
+    modes::{InputMode, MainMode, Mode, NavMode, SearchMode},
 };
 use crossterm::event::{KeyCode, KeyEvent};
 
@@ -24,8 +24,10 @@ impl App {
 
     fn char(&mut self, c: char) -> Res {
         match &self.mode {
-            Mode::Navigate(_) => self.char_nav(c),
-            Mode::Input(input) => self.char_input(c, &input.clone()),
+            Mode::Main(main) => match main {
+                MainMode::Navigate(_) => self.char_nav(c),
+                MainMode::Input(input) => self.char_input(c, &input.clone()),
+            }
             Mode::Popup => self.char_popup(c),
         }
     }
@@ -64,12 +66,12 @@ impl App {
         }
     }
 
-    fn char_input(&mut self, c: char, input: &InputMode) -> Res {
+    fn char_input(&mut self, c: char, mode: &InputMode) -> Res {
         self.input.insert(c);
 
         let viewer = self.tabs.selected();
         let key = self.input.key();
-        match input {
+        match mode {
             InputMode::Search(search) => match search {
                 SearchMode::Fuzzy => viewer.update_fuzzy(key),
                 SearchMode::Regex => viewer.update_regex(key),
@@ -93,18 +95,20 @@ impl App {
 
     fn enter(&mut self) -> Res {
         match &self.mode {
-            Mode::Navigate(nav) => match nav {
-                NavMode::Prevs | NavMode::Nexts => self.goto(),
-                NavMode::Current => Ok(None),
-            },
-            Mode::Input(input) => {
-                let res = match input {
-                    InputMode::Search(_) => self.goto(),
-                    InputMode::Filter => self.filter(),
-                };
-                self.to_nav_mode();
+            Mode::Main(main) => match main {
+                MainMode::Navigate(nav) => match nav {
+                    NavMode::Prevs | NavMode::Nexts => self.goto(),
+                    NavMode::Current => Ok(None),
+                },
+                MainMode::Input(input) => {
+                    let res = match input {
+                        InputMode::Search(_) => self.goto(),
+                        InputMode::Filter => self.filter(),
+                    };
+                    self.to_nav_mode();
 
-                res
+                    res
+                }
             }
             Mode::Popup => {
                 let res = self.subgraph();
@@ -119,46 +123,9 @@ impl App {
         let viewer = self.tabs.selected();
 
         match &self.mode {
-            Mode::Input(input) => {
-                self.input.delete();
-
-                let key = self.input.key();
-                match input {
-                    InputMode::Search(search) => match search {
-                        SearchMode::Fuzzy => viewer.update_fuzzy(key),
-                        SearchMode::Regex => viewer.update_regex(key),
-                    },
-                    InputMode::Filter => viewer.update_filter(key),
-                };
-                viewer.update_trie();
-
-                Ok(None)
-            }
-            _ => Err(DotViewerError::KeyError(KeyCode::Backspace)),
-        }
-    }
-
-    fn esc(&mut self) -> Res {
-        match self.mode {
-            Mode::Input(_) | Mode::Popup => {
-                self.to_nav_mode();
-                Ok(None)
-            }
-            _ => Err(DotViewerError::KeyError(KeyCode::Esc)),
-        }
-    }
-
-    fn tab(&mut self) -> Res {
-        match &self.mode {
-            Mode::Navigate(_) => {
-                self.tabs.next();
-                Ok(None)
-            }
-            Mode::Input(input) => {
-                let viewer = self.tabs.selected();
-
-                if let Some(key) = viewer.autocomplete(&self.input.key()) {
-                    self.input.set(key);
+            Mode::Main(main) => match main {
+                MainMode::Input(input) => {
+                    self.input.delete();
 
                     let key = self.input.key();
                     match input {
@@ -168,9 +135,57 @@ impl App {
                         },
                         InputMode::Filter => viewer.update_filter(key),
                     };
-                }
+                    viewer.update_trie();
 
+                    Ok(None)
+                }
+                _ => Err(DotViewerError::KeyError(KeyCode::Backspace)),
+            }
+            _ => Err(DotViewerError::KeyError(KeyCode::Backspace)),
+        }
+    }
+
+    fn esc(&mut self) -> Res {
+        match &self.mode {
+            Mode::Main(main) => match main {
+                MainMode::Input(_) => {
+                    self.to_nav_mode();
+                    Ok(None)
+                }
+                _ => Err(DotViewerError::KeyError(KeyCode::Esc)),
+            }
+            _ => {
+                self.to_nav_mode();
                 Ok(None)
+            },
+        }
+    }
+
+    fn tab(&mut self) -> Res {
+        match &self.mode {
+            Mode::Main(main) => match main {
+                MainMode::Navigate(_) => {
+                    self.tabs.next();
+                    Ok(None)
+                }
+                MainMode::Input(input) => {
+                    let viewer = self.tabs.selected();
+
+                    if let Some(key) = viewer.autocomplete(&self.input.key()) {
+                        self.input.set(key);
+
+                        let key = self.input.key();
+                        match input {
+                            InputMode::Search(search) => match search {
+                                SearchMode::Fuzzy => viewer.update_fuzzy(key),
+                                SearchMode::Regex => viewer.update_regex(key),
+                            },
+                            InputMode::Filter => viewer.update_filter(key),
+                        };
+                    }
+
+                    Ok(None)
+                }
             }
             _ => Ok(None),
         }
@@ -178,9 +193,12 @@ impl App {
 
     fn backtab(&mut self) -> Res {
         match &self.mode {
-            Mode::Navigate(_) => {
-                self.tabs.previous();
-                Ok(None)
+            Mode::Main(main) => match main {
+                MainMode::Navigate(_) => {
+                    self.tabs.previous();
+                    Ok(None)
+                }
+                _ => Err(DotViewerError::KeyError(KeyCode::BackTab)),
             }
             _ => Err(DotViewerError::KeyError(KeyCode::BackTab)),
         }
@@ -190,15 +208,17 @@ impl App {
         let viewer = self.tabs.selected();
 
         match &self.mode {
-            Mode::Navigate(nav) => match nav {
-                NavMode::Current => {
-                    viewer.current.previous();
-                    viewer.update_adjacent();
-                }
-                NavMode::Prevs => viewer.prevs.previous(),
-                NavMode::Nexts => viewer.nexts.previous(),
-            },
-            Mode::Input(_) => viewer.matches.previous(),
+            Mode::Main(main) => match main {
+                MainMode::Navigate(nav) => match nav {
+                    NavMode::Current => {
+                        viewer.current.previous();
+                        viewer.update_adjacent();
+                    }
+                    NavMode::Prevs => viewer.prevs.previous(),
+                    NavMode::Nexts => viewer.nexts.previous(),
+                },
+                MainMode::Input(_) => viewer.matches.previous(),
+            }
             Mode::Popup => viewer.tree.up(),
         };
 
@@ -209,15 +229,17 @@ impl App {
         let viewer = self.tabs.selected();
 
         match &self.mode {
-            Mode::Navigate(nav) => match nav {
-                NavMode::Current => {
-                    viewer.current.next();
-                    viewer.update_adjacent();
-                }
-                NavMode::Prevs => viewer.prevs.next(),
-                NavMode::Nexts => viewer.nexts.next(),
-            },
-            Mode::Input(_) => viewer.matches.next(),
+            Mode::Main(main) => match main {
+                MainMode::Navigate(nav) => match nav {
+                    NavMode::Current => {
+                        viewer.current.next();
+                        viewer.update_adjacent();
+                    }
+                    NavMode::Prevs => viewer.prevs.next(),
+                    NavMode::Nexts => viewer.nexts.next(),
+                },
+                MainMode::Input(_) => viewer.matches.next(),
+            }
             Mode::Popup => viewer.tree.down(),
         };
 
@@ -228,14 +250,16 @@ impl App {
         let mode = self.mode.clone();
 
         match mode {
-            Mode::Navigate(nav) => {
-                self.mode = match nav {
-                    NavMode::Current => Mode::Navigate(NavMode::Prevs),
-                    NavMode::Prevs => Mode::Navigate(NavMode::Nexts),
-                    NavMode::Nexts => Mode::Navigate(NavMode::Current),
-                };
+            Mode::Main(main) => match main {
+                MainMode::Navigate(nav) => {
+                    self.mode = match nav {
+                        NavMode::Current => Mode::Main(MainMode::Navigate(NavMode::Prevs)),
+                        NavMode::Prevs => Mode::Main(MainMode::Navigate(NavMode::Nexts)),
+                        NavMode::Nexts => Mode::Main(MainMode::Navigate(NavMode::Current)),
+                    };
+                }
+                MainMode::Input(_) => self.input.front(),
             }
-            Mode::Input(_) => self.input.front(),
             Mode::Popup => {
                 let viewer = self.tabs.selected();
                 viewer.tree.right();
@@ -249,14 +273,16 @@ impl App {
         let mode = self.mode.clone();
 
         match mode {
-            Mode::Navigate(nav) => {
-                self.mode = match nav {
-                    NavMode::Current => Mode::Navigate(NavMode::Nexts),
-                    NavMode::Prevs => Mode::Navigate(NavMode::Current),
-                    NavMode::Nexts => Mode::Navigate(NavMode::Prevs),
-                };
+            Mode::Main(main) => match main {
+                MainMode::Navigate(nav) => {
+                    self.mode = match nav {
+                        NavMode::Current => Mode::Main(MainMode::Navigate(NavMode::Nexts)),
+                        NavMode::Prevs => Mode::Main(MainMode::Navigate(NavMode::Current)),
+                        NavMode::Nexts => Mode::Main(MainMode::Navigate(NavMode::Prevs)),
+                    };
+                }
+                MainMode::Input(_) => self.input.back(),
             }
-            Mode::Input(_) => self.input.back(),
             Mode::Popup => {
                 let viewer = self.tabs.selected();
                 viewer.tree.left();

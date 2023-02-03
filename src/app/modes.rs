@@ -1,8 +1,13 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Mode {
+    Main(MainMode),
+    Popup,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum MainMode {
     Navigate(NavMode),
     Input(InputMode),
-    Popup,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

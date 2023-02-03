@@ -1,5 +1,5 @@
 use crate::{
-    app::{InputMode, Mode, NavMode, SearchMode, Viewer},
+    app::{InputMode, MainMode, NavMode, SearchMode, Viewer},
     ui::{ui::surrounding_block, utils::htmlparser::parse_html},
 };
 use dot_graph::Node;
@@ -15,7 +15,7 @@ use tui::{
 };
 
 // current tab
-pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
+pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -25,17 +25,16 @@ pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewe
     draw_right(f, chunks[1], mode, viewer);
 }
 
-fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
+fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     match &mode {
-        Mode::Navigate(_) => draw_current(f, chunk, mode, viewer),
-        Mode::Input(input) => draw_matches(f, chunk, input, viewer),
-        _ => {}
+        MainMode::Navigate(_) => draw_current(f, chunk, mode, viewer),
+        MainMode::Input(input) => draw_matches(f, chunk, input, viewer),
     }
 }
 
-fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
+fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     match &mode {
-        Mode::Navigate(_) => {
+        MainMode::Navigate(_) => {
             // inner blocks
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
@@ -44,15 +43,14 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
             draw_adjacent(f, chunks[0], mode, viewer);
             draw_metadata(f, chunks[1], mode, viewer);
         }
-        Mode::Input(_) => draw_metadata(f, chunk, mode, viewer),
-        _ => {}
+        MainMode::Input(_) => draw_metadata(f, chunk, mode, viewer),
     }
 }
 
-fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
+fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     // surrounding block
     let title = format!("Nodes {}", viewer.progress_current());
-    let block = surrounding_block(title, *mode == Mode::Navigate(NavMode::Current));
+    let block = surrounding_block(title, *mode == MainMode::Navigate(NavMode::Current));
 
     let (froms, tos) = match &viewer.current() {
         Some(id) => (viewer.graph.froms(id).clone(), viewer.graph.tos(id)),
@@ -88,7 +86,7 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: 
 }
 
 // adjacent nodes block
-fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
+fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -99,11 +97,11 @@ fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer:
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     // surrounding block
     let block = surrounding_block(
         "Prev Nodes".to_string(),
-        *mode == Mode::Navigate(NavMode::Prevs),
+        *mode == MainMode::Navigate(NavMode::Prevs),
     );
 
     let list: Vec<ListItem> = viewer
@@ -122,11 +120,11 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     // surrounding block
     let block = surrounding_block(
         "Next Nodes".to_string(),
-        *mode == Mode::Navigate(NavMode::Nexts),
+        *mode == MainMode::Navigate(NavMode::Nexts),
     );
 
     let list: Vec<ListItem> = viewer
@@ -149,14 +147,13 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
 }
 
 // node attr block
-fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mut Viewer) {
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     // surrounding block
     let block = surrounding_block("Attrs".to_string(), false);
 
     let id = match mode {
-        Mode::Navigate(_) => viewer.current(),
-        Mode::Input(_) => viewer.matched(),
-        _ => panic!("unreachable"),
+        MainMode::Navigate(_) => viewer.current(),
+        MainMode::Input(_) => viewer.matched(),
     };
 
     if let Some(id) = id {

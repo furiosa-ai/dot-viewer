@@ -65,8 +65,8 @@ impl Viewer {
         )
     }
 
-    pub fn filter(&mut self, key: String) -> Result<Viewer, DotViewerError> {
-        let graph = self.graph.filter(&key);
+    pub fn filter(&mut self, key: &str) -> Result<Viewer, DotViewerError> {
+        let graph = self.graph.filter(key);
 
         graph.map_or(
             Err(DotViewerError::GraphError(format!(
