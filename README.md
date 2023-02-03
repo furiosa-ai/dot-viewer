@@ -93,6 +93,7 @@ With `dot-viewer`, users may
   
 
 **make and export subgraphs** using,
+- subgraph tree selection
 - prefix filtering on node names
 - neighboring `n` nodes of the currently selected node
 
