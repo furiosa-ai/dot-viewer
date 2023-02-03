@@ -96,7 +96,12 @@ impl App {
 
                 res
             },
-            Mode::Popup => Ok(None),
+            Mode::Popup => {
+                let res = self.subgraph();
+                self.to_nav_mode();
+
+                res
+            },
         }
     }
 

@@ -71,6 +71,14 @@ impl App {
         Ok(None)
     }
 
+    pub fn subgraph(&mut self) -> Res {
+        let viewer = self.tabs.selected();
+        let viewer = viewer.subgraph()?;
+        self.tabs.open(viewer);
+
+        Ok(None)
+    }
+
     pub fn export(&mut self) -> Res {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;

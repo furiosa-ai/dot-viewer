@@ -24,7 +24,7 @@ fn draw_tree<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let viewer = app.tabs.selected();
     let tree = &mut viewer.tree;
 
-    let widget = TUITree::new(tree.items.clone())
+    let widget = TUITree::new(tree.tree.clone())
         .block(
             Block::default()
                 .borders(Borders::ALL)
