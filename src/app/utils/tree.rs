@@ -18,7 +18,7 @@ impl Tree {
     #[allow(dead_code)]
     pub fn with_graph(graph: &Graph) -> Self {
         let &root = graph.slookup.get_by_left(&graph.id).unwrap();
-        
+
         let tree = Self::to_tree(root, graph);
         let tree = vec![tree];
 
@@ -42,7 +42,10 @@ impl Tree {
         let id = graph.slookup.get_by_right(&root).unwrap().to_string();
 
         if let Some(subgraphs) = graph.subtree.get(&root) {
-            let subgraphs: Vec<TreeItem> = subgraphs.par_iter().map(|&subgraph| Self::to_tree(subgraph, graph)).collect();
+            let subgraphs: Vec<TreeItem> = subgraphs
+                .par_iter()
+                .map(|&subgraph| Self::to_tree(subgraph, graph))
+                .collect();
 
             TreeItem::new(id, subgraphs)
         } else {
@@ -54,11 +57,17 @@ impl Tree {
         let id = graph.slookup.get_by_right(&root).unwrap().to_string();
 
         let node = if let Some(subgraphs) = graph.subtree.get(&root) {
-            let children: Vec<Box<Node>> = subgraphs.par_iter().map(|&subgraph| Self::to_items(subgraph, graph)).collect();
+            let children: Vec<Box<Node>> = subgraphs
+                .par_iter()
+                .map(|&subgraph| Self::to_items(subgraph, graph))
+                .collect();
 
             Node { id, children }
         } else {
-            Node { id, children: Vec::new() }
+            Node {
+                id,
+                children: Vec::new(),
+            }
         };
 
         Box::new(node)

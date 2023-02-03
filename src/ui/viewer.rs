@@ -29,7 +29,7 @@ fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mu
     match &mode {
         Mode::Navigate(_) => draw_current(f, chunk, mode, viewer),
         Mode::Input(input) => draw_matches(f, chunk, input, viewer),
-        _ => {},
+        _ => {}
     }
 }
 
@@ -45,7 +45,7 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
             draw_metadata(f, chunks[1], mode, viewer);
         }
         Mode::Input(_) => draw_metadata(f, chunk, mode, viewer),
-        _ => {},
+        _ => {}
     }
 }
 

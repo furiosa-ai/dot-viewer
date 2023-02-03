@@ -1,5 +1,5 @@
 use crate::app::{App, Mode};
-use crate::ui::{input::draw_input, tabs::draw_tabs, popup::draw_popup};
+use crate::ui::{input::draw_input, popup::draw_popup, tabs::draw_tabs};
 use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout, Rect},

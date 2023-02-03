@@ -48,7 +48,7 @@ impl App {
 
                 viewer.matches.selected().map(|(item, _)| item)
             }
-            _ => None
+            _ => None,
         }
     }
 

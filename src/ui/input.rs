@@ -189,6 +189,6 @@ fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     match app.mode {
         Mode::Navigate(_) => {}
         Mode::Input(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
-        _ => {},
+        _ => {}
     }
 }

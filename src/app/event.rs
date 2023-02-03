@@ -95,13 +95,13 @@ impl App {
                 self.to_nav_mode();
 
                 res
-            },
+            }
             Mode::Popup => {
                 let res = self.subgraph();
                 self.to_nav_mode();
 
                 res
-            },
+            }
         }
     }
 
