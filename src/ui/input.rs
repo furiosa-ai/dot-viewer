@@ -21,6 +21,7 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
             },
             InputMode::Filter => "Filter",
         },
+        _ => panic!("unreachable"),
     };
 
     let block = surrounding_block(
@@ -43,6 +44,7 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     match app.mode {
         Mode::Navigate(_) => draw_error(f, chunks[1], app),
         Mode::Input(_) => draw_form(f, chunks[1], app),
+        _ => panic!("unreachable"),
     };
 }
 
@@ -68,6 +70,7 @@ pub fn draw_search<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     match app.mode {
         Mode::Navigate(_) => draw_error(f, chunks[1], app),
         Mode::Input(_) => draw_input(f, chunks[1], app),
+        _ => panic!("unreachable"),
     };
 }
 
@@ -149,6 +152,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
                 Style::default(),
             ),
         },
+        _ => panic!("unreachable"),
     };
     let mut text = Text::from(Spans::from(msg));
     text.patch_style(style);
@@ -177,6 +181,7 @@ fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let input = Paragraph::new(app.input.key()).style(match app.mode {
         Mode::Navigate(_) => Style::default(),
         Mode::Input(_) => Style::default().fg(Color::Yellow),
+        _ => panic!("unreachable"),
     });
     f.render_widget(input, chunk);
 
@@ -184,5 +189,6 @@ fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     match app.mode {
         Mode::Navigate(_) => {}
         Mode::Input(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
+        _ => {}
     }
 }

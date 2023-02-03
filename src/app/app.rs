@@ -48,6 +48,7 @@ impl App {
 
                 viewer.matches.selected().map(|(item, _)| item)
             }
+            _ => None,
         }
     }
 
@@ -65,6 +66,14 @@ impl App {
     pub fn filter(&mut self) -> Res {
         let viewer = self.tabs.selected();
         let viewer = viewer.filter(self.input.key())?;
+        self.tabs.open(viewer);
+
+        Ok(None)
+    }
+
+    pub fn subgraph(&mut self) -> Res {
+        let viewer = self.tabs.selected();
+        let viewer = viewer.subgraph()?;
         self.tabs.open(viewer);
 
         Ok(None)
@@ -135,6 +144,10 @@ impl App {
             .map(|id| (id.clone(), Vec::new()))
             .collect();
         viewer.matches = List::with_items(init);
+    }
+
+    pub fn to_popup_mode(&mut self) {
+        self.mode = Mode::Popup;
     }
 
     fn write(filename: String, contents: String) -> Result<String, std::io::Error> {

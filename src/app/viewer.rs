@@ -1,6 +1,6 @@
 use crate::app::{
     error::{DotViewerError, Res},
-    utils::{List, Trie},
+    utils::{List, Tree, Trie},
 };
 use dot_graph::Graph;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
@@ -18,11 +18,14 @@ pub struct Viewer {
 
     pub matches: List<(String, Vec<usize>)>,
     pub trie: Trie,
+
+    pub tree: Tree,
 }
 
 impl Viewer {
     pub fn new(title: String, graph: Graph) -> Viewer {
         let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();
+        let tree = Tree::with_graph(&graph);
 
         let mut viewer = Viewer {
             title,
@@ -32,6 +35,7 @@ impl Viewer {
             nexts: List::with_items(Vec::new()),
             matches: List::with_items(Vec::new()),
             trie: Trie::new(&nodes),
+            tree,
         };
 
         viewer.update_adjacent();
@@ -56,14 +60,6 @@ impl Viewer {
                 self.current.select(idx);
                 self.update_adjacent();
 
-                // TODO
-                // manually set offset to keep goto-ed node in the middle of the list
-                // with modified (forked) tui-rs
-                let offset = self.current.state.offset_mut();
-                if idx >= 10 {
-                    *offset = idx - 10;
-                }
-
                 Ok(None)
             },
         )
@@ -79,6 +75,22 @@ impl Viewer {
             ))),
             |graph| {
                 let viewer = Self::new(format!("{} - {}", self.title, key), graph);
+                Ok(viewer)
+            },
+        )
+    }
+
+    pub fn subgraph(&mut self) -> Result<Viewer, DotViewerError> {
+        let key = self.tree.selected();
+        let graph = self.graph.subgraph(&key);
+
+        graph.map_or(
+            Err(DotViewerError::GraphError(format!(
+                "no match for prefix {}",
+                key
+            ))),
+            |graph| {
+                let viewer = Self::new(key, graph);
                 Ok(viewer)
             },
         )

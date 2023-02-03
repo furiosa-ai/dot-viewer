@@ -29,6 +29,7 @@ fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &mu
     match &mode {
         Mode::Navigate(_) => draw_current(f, chunk, mode, viewer),
         Mode::Input(input) => draw_matches(f, chunk, input, viewer),
+        _ => {}
     }
 }
 
@@ -44,6 +45,7 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer: &m
             draw_metadata(f, chunks[1], mode, viewer);
         }
         Mode::Input(_) => draw_metadata(f, chunk, mode, viewer),
+        _ => {}
     }
 }
 
@@ -154,6 +156,7 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &Mode, viewer:
     let id = match mode {
         Mode::Navigate(_) => viewer.current(),
         Mode::Input(_) => viewer.matched(),
+        _ => panic!("unreachable"),
     };
 
     if let Some(id) = id {

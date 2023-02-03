@@ -26,6 +26,7 @@ impl App {
         match &self.mode {
             Mode::Navigate(_) => self.char_nav(c),
             Mode::Input(input) => self.char_input(c, &input.clone()),
+            _ => Ok(None),
         }
     }
 
@@ -45,6 +46,10 @@ impl App {
             }
             'f' => {
                 self.to_input_mode(InputMode::Filter);
+                Ok(None)
+            }
+            's' => {
+                self.to_popup_mode();
                 Ok(None)
             }
             'c' => self.tabs.close(),
@@ -91,6 +96,12 @@ impl App {
 
                 res
             }
+            Mode::Popup => {
+                let res = self.subgraph();
+                self.to_nav_mode();
+
+                res
+            }
         }
     }
 
@@ -119,7 +130,7 @@ impl App {
 
     fn esc(&mut self) -> Res {
         match self.mode {
-            Mode::Input(_) => {
+            Mode::Input(_) | Mode::Popup => {
                 self.to_nav_mode();
                 Ok(None)
             }
@@ -151,6 +162,7 @@ impl App {
 
                 Ok(None)
             }
+            _ => Ok(None),
         }
     }
 
@@ -177,6 +189,7 @@ impl App {
                 NavMode::Nexts => viewer.nexts.previous(),
             },
             Mode::Input(_) => viewer.matches.previous(),
+            Mode::Popup => viewer.tree.up(),
         };
 
         Ok(None)
@@ -195,6 +208,7 @@ impl App {
                 NavMode::Nexts => viewer.nexts.next(),
             },
             Mode::Input(_) => viewer.matches.next(),
+            Mode::Popup => viewer.tree.down(),
         };
 
         Ok(None)
@@ -212,6 +226,10 @@ impl App {
                 };
             }
             Mode::Input(_) => self.input.front(),
+            Mode::Popup => {
+                let viewer = self.tabs.selected();
+                viewer.tree.right();
+            }
         }
 
         Ok(None)
@@ -229,6 +247,10 @@ impl App {
                 };
             }
             Mode::Input(_) => self.input.back(),
+            Mode::Popup => {
+                let viewer = self.tabs.selected();
+                viewer.tree.left();
+            }
         }
 
         Ok(None)

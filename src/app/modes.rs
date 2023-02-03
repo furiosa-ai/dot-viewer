@@ -2,6 +2,7 @@
 pub enum Mode {
     Navigate(NavMode),
     Input(InputMode),
+    Popup,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
