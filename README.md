@@ -103,6 +103,7 @@ With `dot-viewer`, users may
 Key | Effect
 --- | ---
 `q` | quit
+`esc ` | go back to the main screen
 `c` | close the current tab (except for the root tab)
 `tab`/`backtab` | navigate tabs or autocomplete input keyword
 `up`/`k` | traverse the focused node list
@@ -123,8 +124,9 @@ Key | Effect
 
 Key | Effect
 --- | ---
+`s` | opens a popup showing subgraphs of the current graph
 `f[node-prefix]` (e.g. `fgraph1_subgraph34`) | apply filter with prefix
-`enter` | apply filter with the given prefix (opens a new tab)
+`enter` | apply filter (opens a new tab)
 `e` | export the current tab to dot
 `0-9` | export the subgraph containing neighbors of the currently selected node with given depth (in digits)
 `x` | launch xdot, showing `./exports/current.dot`
