@@ -51,14 +51,22 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
 
     match child.join() {
         Ok(_) => {}
-        Err(_) => {
-            println!("Err: dot-viewer paniced");
-
+        Err(e) => {
             let mut terminal = match recovery.lock() {
                 Ok(guard) => guard,
                 Err(poisoned) => poisoned.into_inner(),
             };
             cleanup(&mut terminal)?;
+
+            let msg = match e.downcast_ref::<&'static str>() {
+                Some(s) => *s,
+                None => match e.downcast_ref::<String>() {
+                    Some(s) => &s[..],
+                    None => "unknown",
+                }
+            };
+
+            println!("Err: dot-viewer paniced: {:?}", msg);
         }
     };
 

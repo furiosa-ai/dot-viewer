@@ -212,7 +212,7 @@ impl App {
                 MainMode::Navigate(nav) => match nav {
                     NavMode::Current => {
                         viewer.current.previous();
-                        viewer.update_adjacent();
+                        viewer.update_adjacent()?;
                     }
                     NavMode::Prevs => viewer.prevs.previous(),
                     NavMode::Nexts => viewer.nexts.previous(),
@@ -233,7 +233,7 @@ impl App {
                 MainMode::Navigate(nav) => match nav {
                     NavMode::Current => {
                         viewer.current.next();
-                        viewer.update_adjacent();
+                        viewer.update_adjacent()?;
                     }
                     NavMode::Prevs => viewer.prevs.next(),
                     NavMode::Nexts => viewer.nexts.next(),

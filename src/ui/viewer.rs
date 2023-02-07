@@ -53,7 +53,11 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, view
     let block = surrounding_block(title, *mode == MainMode::Navigate(NavMode::Current));
 
     let (froms, tos) = match &viewer.current() {
-        Some(id) => (viewer.graph.froms(id).clone(), viewer.graph.tos(id)),
+        Some(id) => {
+            let froms = viewer.graph.froms(id).unwrap();
+            let tos = viewer.graph.tos(id).unwrap();
+            (froms, tos)
+        }
         None => (HashSet::new(), HashSet::new()),
     };
 

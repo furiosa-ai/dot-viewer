@@ -6,10 +6,10 @@ pub type Res = Result<Option<String>, DotViewerError>;
 
 #[derive(Error, Debug)]
 pub enum DotViewerError {
-    #[error("Err: parse failed in dot-graph, {}", .0)]
-    ParseError(DotGraphError),
-    #[error("Err: graph manipulation failed with, `{0}`")]
-    GraphError(String),
+    #[error("Err: dot-graph failed")]
+    DotGraphError(#[from] DotGraphError),
+    #[error("Err: viewer failed with, `{0}`")]
+    ViewerError(String),
     #[error("Err: no keybinding for {:?}", .0)]
     KeyError(KeyCode),
     #[error("Err: file io failed with, `{0}`")]

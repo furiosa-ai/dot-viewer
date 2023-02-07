@@ -38,7 +38,7 @@ impl Viewer {
             tree,
         };
 
-        viewer.update_adjacent();
+        let _ = viewer.update_adjacent();
 
         viewer
     }
@@ -55,10 +55,10 @@ impl Viewer {
         let idx = self.current.find(id.to_string());
 
         idx.map_or(
-            Err(DotViewerError::GraphError(format!("no such node {:?}", id))),
+            Err(DotViewerError::ViewerError(format!("no such node {:?}", id))),
             |idx| {
                 self.current.select(idx);
-                self.update_adjacent();
+                self.update_adjacent()?;
 
                 Ok(None)
             },
@@ -69,7 +69,7 @@ impl Viewer {
         let graph = self.graph.filter(key);
 
         graph.map_or(
-            Err(DotViewerError::GraphError(format!(
+            Err(DotViewerError::ViewerError(format!(
                 "no match for prefix {}",
                 key
             ))),
@@ -82,19 +82,19 @@ impl Viewer {
 
     pub fn subgraph(&mut self) -> Result<Viewer, DotViewerError> {
         self.tree.selected().map_or(
-            Err(DotViewerError::GraphError("no subgraph selected".to_string())),
+            Err(DotViewerError::ViewerError("no subgraph selected".to_string())),
             |key| {
-                let graph = self.graph.subgraph(&key);
-
-                graph.map_or(
-                    Err(DotViewerError::GraphError(format!(
-                        "no match for prefix {}",
-                        key
-                    ))),
+                self.graph.subgraph(&key).map_or_else(
+                    |e| Err(DotViewerError::ViewerError(e.to_string())),
                     |graph| {
-                        let viewer = Self::new(key, graph);
-                        Ok(viewer)
-                    },
+                        graph.map_or(
+                            Err(DotViewerError::ViewerError("empty graph".to_string())),
+                            |graph| {
+                                let viewer = Self::new(key, graph);
+                                Ok(viewer)
+                            }
+                        )
+                    }
                 )
             })
     }
@@ -103,19 +103,21 @@ impl Viewer {
         self.trie.autocomplete(key)
     }
 
-    pub fn update_adjacent(&mut self) {
+    pub fn update_adjacent(&mut self) -> Result<(), DotViewerError> {
         let id = self.current().unwrap();
 
         let prevs = self
             .graph
-            .froms(&id)
+            .froms(&id)?
             .iter()
             .map(|n| n.to_string())
             .collect();
         self.prevs = List::with_items(prevs);
 
-        let nexts = self.graph.tos(&id).iter().map(|n| n.to_string()).collect();
+        let nexts = self.graph.tos(&id)?.iter().map(|n| n.to_string()).collect();
         self.nexts = List::with_items(nexts);
+
+        Ok(())
     }
 
     fn update_matches(

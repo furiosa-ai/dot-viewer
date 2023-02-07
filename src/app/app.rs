@@ -18,7 +18,7 @@ pub struct App {
 
 impl App {
     pub fn new(path: &str) -> Result<App, DotViewerError> {
-        let graph = parse(path).map_err(DotViewerError::ParseError)?;
+        let graph = parse(path)?;
         let viewer = Viewer::new("DAG".to_string(), graph);
         let tabs = Tabs::with_tabs(vec![viewer])?;
         let input = Input::new();
@@ -57,7 +57,7 @@ impl App {
     pub fn goto(&mut self) -> Res {
         let id = self.selected();
         id.map_or(
-            Err(DotViewerError::GraphError("no node selected".to_string())),
+            Err(DotViewerError::ViewerError("no node selected".to_string())),
             |id| {
                 let viewer = self.tabs.selected();
                 viewer.goto(&id)
@@ -116,17 +116,19 @@ impl App {
         let node = &viewer.current().unwrap();
 
         let filename = format!("{}-{}", node.clone(), depth);
-        let neighbors = graph.neighbors(node, depth);
 
-        match neighbors {
-            Some(neighbors) => {
-                let contents = neighbors.to_dot();
-                Self::write(filename, contents)
-                    .map(Some)
-                    .map_err(|e| DotViewerError::IOError(e.to_string()))
+        graph.neighbors(node, depth).map_or_else(
+            |e| Err(DotViewerError::ViewerError(e.to_string())),
+            |neighbors| match neighbors {
+                Some(neighbors) => {
+                    let contents = neighbors.to_dot();
+                    Self::write(filename, contents)
+                        .map(Some)
+                        .map_err(|e| DotViewerError::IOError(e.to_string()))
+                }
+                None => Err(DotViewerError::ViewerError("empty graph".to_string())),
             }
-            None => Err(DotViewerError::GraphError("empty graph".to_string())),
-        }
+        )
     }
 
     pub fn to_nav_mode(&mut self) {
