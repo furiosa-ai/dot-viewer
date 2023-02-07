@@ -26,15 +26,10 @@ fn draw_tree<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
     let widget = TUITree::new(tree.tree.clone())
         .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(format!("Tree Widget {:?}", tree.state)),
+            Block::default().borders(Borders::ALL).title(format!("Tree Widget {:?}", tree.state)),
         )
         .highlight_style(
-            Style::default()
-                .fg(Color::Black)
-                .bg(Color::LightGreen)
-                .add_modifier(Modifier::BOLD),
+            Style::default().fg(Color::Black).bg(Color::LightGreen).add_modifier(Modifier::BOLD),
         )
         .highlight_symbol(">> ");
 

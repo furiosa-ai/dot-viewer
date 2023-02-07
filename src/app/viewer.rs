@@ -56,28 +56,19 @@ impl Viewer {
     pub fn goto(&mut self, id: &str) -> Res {
         let idx = self.current.find(id.to_string());
 
-        idx.map_or(
-            Err(DotViewerError::ViewerError(format!(
-                "no such node {:?}",
-                id
-            ))),
-            |idx| {
-                self.current.select(idx);
-                self.update_adjacent()?;
+        idx.map_or(Err(DotViewerError::ViewerError(format!("no such node {:?}", id))), |idx| {
+            self.current.select(idx);
+            self.update_adjacent()?;
 
-                Ok(None)
-            },
-        )
+            Ok(None)
+        })
     }
 
     pub fn filter(&mut self, key: &str) -> Result<Viewer, DotViewerError> {
         let graph = self.graph.filter(key);
 
         graph.map_or(
-            Err(DotViewerError::ViewerError(format!(
-                "no match for prefix {}",
-                key
-            ))),
+            Err(DotViewerError::ViewerError(format!("no match for prefix {}", key))),
             |graph| {
                 let viewer = Self::new(format!("{} - {}", self.title, key), graph);
                 Ok(viewer)
@@ -87,9 +78,7 @@ impl Viewer {
 
     pub fn subgraph(&mut self) -> Result<Viewer, DotViewerError> {
         self.tree.selected().map_or(
-            Err(DotViewerError::ViewerError(
-                "no subgraph selected".to_string(),
-            )),
+            Err(DotViewerError::ViewerError("no subgraph selected".to_string())),
             |key| {
                 self.graph.subgraph(&key).map_or_else(
                     |e| Err(DotViewerError::ViewerError(e.to_string())),
@@ -114,12 +103,7 @@ impl Viewer {
     pub fn update_adjacent(&mut self) -> Result<(), DotViewerError> {
         let id = self.current().unwrap();
 
-        let prevs = self
-            .graph
-            .froms(&id)?
-            .iter()
-            .map(|n| n.to_string())
-            .collect();
+        let prevs = self.graph.froms(&id)?.iter().map(|n| n.to_string()).collect();
         self.prevs = List::with_items(prevs);
 
         let nexts = self.graph.tos(&id)?.iter().map(|n| n.to_string()).collect();
@@ -129,12 +113,8 @@ impl Viewer {
     }
 
     fn update_matches(&mut self, matcher: Matcher, key: &str, graph: &Option<Graph>) {
-        let matches: Vec<(String, Vec<usize>)> = self
-            .current
-            .items
-            .par_iter()
-            .filter_map(|id| matcher(id, key, graph))
-            .collect();
+        let matches: Vec<(String, Vec<usize>)> =
+            self.current.items.par_iter().filter_map(|id| matcher(id, key, graph)).collect();
 
         self.matches = List::with_items(matches);
     }
@@ -142,9 +122,7 @@ impl Viewer {
     fn match_fuzzy(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
         let matcher = SkimMatcherV2::default();
 
-        matcher
-            .fuzzy_indices(id, key)
-            .map(|(_, idxs)| (id.to_string(), idxs))
+        matcher.fuzzy_indices(id, key).map(|(_, idxs)| (id.to_string(), idxs))
     }
 
     pub fn update_fuzzy(&mut self, key: String) {
@@ -185,12 +163,7 @@ impl Viewer {
     }
 
     pub fn update_trie(&mut self) {
-        let nodes: Vec<String> = self
-            .matches
-            .items
-            .par_iter()
-            .map(|(id, _)| id.clone())
-            .collect();
+        let nodes: Vec<String> = self.matches.items.par_iter().map(|(id, _)| id.clone()).collect();
         self.trie = Trie::new(&nodes);
     }
 

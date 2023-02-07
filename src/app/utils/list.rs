@@ -7,10 +7,7 @@ pub struct List<T> {
 
 impl<T: Clone + Eq> List<T> {
     pub fn with_items(items: Vec<T>) -> List<T> {
-        let mut list = List {
-            state: ListState::default(),
-            items,
-        };
+        let mut list = List { state: ListState::default(), items };
 
         if !list.items.is_empty() {
             list.state.select(Some(0));

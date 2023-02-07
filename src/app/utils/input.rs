@@ -6,11 +6,7 @@ pub struct Input {
 
 impl Input {
     pub fn new() -> Input {
-        Input {
-            key: String::from(""),
-            history: Vec::new(),
-            cursor: 0,
-        }
+        Input { key: String::from(""), history: Vec::new(), cursor: 0 }
     }
 
     pub fn key(&self) -> String {

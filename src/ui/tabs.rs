@@ -26,30 +26,16 @@ pub fn draw_nav<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
     let block = Block::default().borders(Borders::ALL).title("Tabs");
 
-    let titles: Vec<String> = app
-        .tabs
-        .tabs
-        .iter()
-        .map(|viewer| viewer.title.clone())
-        .collect();
+    let titles: Vec<String> = app.tabs.tabs.iter().map(|viewer| viewer.title.clone()).collect();
     let titles = titles
         .iter()
-        .map(|title| {
-            Spans::from(vec![Span::styled(
-                title,
-                Style::default().fg(Color::Yellow),
-            )])
-        })
+        .map(|title| Spans::from(vec![Span::styled(title, Style::default().fg(Color::Yellow))]))
         .collect();
 
     let tabs = Tabs::new(titles)
         .block(block)
         .select(app.tabs.state)
-        .highlight_style(
-            Style::default()
-                .add_modifier(Modifier::BOLD)
-                .bg(Color::Black),
-        );
+        .highlight_style(Style::default().add_modifier(Modifier::BOLD).bg(Color::Black));
 
     f.render_widget(tabs, chunk)
 }

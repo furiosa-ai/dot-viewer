@@ -56,13 +56,10 @@ impl App {
 
     pub fn goto(&mut self) -> Res {
         let id = self.selected();
-        id.map_or(
-            Err(DotViewerError::ViewerError("no node selected".to_string())),
-            |id| {
-                let viewer = self.tabs.selected();
-                viewer.goto(&id)
-            },
-        )
+        id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
+            let viewer = self.tabs.selected();
+            viewer.goto(&id)
+        })
     }
 
     pub fn filter(&mut self) -> Res {
@@ -85,11 +82,7 @@ impl App {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
-        let filename: String = viewer
-            .title
-            .chars()
-            .filter(|c| !c.is_whitespace())
-            .collect();
+        let filename: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
 
         Self::write(filename, graph.to_dot())
             .map(Some)
@@ -141,12 +134,8 @@ impl App {
 
         let viewer = self.tabs.selected();
 
-        let init: Vec<(String, Vec<usize>)> = viewer
-            .current
-            .items
-            .iter()
-            .map(|id| (id.clone(), Vec::new()))
-            .collect();
+        let init: Vec<(String, Vec<usize>)> =
+            viewer.current.items.iter().map(|id| (id.clone(), Vec::new())).collect();
         viewer.matches = List::with_items(init);
     }
 

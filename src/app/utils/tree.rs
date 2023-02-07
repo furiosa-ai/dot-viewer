@@ -24,11 +24,7 @@ impl Tree {
         let items = Self::to_items(root, graph);
         let items = vec![items];
 
-        let mut tree = Self {
-            state: TreeState::default(),
-            items,
-            tree,
-        };
+        let mut tree = Self { state: TreeState::default(), items, tree };
 
         if !tree.tree.is_empty() {
             tree.state.select_first();
@@ -42,10 +38,8 @@ impl Tree {
         let id = graph.slookup.get_by_right(&root).unwrap().to_string();
 
         if let Some(subgraphs) = graph.subtree.get(&root) {
-            let subgraphs: Vec<TreeItem> = subgraphs
-                .par_iter()
-                .map(|&subgraph| Self::to_tree(subgraph, graph))
-                .collect();
+            let subgraphs: Vec<TreeItem> =
+                subgraphs.par_iter().map(|&subgraph| Self::to_tree(subgraph, graph)).collect();
 
             TreeItem::new(id, subgraphs)
         } else {
@@ -57,17 +51,12 @@ impl Tree {
         let id = graph.slookup.get_by_right(&root).unwrap().to_string();
 
         let node = if let Some(subgraphs) = graph.subtree.get(&root) {
-            let children: Vec<Node> = subgraphs
-                .par_iter()
-                .map(|&subgraph| Self::to_items(subgraph, graph))
-                .collect();
+            let children: Vec<Node> =
+                subgraphs.par_iter().map(|&subgraph| Self::to_items(subgraph, graph)).collect();
 
             Node { id, children }
         } else {
-            Node {
-                id,
-                children: Vec::new(),
-            }
+            Node { id, children: Vec::new() }
         };
 
         node

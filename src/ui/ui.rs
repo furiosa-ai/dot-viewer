@@ -37,14 +37,7 @@ pub fn draw_app<B: Backend>(f: &mut Frame<B>, size: Rect, mode: &MainMode, app: 
 }
 
 pub fn surrounding_block(title: String, highlight: bool) -> Block<'static> {
-    let color = if highlight {
-        Color::Yellow
-    } else {
-        Color::White
-    };
+    let color = if highlight { Color::Yellow } else { Color::White };
 
-    Block::default()
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(color))
-        .title(title)
+    Block::default().borders(Borders::ALL).border_style(Style::default().fg(color)).title(title)
 }

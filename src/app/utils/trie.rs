@@ -20,21 +20,15 @@ impl Trie {
     }
 
     pub fn autocomplete(&self, str: &str) -> Option<String> {
-        let predictions = if str.is_empty() {
-            self.items.clone()
-        } else {
-            self.predict(str)
-        };
+        let predictions = if str.is_empty() { self.items.clone() } else { self.predict(str) };
 
         Self::longest_common_prefix(predictions)
     }
 
     fn predict(&self, str: &str) -> Vec<String> {
         let result = self.trie.predictive_search(str);
-        let result: Vec<String> = result
-            .iter()
-            .map(|s| str::from_utf8(s).unwrap().to_string())
-            .collect();
+        let result: Vec<String> =
+            result.iter().map(|s| str::from_utf8(s).unwrap().to_string()).collect();
 
         result
     }

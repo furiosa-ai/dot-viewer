@@ -46,35 +46,17 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, _app: &
         MainMode::Navigate(_) => (
             vec![
                 Span::raw("Press "),
-                Span::styled(
-                    "q",
-                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
-                ),
+                Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to exit, "),
-                Span::styled(
-                    "/",
-                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
-                ),
+                Span::styled("/", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to fuzzy search, "),
-                Span::styled(
-                    "f",
-                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
-                ),
+                Span::styled("f", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to apply filter with prefix, "),
-                Span::styled(
-                    "e",
-                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
-                ),
+                Span::styled("e", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to export the current subgraph, "),
-                Span::styled(
-                    "0-9",
-                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
-                ),
+                Span::styled("0-9", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to export the current neighbors with specified degree, "),
-                Span::styled(
-                    "c",
-                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
-                ),
+                Span::styled("c", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
                 Span::raw(" to close tab, and "),
                 Span::styled(
                     "tab/backtab",

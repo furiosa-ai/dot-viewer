@@ -84,11 +84,7 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, view
 
     let list = List::new(list)
         .block(block)
-        .highlight_style(
-            Style::default()
-                .fg(Color::Green)
-                .add_modifier(Modifier::BOLD),
-        )
+        .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
     f.render_stateful_widget(list, chunk, &mut viewer.current.state);
@@ -108,10 +104,8 @@ fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, vie
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     // surrounding block
-    let block = surrounding_block(
-        "Prev Nodes".to_string(),
-        *mode == MainMode::Navigate(NavMode::Prevs),
-    );
+    let block =
+        surrounding_block("Prev Nodes".to_string(), *mode == MainMode::Navigate(NavMode::Prevs));
 
     let list: Vec<ListItem> = viewer
         .prevs
@@ -131,10 +125,8 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     // surrounding block
-    let block = surrounding_block(
-        "Next Nodes".to_string(),
-        *mode == MainMode::Navigate(NavMode::Nexts),
-    );
+    let block =
+        surrounding_block("Next Nodes".to_string(), *mode == MainMode::Navigate(NavMode::Nexts));
 
     let list: Vec<ListItem> = viewer
         .nexts
@@ -145,11 +137,7 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer
 
     let list = List::new(list)
         .block(block)
-        .highlight_style(
-            Style::default()
-                .fg(Color::Blue)
-                .add_modifier(Modifier::BOLD),
-        )
+        .highlight_style(Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
     f.render_stateful_widget(list, chunk, &mut viewer.nexts.state);
@@ -167,9 +155,8 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, vie
 
     if let Some(id) = id {
         let node = viewer.graph.search(&id).unwrap();
-        let paragraph = Paragraph::new(pretty_metadata(node))
-            .block(block)
-            .wrap(Wrap { trim: true });
+        let paragraph =
+            Paragraph::new(pretty_metadata(node)).block(block).wrap(Wrap { trim: true });
 
         f.render_widget(paragraph, chunk);
     } else {
@@ -220,9 +207,7 @@ fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, vi
         .map(|(id, highlight)| {
             let mut spans: Vec<Span> = id.chars().map(|c| Span::raw(c.to_string())).collect();
             for &idx in highlight {
-                spans[idx].style = Style::default()
-                    .bg(Color::Black)
-                    .add_modifier(Modifier::BOLD);
+                spans[idx].style = Style::default().bg(Color::Black).add_modifier(Modifier::BOLD);
             }
 
             ListItem::new(Spans(spans))
@@ -231,11 +216,7 @@ fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, vi
 
     let list = List::new(list)
         .block(block)
-        .highlight_style(
-            Style::default()
-                .fg(Color::Green)
-                .add_modifier(Modifier::BOLD),
-        )
+        .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
     f.render_stateful_widget(list, chunk, &mut viewer.matches.state);
