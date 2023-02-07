@@ -135,11 +135,7 @@ impl Viewer {
             let node = graph.search(id).unwrap();
             let raw = node.to_dot(0);
 
-            if matcher.is_match(&raw) {
-                Some((id.to_string(), Vec::new()))
-            } else {
-                None
-            }
+            matcher.is_match(&raw).then_some((id.to_string(), Vec::new()))
         } else {
             None
         }
@@ -150,12 +146,8 @@ impl Viewer {
     }
 
     fn match_filter(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
-        if id.starts_with(key) {
-            let highlight: Vec<usize> = (0..key.len()).collect();
-            Some((id.to_string(), highlight))
-        } else {
-            None
-        }
+        let highlight: Vec<usize> = (0..key.len()).collect();
+        id.starts_with(key).then_some((id.to_string(), highlight))
     }
 
     pub fn update_filter(&mut self, key: String) {
