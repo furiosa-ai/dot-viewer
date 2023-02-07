@@ -1,16 +1,15 @@
 use dot_graph::Graph;
 use rayon::prelude::*;
-use std::boxed::Box;
 use tui_tree_widget::{TreeItem, TreeState};
 
 struct Node {
     id: String,
-    children: Vec<Box<Node>>,
+    children: Vec<Node>,
 }
 
 pub struct Tree {
     pub state: TreeState,
-    items: Vec<Box<Node>>,
+    items: Vec<Node>,
     pub tree: Vec<TreeItem<'static>>,
 }
 
@@ -54,11 +53,11 @@ impl Tree {
         }
     }
 
-    fn to_items(root: usize, graph: &Graph) -> Box<Node> {
+    fn to_items(root: usize, graph: &Graph) -> Node {
         let id = graph.slookup.get_by_right(&root).unwrap().to_string();
 
         let node = if let Some(subgraphs) = graph.subtree.get(&root) {
-            let children: Vec<Box<Node>> = subgraphs
+            let children: Vec<Node> = subgraphs
                 .par_iter()
                 .map(|&subgraph| Self::to_items(subgraph, graph))
                 .collect();
@@ -71,7 +70,7 @@ impl Tree {
             }
         };
 
-        Box::new(node)
+        node
     }
 
     pub fn selected(&self) -> Option<String> {

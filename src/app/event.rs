@@ -27,7 +27,7 @@ impl App {
             Mode::Main(main) => match main {
                 MainMode::Navigate(_) => self.char_nav(c),
                 MainMode::Input(input) => self.char_input(c, &input.clone()),
-            }
+            },
             Mode::Popup => self.char_popup(c),
         }
     }
@@ -109,7 +109,7 @@ impl App {
 
                     res
                 }
-            }
+            },
             Mode::Popup => {
                 let res = self.subgraph();
                 self.to_nav_mode();
@@ -123,23 +123,20 @@ impl App {
         let viewer = self.tabs.selected();
 
         match &self.mode {
-            Mode::Main(main) => match main {
-                MainMode::Input(input) => {
-                    self.input.delete();
+            Mode::Main(MainMode::Input(input)) => {
+                self.input.delete();
 
-                    let key = self.input.key();
-                    match input {
-                        InputMode::Search(search) => match search {
-                            SearchMode::Fuzzy => viewer.update_fuzzy(key),
-                            SearchMode::Regex => viewer.update_regex(key),
-                        },
-                        InputMode::Filter => viewer.update_filter(key),
-                    };
-                    viewer.update_trie();
+                let key = self.input.key();
+                match input {
+                    InputMode::Search(search) => match search {
+                        SearchMode::Fuzzy => viewer.update_fuzzy(key),
+                        SearchMode::Regex => viewer.update_regex(key),
+                    },
+                    InputMode::Filter => viewer.update_filter(key),
+                };
+                viewer.update_trie();
 
-                    Ok(None)
-                }
-                _ => Err(DotViewerError::KeyError(KeyCode::Backspace)),
+                Ok(None)
             }
             _ => Err(DotViewerError::KeyError(KeyCode::Backspace)),
         }
@@ -153,11 +150,11 @@ impl App {
                     Ok(None)
                 }
                 _ => Err(DotViewerError::KeyError(KeyCode::Esc)),
-            }
+            },
             _ => {
                 self.to_nav_mode();
                 Ok(None)
-            },
+            }
         }
     }
 
@@ -186,19 +183,16 @@ impl App {
 
                     Ok(None)
                 }
-            }
+            },
             _ => Ok(None),
         }
     }
 
     fn backtab(&mut self) -> Res {
         match &self.mode {
-            Mode::Main(main) => match main {
-                MainMode::Navigate(_) => {
-                    self.tabs.previous();
-                    Ok(None)
-                }
-                _ => Err(DotViewerError::KeyError(KeyCode::BackTab)),
+            Mode::Main(MainMode::Navigate(_)) => {
+                self.tabs.previous();
+                Ok(None)
             }
             _ => Err(DotViewerError::KeyError(KeyCode::BackTab)),
         }
@@ -218,7 +212,7 @@ impl App {
                     NavMode::Nexts => viewer.nexts.previous(),
                 },
                 MainMode::Input(_) => viewer.matches.previous(),
-            }
+            },
             Mode::Popup => viewer.tree.up(),
         };
 
@@ -239,7 +233,7 @@ impl App {
                     NavMode::Nexts => viewer.nexts.next(),
                 },
                 MainMode::Input(_) => viewer.matches.next(),
-            }
+            },
             Mode::Popup => viewer.tree.down(),
         };
 
@@ -259,7 +253,7 @@ impl App {
                     };
                 }
                 MainMode::Input(_) => self.input.front(),
-            }
+            },
             Mode::Popup => {
                 let viewer = self.tabs.selected();
                 viewer.tree.right();
@@ -282,7 +276,7 @@ impl App {
                     };
                 }
                 MainMode::Input(_) => self.input.back(),
-            }
+            },
             Mode::Popup => {
                 let viewer = self.tabs.selected();
                 viewer.tree.left();

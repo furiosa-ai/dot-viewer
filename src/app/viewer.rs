@@ -7,6 +7,8 @@ use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use rayon::prelude::*;
 use regex::Regex;
 
+type Matcher = fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>;
+
 pub struct Viewer {
     pub title: String,
 
@@ -55,7 +57,10 @@ impl Viewer {
         let idx = self.current.find(id.to_string());
 
         idx.map_or(
-            Err(DotViewerError::ViewerError(format!("no such node {:?}", id))),
+            Err(DotViewerError::ViewerError(format!(
+                "no such node {:?}",
+                id
+            ))),
             |idx| {
                 self.current.select(idx);
                 self.update_adjacent()?;
@@ -82,7 +87,9 @@ impl Viewer {
 
     pub fn subgraph(&mut self) -> Result<Viewer, DotViewerError> {
         self.tree.selected().map_or(
-            Err(DotViewerError::ViewerError("no subgraph selected".to_string())),
+            Err(DotViewerError::ViewerError(
+                "no subgraph selected".to_string(),
+            )),
             |key| {
                 self.graph.subgraph(&key).map_or_else(
                     |e| Err(DotViewerError::ViewerError(e.to_string())),
@@ -92,11 +99,12 @@ impl Viewer {
                             |graph| {
                                 let viewer = Self::new(key, graph);
                                 Ok(viewer)
-                            }
+                            },
                         )
-                    }
+                    },
                 )
-            })
+            },
+        )
     }
 
     pub fn autocomplete(&mut self, key: &str) -> Option<String> {
@@ -120,12 +128,7 @@ impl Viewer {
         Ok(())
     }
 
-    fn update_matches(
-        &mut self,
-        matcher: fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>,
-        key: &str,
-        graph: &Option<Graph>,
-    ) {
+    fn update_matches(&mut self, matcher: Matcher, key: &str, graph: &Option<Graph>) {
         let matches: Vec<(String, Vec<usize>)> = self
             .current
             .items

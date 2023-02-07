@@ -63,7 +63,7 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
                 None => match e.downcast_ref::<String>() {
                     Some(s) => &s[..],
                     None => "unknown",
-                }
+                },
             };
 
             println!("Err: dot-viewer paniced: {:?}", msg);

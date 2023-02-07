@@ -15,7 +15,12 @@ use tui::{
 };
 
 // current tab
-pub fn draw_viewer<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
+pub fn draw_viewer<B: Backend>(
+    f: &mut Frame<B>,
+    chunk: Rect,
+    mode: &MainMode,
+    viewer: &mut Viewer,
+) {
     // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)

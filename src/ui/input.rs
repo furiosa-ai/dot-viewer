@@ -23,13 +23,7 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, ap
         },
     };
 
-    let block = surrounding_block(
-        title.to_string(),
-        match mode {
-            MainMode::Input(_) => true,
-            _ => false,
-        },
-    );
+    let block = surrounding_block(title.to_string(), matches!(mode, MainMode::Input(_)));
 
     f.render_widget(block, chunk);
 

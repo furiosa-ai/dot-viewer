@@ -49,7 +49,7 @@ impl App {
 
                     viewer.matches.selected().map(|(item, _)| item)
                 }
-            }
+            },
             Mode::Popup => None,
         }
     }
@@ -127,7 +127,7 @@ impl App {
                         .map_err(|e| DotViewerError::IOError(e.to_string()))
                 }
                 None => Err(DotViewerError::ViewerError("empty graph".to_string())),
-            }
+            },
         )
     }
 

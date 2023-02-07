@@ -51,3 +51,9 @@ impl Input {
         self.cursor = 0;
     }
 }
+
+impl Default for Input {
+    fn default() -> Self {
+        Self::new()
+    }
+}
