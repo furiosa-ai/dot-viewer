@@ -10,7 +10,7 @@ use tui::{
 };
 
 // main block
-pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, app: &mut App) {
+pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
@@ -20,7 +20,7 @@ pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, app
     draw_nav(f, chunks[0], app);
 
     let viewer = app.tabs.selected();
-    draw_viewer(f, chunks[1], mode, viewer);
+    draw_viewer(f, chunks[1], mmode, viewer);
 }
 
 pub fn draw_nav<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {

@@ -18,7 +18,7 @@ use tui::{
 pub fn draw_viewer<B: Backend>(
     f: &mut Frame<B>,
     chunk: Rect,
-    mode: &MainMode,
+    mmode: &MainMode,
     viewer: &mut Viewer,
 ) {
     let chunks = Layout::default()
@@ -26,35 +26,35 @@ pub fn draw_viewer<B: Backend>(
         .constraints([Constraint::Percentage(35), Constraint::Percentage(65)].as_ref())
         .split(chunk);
 
-    draw_left(f, chunks[0], mode, viewer);
-    draw_right(f, chunks[1], mode, viewer);
+    draw_left(f, chunks[0], mmode, viewer);
+    draw_right(f, chunks[1], mmode, viewer);
 }
 
-fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
-    match &mode {
-        MainMode::Navigate(_) => draw_current(f, chunk, mode, viewer),
-        MainMode::Input(input) => draw_matches(f, chunk, input, viewer),
+fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
+    match &mmode {
+        MainMode::Navigate(_) => draw_current(f, chunk, mmode, viewer),
+        MainMode::Input(imode) => draw_matches(f, chunk, imode, viewer),
     }
 }
 
-fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
-    match &mode {
+fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
+    match &mmode {
         MainMode::Navigate(_) => {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
                 .split(chunk);
 
-            draw_adjacent(f, chunks[0], mode, viewer);
-            draw_metadata(f, chunks[1], mode, viewer);
+            draw_adjacent(f, chunks[0], mmode, viewer);
+            draw_metadata(f, chunks[1], mmode, viewer);
         }
-        MainMode::Input(_) => draw_metadata(f, chunk, mode, viewer),
+        MainMode::Input(_) => draw_metadata(f, chunk, mmode, viewer),
     }
 }
 
-fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
+fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
     let title = format!("Nodes {}", viewer.progress_current());
-    let block = surrounding_block(title, *mode == MainMode::Navigate(NavMode::Current));
+    let block = surrounding_block(title, *mmode == MainMode::Navigate(NavMode::Current));
 
     let (froms, tos) = match &viewer.current_id() {
         Some(id) => {
@@ -90,20 +90,20 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, view
 }
 
 // adjacent nodes block
-fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
+fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
 
-    draw_prevs(f, chunks[0], mode, viewer);
-    draw_nexts(f, chunks[1], mode, viewer);
+    draw_prevs(f, chunks[0], mmode, viewer);
+    draw_nexts(f, chunks[1], mmode, viewer);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
     let block =
-        surrounding_block("Prev Nodes".to_string(), *mode == MainMode::Navigate(NavMode::Prevs));
+        surrounding_block("Prev Nodes".to_string(), *mmode == MainMode::Navigate(NavMode::Prevs));
 
     let list: Vec<ListItem> = viewer
         .prevs
@@ -121,9 +121,9 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
     let block =
-        surrounding_block("Next Nodes".to_string(), *mode == MainMode::Navigate(NavMode::Nexts));
+        surrounding_block("Next Nodes".to_string(), *mmode == MainMode::Navigate(NavMode::Nexts));
 
     let list: Vec<ListItem> = viewer
         .nexts
@@ -141,10 +141,10 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer
 }
 
 // node attr block
-fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
     let block = surrounding_block("Attrs".to_string(), false);
 
-    let id = match mode {
+    let id = match mmode {
         MainMode::Navigate(_) => viewer.current_id(),
         MainMode::Input(_) => viewer.matched_id(),
     };
@@ -187,7 +187,7 @@ fn pretty_metadata(node: &Node) -> String {
 fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, viewer: &mut Viewer) {
     // surrounding block
     let title = match input {
-        InputMode::Search(search) => match search {
+        InputMode::Search(smode) => match smode {
             SearchMode::Fuzzy => "Fuzzy Searching...".to_string(),
             SearchMode::Regex => "Regex Searching...".to_string(),
         },

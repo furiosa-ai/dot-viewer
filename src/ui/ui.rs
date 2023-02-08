@@ -19,9 +19,8 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .border_type(BorderType::Rounded);
     f.render_widget(block, size);
 
-    let mode = app.mode.clone();
-    match &mode {
-        Mode::Main(main) => draw_app(f, size, main, app),
+    match &app.mode {
+        Mode::Main(mmode) => draw_app(f, size, &mmode.clone(), app),
         Mode::Popup => draw_popup(f, size, app),
     }
 }

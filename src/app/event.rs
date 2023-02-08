@@ -24,9 +24,9 @@ impl App {
 
     fn char(&mut self, c: char) -> Res {
         match &self.mode {
-            Mode::Main(main) => match main {
+            Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(_) => self.char_nav(c),
-                MainMode::Input(input) => self.char_input(c, &input.clone()),
+                MainMode::Input(imode) => self.char_input(c, &imode.clone()),
             },
             Mode::Popup => self.char_popup(c),
         }
@@ -66,13 +66,13 @@ impl App {
         }
     }
 
-    fn char_input(&mut self, c: char, mode: &InputMode) -> Res {
+    fn char_input(&mut self, c: char, imode: &InputMode) -> Res {
         self.input.insert(c);
 
         let viewer = self.tabs.selected();
         let key = self.input.key();
-        match mode {
-            InputMode::Search(search) => match search {
+        match imode {
+            InputMode::Search(smode) => match smode {
                 SearchMode::Fuzzy => viewer.update_fuzzy(key),
                 SearchMode::Regex => viewer.update_regex(key),
             },
@@ -95,13 +95,13 @@ impl App {
 
     fn enter(&mut self) -> Res {
         match &self.mode {
-            Mode::Main(main) => match main {
+            Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(nav) => match nav {
                     NavMode::Prevs | NavMode::Nexts => self.goto(),
                     NavMode::Current => Ok(None),
                 },
-                MainMode::Input(input) => {
-                    let res = match input {
+                MainMode::Input(imode) => {
+                    let res = match imode {
                         InputMode::Search(_) => self.goto(),
                         InputMode::Filter => self.filter(),
                     };
@@ -123,12 +123,12 @@ impl App {
         let viewer = self.tabs.selected();
 
         match &self.mode {
-            Mode::Main(MainMode::Input(input)) => {
+            Mode::Main(MainMode::Input(imode)) => {
                 self.input.delete();
 
                 let key = self.input.key();
-                match input {
-                    InputMode::Search(search) => match search {
+                match imode {
+                    InputMode::Search(smode) => match smode {
                         SearchMode::Fuzzy => viewer.update_fuzzy(key),
                         SearchMode::Regex => viewer.update_regex(key),
                     },
@@ -144,7 +144,7 @@ impl App {
 
     fn esc(&mut self) -> Res {
         match &self.mode {
-            Mode::Main(main) => match main {
+            Mode::Main(mmode) => match mmode {
                 MainMode::Input(_) => {
                     self.to_nav_mode();
                     Ok(None)
@@ -160,20 +160,20 @@ impl App {
 
     fn tab(&mut self) -> Res {
         match &self.mode {
-            Mode::Main(main) => match main {
+            Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(_) => {
                     self.tabs.next();
                     Ok(None)
                 }
-                MainMode::Input(input) => {
+                MainMode::Input(imode) => {
                     let viewer = self.tabs.selected();
 
                     if let Some(key) = viewer.autocomplete(&self.input.key()) {
                         self.input.set(key);
 
                         let key = self.input.key();
-                        match input {
-                            InputMode::Search(search) => match search {
+                        match imode {
+                            InputMode::Search(smode) => match smode {
                                 SearchMode::Fuzzy => viewer.update_fuzzy(key),
                                 SearchMode::Regex => viewer.update_regex(key),
                             },
@@ -202,7 +202,7 @@ impl App {
         let viewer = self.tabs.selected();
 
         match &self.mode {
-            Mode::Main(main) => match main {
+            Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(nav) => match nav {
                     NavMode::Current => {
                         viewer.current.previous();
@@ -223,7 +223,7 @@ impl App {
         let viewer = self.tabs.selected();
 
         match &self.mode {
-            Mode::Main(main) => match main {
+            Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(nav) => match nav {
                     NavMode::Current => {
                         viewer.current.next();
@@ -244,7 +244,7 @@ impl App {
         let mode = self.mode.clone();
 
         match mode {
-            Mode::Main(main) => match main {
+            Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(nav) => {
                     self.mode = match nav {
                         NavMode::Current => Mode::Main(MainMode::Navigate(NavMode::Prevs)),
@@ -267,7 +267,7 @@ impl App {
         let mode = self.mode.clone();
 
         match mode {
-            Mode::Main(main) => match main {
+            Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(nav) => {
                     self.mode = match nav {
                         NavMode::Current => Mode::Main(MainMode::Navigate(NavMode::Nexts)),

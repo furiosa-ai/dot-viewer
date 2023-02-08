@@ -10,12 +10,12 @@ use tui::{
 };
 
 // input block
-pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, app: &mut App) {
+pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, app: &mut App) {
     // surrounding block
-    let title = match mode {
+    let title = match mmode {
         MainMode::Navigate(_) => "Navigate",
-        MainMode::Input(input) => match input {
-            InputMode::Search(search) => match search {
+        MainMode::Input(imode) => match imode {
+            InputMode::Search(smode) => match smode {
                 SearchMode::Fuzzy => "Fuzzy Search",
                 SearchMode::Regex => "Regex Search",
             },
@@ -23,7 +23,7 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, ap
         },
     };
 
-    let block = surrounding_block(title.to_string(), matches!(mode, MainMode::Input(_)));
+    let block = surrounding_block(title.to_string(), matches!(mmode, MainMode::Input(_)));
 
     f.render_widget(block, chunk);
 
@@ -33,16 +33,16 @@ pub fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, ap
         .margin(1)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
-    draw_help(f, chunks[0], mode, app);
-    match mode {
-        MainMode::Navigate(_) => draw_error(f, chunks[1], mode, app),
-        MainMode::Input(_) => draw_form(f, chunks[1], mode, app),
+    draw_help(f, chunks[0], mmode, app);
+    match mmode {
+        MainMode::Navigate(_) => draw_error(f, chunks[1], app),
+        MainMode::Input(_) => draw_form(f, chunks[1], mmode, app),
     };
 }
 
 // help block
-fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, _app: &mut App) {
-    let (msg, style) = match &mode {
+fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, _app: &mut App) {
+    let (msg, style) = match &mmode {
         MainMode::Navigate(_) => (
             vec![
                 Span::raw("Press "),
@@ -66,7 +66,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, _app: &
             ],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
-        MainMode::Input(input) => match input {
+        MainMode::Input(imode) => match imode {
             InputMode::Search(_) => (
                 vec![
                     Span::raw("Press "),
@@ -109,7 +109,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, _app: &
 }
 
 // error block
-fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, _mode: &MainMode, app: &mut App) {
+fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let msg = match &app.result {
         Ok(Some(msg)) => Some(msg.clone()),
         Err(err) => Some(format!("{}", err)),
@@ -124,15 +124,15 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, _mode: &MainMode, app: 
 }
 
 // input block
-fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, app: &mut App) {
-    let input = Paragraph::new(app.input.key()).style(match mode {
+fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, app: &mut App) {
+    let input = Paragraph::new(app.input.key()).style(match mmode {
         MainMode::Navigate(_) => Style::default(),
         MainMode::Input(_) => Style::default().fg(Color::Yellow),
     });
     f.render_widget(input, chunk);
 
     // cursor
-    match mode {
+    match mmode {
         MainMode::Navigate(_) => {}
         MainMode::Input(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
     }
