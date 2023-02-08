@@ -133,7 +133,10 @@ impl Viewer {
         if let Ok(matcher) = Regex::new(key) {
             let graph = graph.as_ref().unwrap();
             let node = graph.search(id).unwrap();
-            let raw = node.to_dot(0);
+
+            let mut buffer = Vec::new();
+            let _ = node.to_dot(0, &mut buffer);
+            let raw = std::str::from_utf8(&buffer).unwrap();
 
             matcher.is_match(&raw).then_some((id.to_string(), Vec::new()))
         } else {
