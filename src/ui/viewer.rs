@@ -56,7 +56,7 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, view
     let title = format!("Nodes {}", viewer.progress_current());
     let block = surrounding_block(title, *mode == MainMode::Navigate(NavMode::Current));
 
-    let (froms, tos) = match &viewer.current() {
+    let (froms, tos) = match &viewer.current_id() {
         Some(id) => {
             let froms = viewer.graph.froms(id).unwrap();
             let tos = viewer.graph.tos(id).unwrap();
@@ -145,8 +145,8 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, vie
     let block = surrounding_block("Attrs".to_string(), false);
 
     let id = match mode {
-        MainMode::Navigate(_) => viewer.current(),
-        MainMode::Input(_) => viewer.matched(),
+        MainMode::Navigate(_) => viewer.current_id(),
+        MainMode::Input(_) => viewer.matched_id(),
     };
 
     if let Some(id) = id {

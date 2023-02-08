@@ -15,7 +15,7 @@ use tui::{
     Terminal,
 };
 
-pub fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
+fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
@@ -25,7 +25,7 @@ pub fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     Ok(terminal)
 }
 
-pub fn cleanup<B: Backend>(terminal: &mut Terminal<B>) -> Result<(), Box<dyn Error>> {
+fn cleanup<B: Backend>(terminal: &mut Terminal<B>) -> Result<(), Box<dyn Error>> {
     terminal.clear()?;
     let mut stdout = io::stdout();
     execute!(stdout, LeaveAlternateScreen, DisableMouseCapture)?;

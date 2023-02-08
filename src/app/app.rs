@@ -31,7 +31,7 @@ impl App {
         })
     }
 
-    pub fn selected(&mut self) -> Option<String> {
+    pub fn selected_id(&mut self) -> Option<String> {
         match &self.mode {
             Mode::Main(main) => match main {
                 MainMode::Navigate(nav) => {
@@ -46,7 +46,7 @@ impl App {
                 MainMode::Input(_) => {
                     let viewer = self.tabs.selected();
 
-                    viewer.matches.selected().map(|(item, _)| item)
+                    viewer.matches.selected().map(|(id, _)| id)
                 }
             },
             Mode::Popup => None,
@@ -54,7 +54,8 @@ impl App {
     }
 
     pub fn goto(&mut self) -> Res {
-        let id = self.selected();
+        let id = self.selected_id();
+
         id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
             let viewer = self.tabs.selected();
             viewer.goto(&id)
@@ -62,17 +63,17 @@ impl App {
     }
 
     pub fn filter(&mut self) -> Res {
-        let viewer = self.tabs.selected();
-        let viewer = viewer.filter(&self.input.key())?;
-        self.tabs.open(viewer);
+        let viewer_current = self.tabs.selected();
+        let viewer_new = viewer_current.filter(&self.input.key())?;
+        self.tabs.open(viewer_new);
 
         Ok(None)
     }
 
     pub fn subgraph(&mut self) -> Res {
-        let viewer = self.tabs.selected();
-        let viewer = viewer.subgraph()?;
-        self.tabs.open(viewer);
+        let viewer_current = self.tabs.selected();
+        let viewer_new = viewer_current.subgraph()?;
+        self.tabs.open(viewer_new);
 
         Ok(None)
     }
@@ -105,15 +106,15 @@ impl App {
     pub fn neighbors(&mut self, depth: usize) -> Res {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
-        let node = &viewer.current().unwrap();
+        let node = &viewer.current_id().unwrap();
 
         let filename = format!("{}-{}", node.clone(), depth);
 
         graph.neighbors(node, depth).map_or_else(
             |e| Err(DotViewerError::ViewerError(e.to_string())),
-            |neighbors| match neighbors {
-                Some(neighbors) => {
-                    write(filename, &neighbors)
+            |neighbor_graph| match neighbor_graph {
+                Some(neighbor_graph) => {
+                    write(filename, &neighbor_graph)
                         .map(Some)
                         .map_err(|e| DotViewerError::IOError(e.to_string()))
                 }

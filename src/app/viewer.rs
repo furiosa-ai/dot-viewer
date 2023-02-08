@@ -45,11 +45,11 @@ impl Viewer {
         viewer
     }
 
-    pub fn current(&self) -> Option<String> {
+    pub fn current_id(&self) -> Option<String> {
         self.current.selected()
     }
 
-    pub fn matched(&self) -> Option<String> {
+    pub fn matched_id(&self) -> Option<String> {
         self.matches.selected().map(|(item, _)| item)
     }
 
@@ -101,7 +101,7 @@ impl Viewer {
     }
 
     pub fn update_adjacent(&mut self) -> Result<(), DotViewerError> {
-        let id = self.current().unwrap();
+        let id = self.current_id().unwrap();
 
         let prevs = self.graph.froms(&id)?.iter().map(|n| n.to_string()).collect();
         self.prevs = List::with_items(prevs);
