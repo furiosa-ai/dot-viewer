@@ -119,42 +119,16 @@ impl Viewer {
         self.matches = List::with_items(matches);
     }
 
-    fn match_fuzzy(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
-        let matcher = SkimMatcherV2::default();
-
-        matcher.fuzzy_indices(id, key).map(|(_, idxs)| (id.to_string(), idxs))
-    }
-
     pub fn update_fuzzy(&mut self, key: String) {
-        self.update_matches(Self::match_fuzzy, &key, &None);
-    }
-
-    fn match_regex(id: &str, key: &str, graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
-        if let Ok(matcher) = Regex::new(key) {
-            let graph = graph.as_ref().unwrap();
-            let node = graph.search_node(id).unwrap();
-
-            let mut buffer = Vec::new();
-            let _ = node.to_dot(0, &mut buffer);
-            let raw = std::str::from_utf8(&buffer).unwrap();
-
-            matcher.is_match(&raw).then_some((id.to_string(), Vec::new()))
-        } else {
-            None
-        }
+        self.update_matches(match_fuzzy, &key, &None);
     }
 
     pub fn update_regex(&mut self, key: String) {
-        self.update_matches(Self::match_regex, &key, &Some(self.graph.clone()));
-    }
-
-    fn match_filter(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
-        let highlight: Vec<usize> = (0..key.len()).collect();
-        id.starts_with(key).then_some((id.to_string(), highlight))
+        self.update_matches(match_regex, &key, &Some(self.graph.clone()));
     }
 
     pub fn update_filter(&mut self, key: String) {
-        self.update_matches(Self::match_filter, &key, &None);
+        self.update_matches(match_prefix, &key, &None);
     }
 
     pub fn update_trie(&mut self) {
@@ -180,4 +154,30 @@ impl Viewer {
             "No Match...".to_string()
         }
     }
+}
+
+fn match_fuzzy(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
+    let matcher = SkimMatcherV2::default();
+
+    matcher.fuzzy_indices(id, key).map(|(_, idxs)| (id.to_string(), idxs))
+}
+
+fn match_regex(id: &str, key: &str, graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
+    if let Ok(matcher) = Regex::new(key) {
+        let graph = graph.as_ref().unwrap();
+        let node = graph.search_node(id).unwrap();
+
+        let mut buffer = Vec::new();
+        let _ = node.to_dot(0, &mut buffer);
+        let raw = std::str::from_utf8(&buffer).unwrap();
+
+        matcher.is_match(&raw).then_some((id.to_string(), Vec::new()))
+    } else {
+        None
+    }
+}
+
+fn match_prefix(id: &str, key: &str, _graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
+    let highlight: Vec<usize> = (0..key.len()).collect();
+    id.starts_with(key).then_some((id.to_string(), highlight))
 }

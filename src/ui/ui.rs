@@ -27,11 +27,11 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 }
 
 pub fn draw_app<B: Backend>(f: &mut Frame<B>, size: Rect, mode: &MainMode, app: &mut App) {
-    // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())
         .split(size);
+
     draw_tabs(f, chunks[0], mode, app);
     draw_input(f, chunks[1], mode, app);
 }

@@ -83,7 +83,7 @@ impl App {
 
         let filename: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
 
-        Self::write(filename, graph)
+        write(filename, graph)
             .map(Some)
             .map_err(|e| DotViewerError::IOError(e.to_string()))
     }
@@ -113,7 +113,7 @@ impl App {
             |e| Err(DotViewerError::ViewerError(e.to_string())),
             |neighbors| match neighbors {
                 Some(neighbors) => {
-                    Self::write(filename, &neighbors)
+                    write(filename, &neighbors)
                         .map(Some)
                         .map_err(|e| DotViewerError::IOError(e.to_string()))
                 }
@@ -139,24 +139,24 @@ impl App {
 
     pub fn to_popup_mode(&mut self) {
         self.mode = Mode::Popup;
-    }
+    } 
+}
 
-    fn write(filename: String, graph: &Graph) -> Result<String, std::io::Error> {
-        std::fs::create_dir_all("./exports")?;
-        let mut file_export = std::fs::OpenOptions::new()
-            .write(true)
-            .truncate(true)
-            .create(true)
-            .open(format!("./exports/{}.dot", filename))?;
-        graph.to_dot(&mut file_export)?;
+fn write(filename: String, graph: &Graph) -> Result<String, std::io::Error> {
+    std::fs::create_dir_all("./exports")?;
+    let mut file_export = std::fs::OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .create(true)
+        .open(format!("./exports/{}.dot", filename))?;
+    graph.to_dot(&mut file_export)?;
 
-        let mut file_current = std::fs::OpenOptions::new()
-            .write(true)
-            .truncate(true)
-            .create(true)
-            .open("./exports/current.dot")?;
-        graph.to_dot(&mut file_current)?;
+    let mut file_current = std::fs::OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .create(true)
+        .open("./exports/current.dot")?;
+    graph.to_dot(&mut file_current)?;
 
-        Ok(format!("file successfully written to {}", filename))
-    }
+    Ok(format!("file successfully written to {}", filename))
 }

@@ -10,13 +10,10 @@ use tui::{
 use tui_tree_widget::Tree as TUITree;
 
 pub fn draw_popup<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
-    // surrounding block
     let block = surrounding_block("Filter by Subgraph".to_string(), false);
-
     let popup = centered_rect(70, 70, size);
 
     draw_tree(f, popup, app);
-
     f.render_widget(block, popup);
 }
 

@@ -21,11 +21,11 @@ pub fn draw_viewer<B: Backend>(
     mode: &MainMode,
     viewer: &mut Viewer,
 ) {
-    // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(35), Constraint::Percentage(65)].as_ref())
         .split(chunk);
+
     draw_left(f, chunks[0], mode, viewer);
     draw_right(f, chunks[1], mode, viewer);
 }
@@ -40,11 +40,11 @@ fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer:
 fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
     match &mode {
         MainMode::Navigate(_) => {
-            // inner blocks
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
                 .split(chunk);
+
             draw_adjacent(f, chunks[0], mode, viewer);
             draw_metadata(f, chunks[1], mode, viewer);
         }
@@ -53,7 +53,6 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer
 }
 
 fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
-    // surrounding block
     let title = format!("Nodes {}", viewer.progress_current());
     let block = surrounding_block(title, *mode == MainMode::Navigate(NavMode::Current));
 
@@ -92,18 +91,17 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, view
 
 // adjacent nodes block
 fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
-    // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
+
     draw_prevs(f, chunks[0], mode, viewer);
     draw_nexts(f, chunks[1], mode, viewer);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
-    // surrounding block
     let block =
         surrounding_block("Prev Nodes".to_string(), *mode == MainMode::Navigate(NavMode::Prevs));
 
@@ -124,7 +122,6 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
-    // surrounding block
     let block =
         surrounding_block("Next Nodes".to_string(), *mode == MainMode::Navigate(NavMode::Nexts));
 
@@ -145,7 +142,6 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer
 
 // node attr block
 fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, viewer: &mut Viewer) {
-    // surrounding block
     let block = surrounding_block("Attrs".to_string(), false);
 
     let id = match mode {
