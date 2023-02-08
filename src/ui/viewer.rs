@@ -154,7 +154,7 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mode: &MainMode, vie
     };
 
     if let Some(id) = id {
-        let node = viewer.graph.search(&id).unwrap();
+        let node = viewer.graph.search_node(&id).unwrap();
         let paragraph =
             Paragraph::new(pretty_metadata(node)).block(block).wrap(Wrap { trim: true });
 

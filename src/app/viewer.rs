@@ -132,7 +132,7 @@ impl Viewer {
     fn match_regex(id: &str, key: &str, graph: &Option<Graph>) -> Option<(String, Vec<usize>)> {
         if let Ok(matcher) = Regex::new(key) {
             let graph = graph.as_ref().unwrap();
-            let node = graph.search(id).unwrap();
+            let node = graph.search_node(id).unwrap();
 
             let mut buffer = Vec::new();
             let _ = node.to_dot(0, &mut buffer);
