@@ -80,7 +80,11 @@ impl Tree {
 }
 
 fn to_tree(root: &SubGraph, graph: &Graph) -> TreeItem<'static> {
-    let id = root.id.clone();
+    let subgraphs = graph.count_subgraphs(&root.id).expect("root should exist in the graph");
+    let nodes = graph.count_nodes(&root.id).expect("root should exist in the graph");
+    let edges = graph.count_edges(&root.id).expect("root should exist in the graph");
+
+    let id = format!("{} (s: {} n: {} e: {})", root.id, subgraphs, nodes, edges);
 
     let children = graph.children(&root.id).expect("root should exist in the graph");
     let children: Vec<TreeItem> = children.par_iter().map(|&child| to_tree(child, graph)).collect();
