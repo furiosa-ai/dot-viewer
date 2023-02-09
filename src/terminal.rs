@@ -5,11 +5,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::{error::Error, io};
-use std::{
-    io::Stdout,
-    sync::{Arc, Mutex},
-    thread,
-};
+use std::io::Stdout;
 use tui::{
     backend::{Backend, CrosstermBackend},
     Terminal,
@@ -25,50 +21,23 @@ fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     Ok(terminal)
 }
 
-fn cleanup<B: Backend>(terminal: &mut Terminal<B>) -> Result<(), Box<dyn Error>> {
-    terminal.clear()?;
+pub fn cleanup() -> Result<(), Box<dyn Error>> {
     let mut stdout = io::stdout();
     execute!(stdout, LeaveAlternateScreen, DisableMouseCapture)?;
     disable_raw_mode()?;
-    terminal.show_cursor()?;
 
     Ok(())
 }
 
 pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
     // setup terminal
-    let terminal = setup()?;
-    let terminal = Arc::new(Mutex::new(terminal));
-    let recovery = terminal.clone();
+    let mut terminal = setup()?;
 
-    // create and run app in a child thread
-    // https://stackoverflow.com/questions/43441047/whats-the-best-way-to-register-a-function-to-run-during-an-unexpected-exit-of-a
-    let child = thread::spawn(move || {
-        let mut terminal = terminal.lock().unwrap();
-        let app = App::new(&path);
-        let _ = app.map(|app| run(&mut terminal, app));
-    });
+    // run app
+    let app = App::new(&path)?;
+    let _ = run(&mut terminal, app);
 
-    match child.join() {
-        Ok(_) => {}
-        Err(e) => {
-            let mut terminal = match recovery.lock() {
-                Ok(guard) => guard,
-                Err(poisoned) => poisoned.into_inner(),
-            };
-            cleanup(&mut terminal)?;
-
-            let msg = match e.downcast_ref::<&'static str>() {
-                Some(s) => *s,
-                None => match e.downcast_ref::<String>() {
-                    Some(s) => &s[..],
-                    None => "unknown",
-                },
-            };
-
-            println!("Err: dot-viewer paniced: {:?}", msg);
-        }
-    };
+    let _ = cleanup();
 
     Ok(())
 }
@@ -84,9 +53,7 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
         if app.quit {
             break;
         }
-    }
-
-    let _ = cleanup(terminal);
+    } 
 
     Ok(())
 }

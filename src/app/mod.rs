@@ -13,6 +13,7 @@ use crate::app::{
     error::{DotViewerError, Res},
     utils::{Input, List, Tabs},
 };
+use crate::terminal;
 use dot_graph::{parser, Graph};
 
 /// `App` holds `dot-viewer` application states.
@@ -170,6 +171,12 @@ impl App {
             },
             Mode::Popup => None,
         }
+    }
+}
+
+impl Drop for App {
+    fn drop(&mut self) {
+        let _ = terminal::cleanup();
     }
 }
 
