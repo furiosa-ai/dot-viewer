@@ -1,10 +1,11 @@
 use crate::{
     app::{InputMode, MainMode, NavMode, SearchMode, View},
-    ui::{ui::surrounding_block, utils::htmlparser::parse_html},
+    ui::{ui::surrounding_block, utils::htmlparser},
 };
 use dot_graph::Node;
 use rayon::prelude::*;
 use std::collections::HashSet;
+use std::fmt::Write;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
@@ -14,7 +15,6 @@ use tui::{
     Frame,
 };
 
-// current tab
 pub fn draw_view<B: Backend>(
     f: &mut Frame<B>,
     chunk: Rect,
@@ -89,7 +89,6 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vie
     f.render_stateful_widget(list, chunk, &mut view.current.state);
 }
 
-// adjacent nodes block
 fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
@@ -100,7 +99,6 @@ fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vi
     draw_nexts(f, chunks[1], mmode, view);
 }
 
-// TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
     let block =
         surrounding_block("Prev Nodes".to_string(), *mmode == MainMode::Navigate(NavMode::Prevs));
@@ -120,7 +118,6 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view:
     f.render_stateful_widget(list, chunk, &mut view.prevs.state);
 }
 
-// TODO modularize draw_prevs and draw_edges with impl in dot-graph
 fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
     let block =
         surrounding_block("Next Nodes".to_string(), *mmode == MainMode::Navigate(NavMode::Nexts));
@@ -140,7 +137,6 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view:
     f.render_stateful_widget(list, chunk, &mut view.nexts.state);
 }
 
-// node attr block
 fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
     let block = surrounding_block("Attrs".to_string(), false);
 
@@ -160,32 +156,7 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vi
     }
 }
 
-fn pretty_metadata(node: &Node) -> String {
-    let mut metadata = "".to_string();
-
-    metadata.push_str(&format!("[{}]\n\n", node.id));
-
-    let empty = "".to_string();
-    let attrs = node.attrs.get("label").unwrap_or(&empty);
-    let attrs = parse_html(attrs);
-
-    for attr in attrs {
-        if attr.starts_with("Input") {
-            continue;
-        }
-
-        let vals = attr.split("\\l");
-        for val in vals {
-            metadata.push_str(&format!("{}\n", val));
-        }
-    }
-
-    metadata
-}
-
-// match result block
 fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, view: &mut View) {
-    // surrounding block
     let title = match input {
         InputMode::Search(smode) => match smode {
             SearchMode::Fuzzy => "Fuzzy Searching...".to_string(),
@@ -216,4 +187,28 @@ fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, vi
         .highlight_symbol("> ");
 
     f.render_stateful_widget(list, chunk, &mut view.matches.state);
+}
+
+fn pretty_metadata(node: &Node) -> String {
+    let mut metadata = String::new();
+
+    writeln!(metadata, "[{}]", node.id).unwrap();
+    writeln!(metadata).unwrap();
+
+    let empty = String::new();
+    let attrs = node.attrs.get("label").unwrap_or(&empty);
+    let attrs = htmlparser::parse(attrs);
+
+    for attr in attrs {
+        if attr.starts_with("Input") {
+            continue;
+        }
+
+        let vals = attr.split("\\l");
+        for val in vals {
+            writeln!(metadata, "{}", val).unwrap();
+        }
+    }
+
+    metadata
 }

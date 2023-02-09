@@ -20,12 +20,12 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     f.render_widget(block, size);
 
     match &app.mode {
-        Mode::Main(mmode) => draw_app(f, size, &mmode.clone(), app),
+        Mode::Main(mmode) => draw_main(f, size, &mmode.clone(), app),
         Mode::Popup => draw_popup(f, size, app),
     }
 }
 
-pub fn draw_app<B: Backend>(f: &mut Frame<B>, size: Rect, mode: &MainMode, app: &mut App) {
+pub fn draw_main<B: Backend>(f: &mut Frame<B>, size: Rect, mode: &MainMode, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())

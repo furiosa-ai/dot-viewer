@@ -9,7 +9,6 @@ use tui::{
     Frame,
 };
 
-// main block
 pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -17,14 +16,14 @@ pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, ap
         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
         .split(chunk);
 
-    draw_nav(f, chunks[0], app);
+    draw_nav_bar(f, chunks[0], app);
 
     let view = app.tabs.selected();
     draw_view(f, chunks[1], mmode, view);
 }
 
-pub fn draw_nav<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let block = Block::default().borders(Borders::ALL).title("Tabs");
+pub fn draw_nav_bar<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+    let block = Block::default().borders(Borders::ALL).title("Views");
 
     let titles: Vec<String> = app.tabs.tabs.iter().map(|view| view.title.clone()).collect();
     let titles = titles

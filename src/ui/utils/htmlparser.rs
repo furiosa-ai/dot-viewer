@@ -1,6 +1,6 @@
 use html_parser::{Dom, Element, Node};
 
-pub fn parse_html(html: &str) -> Vec<String> {
+pub fn parse(html: &str) -> Vec<String> {
     let dom = Dom::parse(html);
 
     match dom {
