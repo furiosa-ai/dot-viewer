@@ -1,5 +1,5 @@
 use crate::app::{
-    app::App,
+    App,
     error::{DotViewerError, Res},
     modes::{InputMode, MainMode, Mode, NavMode, SearchMode},
 };
