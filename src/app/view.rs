@@ -100,7 +100,7 @@ impl View {
                         graph.map_or(
                             Err(DotViewerError::ViewerError("empty graph".to_string())),
                             |graph| {
-                                let view = Self::new(key, graph);
+                                let view = Self::new(format!("{} - {}", self.title, key), graph);
                                 Ok(view)
                             },
                         )
