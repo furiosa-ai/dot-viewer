@@ -9,7 +9,7 @@ struct Node {
 
 // https://github.com/EdJoPaTo/tui-rs-tree-widget/blob/main/examples/util/mod.rs
 pub struct Tree {
-    pub state: TreeState, 
+    pub state: TreeState,
     pub tree: Vec<TreeItem<'static>>,
     items: Vec<Node>,
 }

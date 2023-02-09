@@ -1,7 +1,7 @@
 use crate::app::{
-    App,
     error::{DotViewerError, Res},
     modes::{InputMode, MainMode, Mode, NavMode, SearchMode},
+    App,
 };
 use crossterm::event::{KeyCode, KeyEvent};
 
