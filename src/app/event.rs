@@ -69,16 +69,16 @@ impl App {
     fn char_input(&mut self, c: char, imode: &InputMode) -> Res {
         self.input.insert(c);
 
-        let viewer = self.tabs.selected();
+        let view = self.tabs.selected();
         let key = self.input.key();
         match imode {
             InputMode::Search(smode) => match smode {
-                SearchMode::Fuzzy => viewer.update_fuzzy(key),
-                SearchMode::Regex => viewer.update_regex(key),
+                SearchMode::Fuzzy => view.update_fuzzy(key),
+                SearchMode::Regex => view.update_regex(key),
             },
-            InputMode::Filter => viewer.update_filter(key),
+            InputMode::Filter => view.update_filter(key),
         };
-        viewer.update_trie();
+        view.update_trie();
 
         Ok(None)
     }
@@ -120,7 +120,7 @@ impl App {
     }
 
     fn backspace(&mut self) -> Res {
-        let viewer = self.tabs.selected();
+        let view = self.tabs.selected();
 
         match &self.mode {
             Mode::Main(MainMode::Input(imode)) => {
@@ -129,12 +129,12 @@ impl App {
                 let key = self.input.key();
                 match imode {
                     InputMode::Search(smode) => match smode {
-                        SearchMode::Fuzzy => viewer.update_fuzzy(key),
-                        SearchMode::Regex => viewer.update_regex(key),
+                        SearchMode::Fuzzy => view.update_fuzzy(key),
+                        SearchMode::Regex => view.update_regex(key),
                     },
-                    InputMode::Filter => viewer.update_filter(key),
+                    InputMode::Filter => view.update_filter(key),
                 };
-                viewer.update_trie();
+                view.update_trie();
 
                 Ok(None)
             }
@@ -166,18 +166,18 @@ impl App {
                     Ok(None)
                 }
                 MainMode::Input(imode) => {
-                    let viewer = self.tabs.selected();
+                    let view = self.tabs.selected();
 
-                    if let Some(key) = viewer.autocomplete(&self.input.key()) {
+                    if let Some(key) = view.autocomplete(&self.input.key()) {
                         self.input.set(key);
 
                         let key = self.input.key();
                         match imode {
                             InputMode::Search(smode) => match smode {
-                                SearchMode::Fuzzy => viewer.update_fuzzy(key),
-                                SearchMode::Regex => viewer.update_regex(key),
+                                SearchMode::Fuzzy => view.update_fuzzy(key),
+                                SearchMode::Regex => view.update_regex(key),
                             },
-                            InputMode::Filter => viewer.update_filter(key),
+                            InputMode::Filter => view.update_filter(key),
                         };
                     }
 
@@ -199,42 +199,42 @@ impl App {
     }
 
     fn up(&mut self) -> Res {
-        let viewer = self.tabs.selected();
+        let view = self.tabs.selected();
 
         match &self.mode {
             Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(nav) => match nav {
                     NavMode::Current => {
-                        viewer.current.previous();
-                        viewer.update_adjacent()?;
+                        view.current.previous();
+                        view.update_adjacent()?;
                     }
-                    NavMode::Prevs => viewer.prevs.previous(),
-                    NavMode::Nexts => viewer.nexts.previous(),
+                    NavMode::Prevs => view.prevs.previous(),
+                    NavMode::Nexts => view.nexts.previous(),
                 },
-                MainMode::Input(_) => viewer.matches.previous(),
+                MainMode::Input(_) => view.matches.previous(),
             },
-            Mode::Popup => viewer.tree.up(),
+            Mode::Popup => view.tree.up(),
         };
 
         Ok(None)
     }
 
     fn down(&mut self) -> Res {
-        let viewer = self.tabs.selected();
+        let view = self.tabs.selected();
 
         match &self.mode {
             Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(nav) => match nav {
                     NavMode::Current => {
-                        viewer.current.next();
-                        viewer.update_adjacent()?;
+                        view.current.next();
+                        view.update_adjacent()?;
                     }
-                    NavMode::Prevs => viewer.prevs.next(),
-                    NavMode::Nexts => viewer.nexts.next(),
+                    NavMode::Prevs => view.prevs.next(),
+                    NavMode::Nexts => view.nexts.next(),
                 },
-                MainMode::Input(_) => viewer.matches.next(),
+                MainMode::Input(_) => view.matches.next(),
             },
-            Mode::Popup => viewer.tree.down(),
+            Mode::Popup => view.tree.down(),
         };
 
         Ok(None)
@@ -255,8 +255,8 @@ impl App {
                 MainMode::Input(_) => self.input.front(),
             },
             Mode::Popup => {
-                let viewer = self.tabs.selected();
-                viewer.tree.right();
+                let view = self.tabs.selected();
+                view.tree.right();
             }
         }
 
@@ -278,8 +278,8 @@ impl App {
                 MainMode::Input(_) => self.input.back(),
             },
             Mode::Popup => {
-                let viewer = self.tabs.selected();
-                viewer.tree.left();
+                let view = self.tabs.selected();
+                view.tree.left();
             }
         }
 

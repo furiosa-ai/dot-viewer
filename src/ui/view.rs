@@ -1,5 +1,5 @@
 use crate::{
-    app::{InputMode, MainMode, NavMode, SearchMode, Viewer},
+    app::{InputMode, MainMode, NavMode, SearchMode, View},
     ui::{ui::surrounding_block, utils::htmlparser::parse_html},
 };
 use dot_graph::Node;
@@ -15,29 +15,29 @@ use tui::{
 };
 
 // current tab
-pub fn draw_viewer<B: Backend>(
+pub fn draw_view<B: Backend>(
     f: &mut Frame<B>,
     chunk: Rect,
     mmode: &MainMode,
-    viewer: &mut Viewer,
+    view: &mut View,
 ) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(35), Constraint::Percentage(65)].as_ref())
         .split(chunk);
 
-    draw_left(f, chunks[0], mmode, viewer);
-    draw_right(f, chunks[1], mmode, viewer);
+    draw_left(f, chunks[0], mmode, view);
+    draw_right(f, chunks[1], mmode, view);
 }
 
-fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
+fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
     match &mmode {
-        MainMode::Navigate(_) => draw_current(f, chunk, mmode, viewer),
-        MainMode::Input(imode) => draw_matches(f, chunk, imode, viewer),
+        MainMode::Navigate(_) => draw_current(f, chunk, mmode, view),
+        MainMode::Input(imode) => draw_matches(f, chunk, imode, view),
     }
 }
 
-fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
+fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
     match &mmode {
         MainMode::Navigate(_) => {
             let chunks = Layout::default()
@@ -45,27 +45,27 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewe
                 .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
                 .split(chunk);
 
-            draw_adjacent(f, chunks[0], mmode, viewer);
-            draw_metadata(f, chunks[1], mmode, viewer);
+            draw_adjacent(f, chunks[0], mmode, view);
+            draw_metadata(f, chunks[1], mmode, view);
         }
-        MainMode::Input(_) => draw_metadata(f, chunk, mmode, viewer),
+        MainMode::Input(_) => draw_metadata(f, chunk, mmode, view),
     }
 }
 
-fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
-    let title = format!("Nodes {}", viewer.progress_current());
+fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+    let title = format!("Nodes {}", view.progress_current());
     let block = surrounding_block(title, *mmode == MainMode::Navigate(NavMode::Current));
 
-    let (froms, tos) = match &viewer.current_id() {
+    let (froms, tos) = match &view.current_id() {
         Some(id) => {
-            let froms = viewer.graph.froms(id).unwrap();
-            let tos = viewer.graph.tos(id).unwrap();
+            let froms = view.graph.froms(id).unwrap();
+            let tos = view.graph.tos(id).unwrap();
             (froms, tos)
         }
         None => (HashSet::new(), HashSet::new()),
     };
 
-    let list: Vec<ListItem> = viewer
+    let list: Vec<ListItem> = view
         .current
         .items
         .par_iter()
@@ -86,26 +86,26 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vie
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut viewer.current.state);
+    f.render_stateful_widget(list, chunk, &mut view.current.state);
 }
 
 // adjacent nodes block
-fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
+fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
 
-    draw_prevs(f, chunks[0], mmode, viewer);
-    draw_nexts(f, chunks[1], mmode, viewer);
+    draw_prevs(f, chunks[0], mmode, view);
+    draw_nexts(f, chunks[1], mmode, view);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
     let block =
         surrounding_block("Prev Nodes".to_string(), *mmode == MainMode::Navigate(NavMode::Prevs));
 
-    let list: Vec<ListItem> = viewer
+    let list: Vec<ListItem> = view
         .prevs
         .items
         .par_iter()
@@ -117,15 +117,15 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewe
         .highlight_style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut viewer.prevs.state);
+    f.render_stateful_widget(list, chunk, &mut view.prevs.state);
 }
 
 // TODO modularize draw_prevs and draw_edges with impl in dot-graph
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
     let block =
         surrounding_block("Next Nodes".to_string(), *mmode == MainMode::Navigate(NavMode::Nexts));
 
-    let list: Vec<ListItem> = viewer
+    let list: Vec<ListItem> = view
         .nexts
         .items
         .par_iter()
@@ -137,20 +137,20 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewe
         .highlight_style(Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut viewer.nexts.state);
+    f.render_stateful_widget(list, chunk, &mut view.nexts.state);
 }
 
 // node attr block
-fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, viewer: &mut Viewer) {
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
     let block = surrounding_block("Attrs".to_string(), false);
 
     let id = match mmode {
-        MainMode::Navigate(_) => viewer.current_id(),
-        MainMode::Input(_) => viewer.matched_id(),
+        MainMode::Navigate(_) => view.current_id(),
+        MainMode::Input(_) => view.matched_id(),
     };
 
     if let Some(id) = id {
-        let node = viewer.graph.search_node(&id).unwrap();
+        let node = view.graph.search_node(&id).unwrap();
         let paragraph =
             Paragraph::new(pretty_metadata(node)).block(block).wrap(Wrap { trim: true });
 
@@ -184,7 +184,7 @@ fn pretty_metadata(node: &Node) -> String {
 }
 
 // match result block
-fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, viewer: &mut Viewer) {
+fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, view: &mut View) {
     // surrounding block
     let title = match input {
         InputMode::Search(smode) => match smode {
@@ -193,10 +193,10 @@ fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, vi
         },
         InputMode::Filter => "Filtering...".to_string(),
     };
-    let title = format!("{} {}", title, viewer.progress_matches());
+    let title = format!("{} {}", title, view.progress_matches());
     let block = surrounding_block(title, true);
 
-    let list: Vec<ListItem> = viewer
+    let list: Vec<ListItem> = view
         .matches
         .items
         .par_iter()
@@ -215,5 +215,5 @@ fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, vi
         .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    f.render_stateful_widget(list, chunk, &mut viewer.matches.state);
+    f.render_stateful_widget(list, chunk, &mut view.matches.state);
 }

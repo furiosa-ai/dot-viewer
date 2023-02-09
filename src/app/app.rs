@@ -2,7 +2,7 @@ use crate::app::{
     error::{DotViewerError, Res},
     modes::{InputMode, MainMode, Mode, NavMode},
     utils::{Input, List, Tabs},
-    viewer::Viewer,
+    view::View,
 };
 use dot_graph::{parser, Graph};
 
@@ -11,15 +11,15 @@ pub struct App {
     pub mode: Mode,
     pub result: Res,
 
-    pub tabs: Tabs<Viewer>,
+    pub tabs: Tabs<View>,
     pub input: Input,
 }
 
 impl App {
     pub fn new(path: &str) -> Result<App, DotViewerError> {
         let graph = parser::parse(path)?;
-        let viewer = Viewer::new(graph.id.clone(), graph);
-        let tabs = Tabs::with_tabs(vec![viewer])?;
+        let view = View::new(graph.id.clone(), graph);
+        let tabs = Tabs::with_tabs(vec![view])?;
         let input = Input::new();
 
         Ok(App {
@@ -35,18 +35,18 @@ impl App {
         match &self.mode {
             Mode::Main(main) => match main {
                 MainMode::Navigate(nav) => {
-                    let viewer = self.tabs.selected();
+                    let view = self.tabs.selected();
 
                     match nav {
-                        NavMode::Current => viewer.current.selected(),
-                        NavMode::Prevs => viewer.prevs.selected(),
-                        NavMode::Nexts => viewer.nexts.selected(),
+                        NavMode::Current => view.current.selected(),
+                        NavMode::Prevs => view.prevs.selected(),
+                        NavMode::Nexts => view.nexts.selected(),
                     }
                 }
                 MainMode::Input(_) => {
-                    let viewer = self.tabs.selected();
+                    let view = self.tabs.selected();
 
-                    viewer.matches.selected().map(|(id, _)| id)
+                    view.matches.selected().map(|(id, _)| id)
                 }
             },
             Mode::Popup => None,
@@ -57,32 +57,32 @@ impl App {
         let id = self.selected_id();
 
         id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
-            let viewer = self.tabs.selected();
-            viewer.goto(&id)
+            let view = self.tabs.selected();
+            view.goto(&id)
         })
     }
 
     pub fn filter(&mut self) -> Res {
-        let viewer_current = self.tabs.selected();
-        let viewer_new = viewer_current.filter(&self.input.key())?;
-        self.tabs.open(viewer_new);
+        let view_current = self.tabs.selected();
+        let view_new = view_current.filter(&self.input.key())?;
+        self.tabs.open(view_new);
 
         Ok(None)
     }
 
     pub fn subgraph(&mut self) -> Res {
-        let viewer_current = self.tabs.selected();
-        let viewer_new = viewer_current.subgraph()?;
-        self.tabs.open(viewer_new);
+        let view_current = self.tabs.selected();
+        let view_new = view_current.subgraph()?;
+        self.tabs.open(view_new);
 
         Ok(None)
     }
 
     pub fn export(&mut self) -> Res {
-        let viewer = self.tabs.selected();
-        let graph = &viewer.graph;
+        let view = self.tabs.selected();
+        let graph = &view.graph;
 
-        let filename: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
+        let filename: String = view.title.chars().filter(|c| !c.is_whitespace()).collect();
 
         write(filename, graph).map(Some).map_err(|e| DotViewerError::IOError(e.to_string()))
     }
@@ -102,9 +102,9 @@ impl App {
     }
 
     pub fn neighbors(&mut self, depth: usize) -> Res {
-        let viewer = self.tabs.selected();
-        let graph = &viewer.graph;
-        let node = &viewer.current_id().unwrap();
+        let view = self.tabs.selected();
+        let graph = &view.graph;
+        let node = &view.current_id().unwrap();
 
         let filename = format!("{}-{}", node.clone(), depth);
 
@@ -132,11 +132,11 @@ impl App {
     pub fn to_input_mode(&mut self, imode: InputMode) {
         self.mode = Mode::Main(MainMode::Input(imode));
 
-        let viewer = self.tabs.selected();
+        let view = self.tabs.selected();
 
         let init: Vec<(String, Vec<usize>)> =
-            viewer.current.items.iter().map(|id| (id.clone(), Vec::new())).collect();
-        viewer.matches = List::with_items(init);
+            view.current.items.iter().map(|id| (id.clone(), Vec::new())).collect();
+        view.matches = List::with_items(init);
     }
 
     pub fn to_popup_mode(&mut self) {

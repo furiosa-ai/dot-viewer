@@ -9,7 +9,7 @@ use regex::Regex;
 
 type Matcher = fn(&str, &str, &Option<Graph>) -> Option<(String, Vec<usize>)>;
 
-pub struct Viewer {
+pub struct View {
     pub title: String,
 
     pub graph: Graph,
@@ -24,12 +24,12 @@ pub struct Viewer {
     pub tree: Tree,
 }
 
-impl Viewer {
-    pub fn new(title: String, graph: Graph) -> Viewer {
+impl View {
+    pub fn new(title: String, graph: Graph) -> View {
         let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();
         let tree = Tree::with_graph(&graph);
 
-        let mut viewer = Viewer {
+        let mut view = View {
             title,
             graph,
             current: List::with_items(nodes.clone()),
@@ -40,9 +40,9 @@ impl Viewer {
             tree,
         };
 
-        let _ = viewer.update_adjacent();
+        let _ = view.update_adjacent();
 
-        viewer
+        view
     }
 
     pub fn current_id(&self) -> Option<String> {
@@ -64,19 +64,19 @@ impl Viewer {
         })
     }
 
-    pub fn filter(&mut self, key: &str) -> Result<Viewer, DotViewerError> {
+    pub fn filter(&mut self, key: &str) -> Result<View, DotViewerError> {
         let graph = self.graph.filter(key);
 
         graph.map_or(
             Err(DotViewerError::ViewerError(format!("no match for prefix {}", key))),
             |graph| {
-                let viewer = Self::new(format!("{} - {}", self.title, key), graph);
-                Ok(viewer)
+                let view = Self::new(format!("{} - {}", self.title, key), graph);
+                Ok(view)
             },
         )
     }
 
-    pub fn subgraph(&mut self) -> Result<Viewer, DotViewerError> {
+    pub fn subgraph(&mut self) -> Result<View, DotViewerError> {
         self.tree.selected().map_or(
             Err(DotViewerError::ViewerError("no subgraph selected".to_string())),
             |key| {
@@ -86,8 +86,8 @@ impl Viewer {
                         graph.map_or(
                             Err(DotViewerError::ViewerError("empty graph".to_string())),
                             |graph| {
-                                let viewer = Self::new(key, graph);
-                                Ok(viewer)
+                                let view = Self::new(key, graph);
+                                Ok(view)
                             },
                         )
                     },
