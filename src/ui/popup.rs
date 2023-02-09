@@ -19,7 +19,7 @@ pub fn draw_popup<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
 
 fn draw_tree<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let view = app.tabs.selected();
-    let tree = &mut view.tree;
+    let tree = &mut view.subtree;
 
     let widget = TUITree::new(tree.tree.clone())
         .block(

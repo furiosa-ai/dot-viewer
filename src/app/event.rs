@@ -213,7 +213,7 @@ impl App {
                 },
                 MainMode::Input(_) => view.matches.previous(),
             },
-            Mode::Popup => view.tree.up(),
+            Mode::Popup => view.subtree.up(),
         };
 
         Ok(None)
@@ -234,7 +234,7 @@ impl App {
                 },
                 MainMode::Input(_) => view.matches.next(),
             },
-            Mode::Popup => view.tree.down(),
+            Mode::Popup => view.subtree.down(),
         };
 
         Ok(None)
@@ -256,7 +256,7 @@ impl App {
             },
             Mode::Popup => {
                 let view = self.tabs.selected();
-                view.tree.right();
+                view.subtree.right();
             }
         }
 
@@ -279,7 +279,7 @@ impl App {
             },
             Mode::Popup => {
                 let view = self.tabs.selected();
-                view.tree.left();
+                view.subtree.left();
             }
         }
 
