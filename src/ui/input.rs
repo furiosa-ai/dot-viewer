@@ -1,5 +1,5 @@
 use crate::app::{App, InputMode, MainMode, SearchMode};
-use crate::ui::ui::surrounding_block;
+use crate::ui::surrounding_block;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},

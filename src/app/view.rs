@@ -128,7 +128,7 @@ impl View {
         Ok(())
     }
 
-    /// Update matches based on the given matching function `match` with input `key`. 
+    /// Update matches based on the given matching function `match` with input `key`.
     fn update_matches(&mut self, matcher: Matcher, key: &str) {
         let matches: Vec<(String, Vec<usize>)> =
             self.current.items.par_iter().filter_map(|id| matcher(id, key, &self.graph)).collect();
@@ -201,7 +201,7 @@ fn match_regex(id: &str, key: &str, graph: &Graph) -> Option<(String, Vec<usize>
         node.to_dot(0, &mut buffer).expect("to_dot should succeed");
         let raw = std::str::from_utf8(&buffer).unwrap();
 
-        matcher.is_match(&raw).then_some((id.to_string(), Vec::new()))
+        matcher.is_match(raw).then_some((id.to_string(), Vec::new()))
     } else {
         None
     }
