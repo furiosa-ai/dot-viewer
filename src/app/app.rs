@@ -18,7 +18,7 @@ pub struct App {
 impl App {
     pub fn new(path: &str) -> Result<App, DotViewerError> {
         let graph = parser::parse(path)?;
-        let viewer = Viewer::new("DAG".to_string(), graph);
+        let viewer = Viewer::new(graph.id.clone(), graph);
         let tabs = Tabs::with_tabs(vec![viewer])?;
         let input = Input::new();
 
