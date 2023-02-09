@@ -56,9 +56,9 @@ impl App {
         })
     }
 
-    /// Apply prefix filter on the current viewer.
-    /// Based on the currently typed input, it applies a prefix filter on the current viewer,
-    /// and opens a new tab with the filtered viewer.
+    /// Apply prefix filter on the current view.
+    /// Based on the currently typed input, it applies a prefix filter on the current view,
+    /// and opens a new tab with the filtered view.
     pub fn filter(&mut self) -> Res {
         let view_current = self.tabs.selected();
         let view_new = view_current.filter(&self.input.key())?;
@@ -67,7 +67,7 @@ impl App {
         Ok(None)
     }
 
-    /// Extract a subgraph from the current viewer.
+    /// Extract a subgraph from the current view.
     /// When a subgraph id is selected in the subgraph tree,
     /// it opens a new tab containing only the selected subgraph.
     pub fn subgraph(&mut self) -> Res {
@@ -103,7 +103,7 @@ impl App {
         )
     }
 
-    /// Export the current viewer to dot.
+    /// Export the current view to dot.
     pub fn export(&mut self) -> Res {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
