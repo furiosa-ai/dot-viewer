@@ -7,6 +7,7 @@ struct Node {
     children: Vec<Node>,
 }
 
+// https://github.com/EdJoPaTo/tui-rs-tree-widget/blob/main/examples/util/mod.rs
 pub struct Tree {
     pub state: TreeState,
     items: Vec<Node>,
@@ -14,52 +15,23 @@ pub struct Tree {
 }
 
 impl Tree {
-    #[allow(dead_code)]
     pub fn with_graph(graph: &Graph) -> Self {
         let &root = graph.slookup.get_by_left(&graph.id).unwrap();
 
-        let tree = Self::to_tree(root, graph);
+        let tree = to_tree(root, graph);
         let tree = vec![tree];
 
-        let items = Self::to_items(root, graph);
+        let items = to_items(root, graph);
         let items = vec![items];
 
         let mut tree = Self { state: TreeState::default(), items, tree };
 
         if !tree.tree.is_empty() {
-            tree.state.select_first();
-            tree.state.toggle_selected();
+            tree.first();
+            tree.toggle();
         }
 
         tree
-    }
-
-    fn to_tree(root: usize, graph: &Graph) -> TreeItem<'static> {
-        let id = graph.slookup.get_by_right(&root).unwrap().to_string();
-
-        if let Some(subgraphs) = graph.subtree.get(&root) {
-            let subgraphs: Vec<TreeItem> =
-                subgraphs.par_iter().map(|&subgraph| Self::to_tree(subgraph, graph)).collect();
-
-            TreeItem::new(id, subgraphs)
-        } else {
-            TreeItem::new_leaf(id)
-        }
-    }
-
-    fn to_items(root: usize, graph: &Graph) -> Node {
-        let id = graph.slookup.get_by_right(&root).unwrap().to_string();
-
-        let node = if let Some(subgraphs) = graph.subtree.get(&root) {
-            let children: Vec<Node> =
-                subgraphs.par_iter().map(|&subgraph| Self::to_items(subgraph, graph)).collect();
-
-            Node { id, children }
-        } else {
-            Node { id, children: Vec::new() }
-        };
-
-        node
     }
 
     pub fn selected(&self) -> Option<String> {
@@ -105,4 +77,32 @@ impl Tree {
     pub fn toggle(&mut self) {
         self.state.toggle_selected();
     }
+}
+
+fn to_tree(root: usize, graph: &Graph) -> TreeItem<'static> {
+    let id = graph.slookup.get_by_right(&root).unwrap().to_string();
+
+    if let Some(subgraphs) = graph.subtree.get(&root) {
+        let subgraphs: Vec<TreeItem> =
+            subgraphs.par_iter().map(|&subgraph| to_tree(subgraph, graph)).collect();
+
+        TreeItem::new(id, subgraphs)
+    } else {
+        TreeItem::new_leaf(id)
+    }
+}
+
+fn to_items(root: usize, graph: &Graph) -> Node {
+    let id = graph.slookup.get_by_right(&root).unwrap().to_string();
+
+    let node = if let Some(subgraphs) = graph.subtree.get(&root) {
+        let children: Vec<Node> =
+            subgraphs.par_iter().map(|&subgraph| to_items(subgraph, graph)).collect();
+
+        Node { id, children }
+    } else {
+        Node { id, children: Vec::new() }
+    };
+
+    node
 }

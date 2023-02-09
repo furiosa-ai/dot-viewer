@@ -4,7 +4,7 @@ use crate::app::{
     utils::{Input, List, Tabs},
     viewer::Viewer,
 };
-use dot_graph::{Graph, parser};
+use dot_graph::{parser, Graph};
 
 pub struct App {
     pub quit: bool,
@@ -84,9 +84,7 @@ impl App {
 
         let filename: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
 
-        write(filename, graph)
-            .map(Some)
-            .map_err(|e| DotViewerError::IOError(e.to_string()))
+        write(filename, graph).map(Some).map_err(|e| DotViewerError::IOError(e.to_string()))
     }
 
     pub fn xdot(&mut self) -> Res {
@@ -112,13 +110,16 @@ impl App {
 
         graph.neighbors(node, depth).map_or_else(
             |e| Err(DotViewerError::ViewerError(e.to_string())),
-            |neighbor_graph| match neighbor_graph {
-                Some(neighbor_graph) => {
-                    write(filename, &neighbor_graph)
-                        .map(Some)
-                        .map_err(|e| DotViewerError::IOError(e.to_string()))
-                }
-                None => Err(DotViewerError::ViewerError("empty graph".to_string())),
+            |neighbor_graph| {
+                neighbor_graph.map_or(
+                    Err(DotViewerError::ViewerError("empty graph".to_string())),
+                    |neighbor_graph| {
+                        write(filename, &neighbor_graph).map_or_else(
+                            |e| Err(DotViewerError::IOError(e.to_string())),
+                            |res| Ok(Some(res)),
+                        )
+                    },
+                )
             },
         )
     }
@@ -128,8 +129,8 @@ impl App {
         self.input.clear();
     }
 
-    pub fn to_input_mode(&mut self, mode: InputMode) {
-        self.mode = Mode::Main(MainMode::Input(mode));
+    pub fn to_input_mode(&mut self, imode: InputMode) {
+        self.mode = Mode::Main(MainMode::Input(imode));
 
         let viewer = self.tabs.selected();
 
@@ -140,7 +141,7 @@ impl App {
 
     pub fn to_popup_mode(&mut self) {
         self.mode = Mode::Popup;
-    } 
+    }
 }
 
 fn write(filename: String, graph: &Graph) -> Result<String, std::io::Error> {

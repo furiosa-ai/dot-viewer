@@ -1,5 +1,6 @@
 use tui::widgets::ListState;
 
+// https://github.com/fdehau/tui-rs/blob/master/examples/list.rs
 pub struct List<T> {
     pub state: ListState,
     pub items: Vec<T>,

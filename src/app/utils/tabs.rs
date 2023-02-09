@@ -1,5 +1,6 @@
 use crate::app::{error::DotViewerError, error::Res};
 
+// https://github.com/fdehau/tui-rs/blob/master/examples/tabs.rs
 pub struct Tabs<T> {
     pub state: usize,
     pub tabs: Vec<T>,

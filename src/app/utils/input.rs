@@ -43,6 +43,7 @@ impl Input {
     }
 
     pub fn clear(&mut self) {
+        self.history.push(self.key.clone());
         self.key = String::from("");
         self.cursor = 0;
     }
