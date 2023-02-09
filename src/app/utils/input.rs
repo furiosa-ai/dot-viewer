@@ -6,11 +6,7 @@ pub struct Input {
 
 impl Input {
     pub fn new() -> Input {
-        Input {
-            key: String::from(""),
-            history: Vec::new(),
-            cursor: 0,
-        }
+        Input { key: String::from(""), history: Vec::new(), cursor: 0 }
     }
 
     pub fn key(&self) -> String {
@@ -47,7 +43,14 @@ impl Input {
     }
 
     pub fn clear(&mut self) {
+        self.history.push(self.key.clone());
         self.key = String::from("");
         self.cursor = 0;
+    }
+}
+
+impl Default for Input {
+    fn default() -> Self {
+        Self::new()
     }
 }

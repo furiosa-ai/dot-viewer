@@ -15,7 +15,7 @@ use tui::{
     Terminal,
 };
 
-pub fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
+fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
@@ -25,7 +25,7 @@ pub fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     Ok(terminal)
 }
 
-pub fn cleanup<B: Backend>(terminal: &mut Terminal<B>) -> Result<(), Box<dyn Error>> {
+fn cleanup<B: Backend>(terminal: &mut Terminal<B>) -> Result<(), Box<dyn Error>> {
     terminal.clear()?;
     let mut stdout = io::stdout();
     execute!(stdout, LeaveAlternateScreen, DisableMouseCapture)?;
@@ -51,14 +51,22 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
 
     match child.join() {
         Ok(_) => {}
-        Err(_) => {
-            println!("Err: dot-viewer paniced");
-
+        Err(e) => {
             let mut terminal = match recovery.lock() {
                 Ok(guard) => guard,
                 Err(poisoned) => poisoned.into_inner(),
             };
             cleanup(&mut terminal)?;
+
+            let msg = match e.downcast_ref::<&'static str>() {
+                Some(s) => *s,
+                None => match e.downcast_ref::<String>() {
+                    Some(s) => &s[..],
+                    None => "unknown",
+                },
+            };
+
+            println!("Err: dot-viewer paniced: {:?}", msg);
         }
     };
 

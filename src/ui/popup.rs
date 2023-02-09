@@ -10,13 +10,10 @@ use tui::{
 use tui_tree_widget::Tree as TUITree;
 
 pub fn draw_popup<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
-    // surrounding block
     let block = surrounding_block("Filter by Subgraph".to_string(), false);
-
     let popup = centered_rect(70, 70, size);
 
     draw_tree(f, popup, app);
-
     f.render_widget(block, popup);
 }
 
@@ -26,15 +23,10 @@ fn draw_tree<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
     let widget = TUITree::new(tree.tree.clone())
         .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(format!("Tree Widget {:?}", tree.state)),
+            Block::default().borders(Borders::ALL).title(format!("Tree Widget {:?}", tree.state)),
         )
         .highlight_style(
-            Style::default()
-                .fg(Color::Black)
-                .bg(Color::LightGreen)
-                .add_modifier(Modifier::BOLD),
+            Style::default().fg(Color::Black).bg(Color::LightGreen).add_modifier(Modifier::BOLD),
         )
         .highlight_symbol(">> ");
 
