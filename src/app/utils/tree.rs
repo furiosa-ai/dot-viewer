@@ -1,4 +1,4 @@
-use dot_graph::Graph;
+use dot_graph::{Graph, SubGraph};
 use rayon::prelude::*;
 use tui_tree_widget::{TreeItem, TreeState};
 
@@ -9,20 +9,20 @@ struct Node {
 
 // https://github.com/EdJoPaTo/tui-rs-tree-widget/blob/main/examples/util/mod.rs
 pub struct Tree {
-    pub state: TreeState,
-    items: Vec<Node>,
+    pub state: TreeState, 
     pub tree: Vec<TreeItem<'static>>,
+    items: Vec<Node>,
 }
 
 impl Tree {
     pub fn with_graph(graph: &Graph) -> Self {
-        let &root = graph.slookup.get_by_left(&graph.id).unwrap();
+        let root = graph.search_subgraph(&graph.id).unwrap();
 
         let tree = to_tree(root, graph);
         let tree = vec![tree];
 
-        let items = to_items(root, graph);
-        let items = vec![items];
+        let item = to_item(root, graph);
+        let items = vec![item];
 
         let mut tree = Self { state: TreeState::default(), items, tree };
 
@@ -79,30 +79,20 @@ impl Tree {
     }
 }
 
-fn to_tree(root: usize, graph: &Graph) -> TreeItem<'static> {
-    let id = graph.slookup.get_by_right(&root).unwrap().to_string();
+fn to_tree(root: &SubGraph, graph: &Graph) -> TreeItem<'static> {
+    let id = root.id.clone();
 
-    if let Some(subgraphs) = graph.subtree.get(&root) {
-        let subgraphs: Vec<TreeItem> =
-            subgraphs.par_iter().map(|&subgraph| to_tree(subgraph, graph)).collect();
+    let children = graph.children(&root.id).expect("root should exist in the graph");
+    let children: Vec<TreeItem> = children.par_iter().map(|&child| to_tree(child, graph)).collect();
 
-        TreeItem::new(id, subgraphs)
-    } else {
-        TreeItem::new_leaf(id)
-    }
+    TreeItem::new(id, children)
 }
 
-fn to_items(root: usize, graph: &Graph) -> Node {
-    let id = graph.slookup.get_by_right(&root).unwrap().to_string();
+fn to_item(root: &SubGraph, graph: &Graph) -> Node {
+    let id = root.id.clone();
 
-    let node = if let Some(subgraphs) = graph.subtree.get(&root) {
-        let children: Vec<Node> =
-            subgraphs.par_iter().map(|&subgraph| to_items(subgraph, graph)).collect();
+    let children = graph.children(&root.id).expect("root should exist in the graph");
+    let children: Vec<Node> = children.par_iter().map(|&child| to_item(child, graph)).collect();
 
-        Node { id, children }
-    } else {
-        Node { id, children: Vec::new() }
-    };
-
-    node
+    Node { id, children }
 }
