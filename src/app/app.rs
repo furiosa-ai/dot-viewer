@@ -6,53 +6,47 @@ use crate::app::{
 };
 use dot_graph::{parser, Graph};
 
+/// `App` holds `dot-viewer` application states.
+///
+/// `tui-rs` simply redraws the entire screen in a loop while accepting keyboard inputs.
+/// Thus `App` should keep track of the application context in its fields.
 pub struct App {
+    /// Whether to quit the application or not, by `q` keybinding
     pub quit: bool,
+    
+    /// Current mode the application is in
     pub mode: Mode,
+
+    /// Result of the last command that was made
     pub result: Res,
 
+    /// Tabs to be shown in the main screen
     pub tabs: Tabs<View>,
+
+    /// Input form to be shown in the main screen
     pub input: Input,
 }
 
 impl App {
+    /// Constructs a new `App`, given a `path` to a dot format DAG.
     pub fn new(path: &str) -> Result<App, DotViewerError> {
+        let quit = false;
+
+        let mode = Mode::Main(MainMode::Navigate(NavMode::Current));
+
+        let result: Res = Ok(None);
+
         let graph = parser::parse(path)?;
         let view = View::new(graph.id.clone(), graph);
         let tabs = Tabs::with_tabs(vec![view])?;
-        let input = Input::new();
 
-        Ok(App {
-            quit: false,
-            mode: Mode::Main(MainMode::Navigate(NavMode::Current)),
-            result: Ok(None),
-            tabs,
-            input,
-        })
+        let input = Input::default();
+
+        Ok(App { quit, mode, result, tabs, input })
     }
 
-    pub fn selected_id(&mut self) -> Option<String> {
-        match &self.mode {
-            Mode::Main(main) => match main {
-                MainMode::Navigate(nav) => {
-                    let view = self.tabs.selected();
-
-                    match nav {
-                        NavMode::Current => view.current.selected(),
-                        NavMode::Prevs => view.prevs.selected(),
-                        NavMode::Nexts => view.nexts.selected(),
-                    }
-                }
-                MainMode::Input(_) => {
-                    let view = self.tabs.selected();
-
-                    view.matches.selected().map(|(id, _)| id)
-                }
-            },
-            Mode::Popup => None,
-        }
-    }
-
+    /// Navigate to the currently selected node.
+    /// The current node list will be focused on the selected node.
     pub fn goto(&mut self) -> Res {
         let id = self.selected_id();
 
@@ -62,6 +56,9 @@ impl App {
         })
     }
 
+    /// Apply prefix filter on the current viewer.
+    /// Based on the currently typed input, it applies a prefix filter on the current viewer,
+    /// and opens a new tab with the filtered viewer.
     pub fn filter(&mut self) -> Res {
         let view_current = self.tabs.selected();
         let view_new = view_current.filter(&self.input.key())?;
@@ -70,6 +67,9 @@ impl App {
         Ok(None)
     }
 
+    /// Extract a subgraph from the current viewer.
+    /// When a subgraph id is selected in the subgraph tree,
+    /// it opens a new tab containing only the selected subgraph.
     pub fn subgraph(&mut self) -> Res {
         let view_current = self.tabs.selected();
         let view_new = view_current.subgraph()?;
@@ -78,29 +78,8 @@ impl App {
         Ok(None)
     }
 
-    pub fn export(&mut self) -> Res {
-        let view = self.tabs.selected();
-        let graph = &view.graph;
-
-        let filename: String = view.title.chars().filter(|c| !c.is_whitespace()).collect();
-
-        write(filename, graph).map(Some).map_err(|e| DotViewerError::IOError(e.to_string()))
-    }
-
-    pub fn xdot(&mut self) -> Res {
-        if !std::path::Path::new("./exports/current.dot").exists() {
-            return Err(DotViewerError::XdotError);
-        }
-
-        let xdot = std::process::Command::new("xdot")
-            .stdout(std::process::Stdio::null())
-            .stderr(std::process::Stdio::null())
-            .arg("./exports/current.dot")
-            .spawn();
-
-        xdot.map(|_| None).map_err(|_| DotViewerError::XdotError)
-    }
-
+    /// Export a neigbor graph from the currently selected node to dot,
+    /// given the neighbor depth by `0-9` keybindings.
     pub fn neighbors(&mut self, depth: usize) -> Res {
         let view = self.tabs.selected();
         let graph = &view.graph;
@@ -124,6 +103,31 @@ impl App {
         )
     }
 
+    /// Export the current viewer to dot.
+    pub fn export(&mut self) -> Res {
+        let viewer = self.tabs.selected();
+        let graph = &viewer.graph;
+
+        let filename: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
+
+        write(filename, graph).map(Some).map_err(|e| DotViewerError::IOError(e.to_string()))
+    }
+
+    /// Launch `xdot.py`, coming from `x` keybinding.
+    pub fn xdot(&mut self) -> Res {
+        if !std::path::Path::new("./exports/current.dot").exists() {
+            return Err(DotViewerError::XdotError);
+        }
+
+        let xdot = std::process::Command::new("xdot")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .arg("./exports/current.dot")
+            .spawn();
+
+        xdot.map(|_| None).map_err(|_| DotViewerError::XdotError)
+    }
+
     pub fn to_nav_mode(&mut self) {
         self.mode = Mode::Main(MainMode::Navigate(NavMode::Current));
         self.input.clear();
@@ -141,6 +145,22 @@ impl App {
 
     pub fn to_popup_mode(&mut self) {
         self.mode = Mode::Popup;
+    }
+
+    pub fn selected_id(&mut self) -> Option<String> {
+        let viewer = self.tabs.selected();
+
+        match &self.mode {
+            Mode::Main(mmode) => match mmode {
+                MainMode::Navigate(nmode) => match nmode {
+                    NavMode::Current => viewer.current.selected(),
+                    NavMode::Prevs => viewer.prevs.selected(),
+                    NavMode::Nexts => viewer.nexts.selected(),
+                }
+                MainMode::Input(_) => viewer.matches.selected().map(|(id, _)| id)
+            },
+            Mode::Popup => None,
+        }
     }
 }
 
