@@ -6,7 +6,7 @@ pub type Res = Result<Option<String>, DotViewerError>;
 
 #[derive(Error, Debug)]
 pub enum DotViewerError {
-    #[error("Err: dot-graph failed")]
+    #[error("Err: dot-graph failed with, `{0}`")]
     DotGraphError(#[from] DotGraphError),
     #[error("Err: viewer failed with, `{0}`")]
     ViewerError(String),
