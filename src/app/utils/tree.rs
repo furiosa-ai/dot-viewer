@@ -80,13 +80,14 @@ impl Tree {
 }
 
 fn to_tree(root: &SubGraph, graph: &Graph) -> TreeItem<'static> {
-    let subgraphs = graph.count_subgraphs(&root.id).expect("root should exist in the graph");
-    let nodes = graph.count_nodes(&root.id).expect("root should exist in the graph");
-    let edges = graph.count_edges(&root.id).expect("root should exist in the graph");
+    let children = graph.collect_subgraphs(&root.id).expect("root should exist in the graph");
 
-    let id = format!("{} (s: {} n: {} e: {})", root.id, subgraphs, nodes, edges);
+    let subgraph_cnt = children.len();
+    let node_cnt = graph.collect_nodes(&root.id).expect("root should exist in the graph").len();
+    let edge_cnt = graph.collect_edges(&root.id).expect("root should exist in the graph").len();
 
-    let children = graph.children(&root.id).expect("root should exist in the graph");
+    let id = format!("{} (s: {} n: {} e: {})", root.id, subgraph_cnt, node_cnt, edge_cnt);
+
     let children: Vec<TreeItem> = children.par_iter().map(|&child| to_tree(child, graph)).collect();
 
     TreeItem::new(id, children)
@@ -95,7 +96,7 @@ fn to_tree(root: &SubGraph, graph: &Graph) -> TreeItem<'static> {
 fn to_item(root: &SubGraph, graph: &Graph) -> Node {
     let id = root.id.clone();
 
-    let children = graph.children(&root.id).expect("root should exist in the graph");
+    let children = graph.collect_subgraphs(&root.id).expect("root should exist in the graph");
     let children: Vec<Node> = children.par_iter().map(|&child| to_item(child, graph)).collect();
 
     Node { id, children }

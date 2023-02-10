@@ -42,7 +42,7 @@ impl View {
     /// Constructs a new `View`, given a `title` and a `graph`, which is a portion of the original
     /// graph.
     pub fn new(title: String, graph: Graph) -> View {
-        let nodes: Vec<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();
+        let nodes: Vec<String> = graph.topsort();
         let subtree = Tree::with_graph(&graph);
 
         let mut view = View {
@@ -195,7 +195,7 @@ fn match_fuzzy(id: &str, key: &str, _graph: &Graph) -> Option<(String, Vec<usize
 
 fn match_regex(id: &str, key: &str, graph: &Graph) -> Option<(String, Vec<usize>)> {
     if let Ok(matcher) = Regex::new(key) {
-        let node = graph.search_node(id).unwrap();
+        let node = graph.search_node(&id.to_string()).unwrap();
 
         let mut buffer = Vec::new();
         node.to_dot(0, &mut buffer).expect("to_dot should succeed");
