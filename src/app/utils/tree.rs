@@ -37,8 +37,6 @@ impl Tree {
     pub fn selected(&self) -> Option<String> {
         let mut idxs = self.state.selected();
 
-        println!("idxs: {:?}", idxs);
-
         if idxs.is_empty() {
             return None;
         }
