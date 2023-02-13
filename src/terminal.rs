@@ -11,12 +11,21 @@ use tui::{
     Terminal,
 };
 
+fn setup_panic_hook() {
+    std::panic::set_hook(Box::new(|info| {
+        let _ = cleanup();
+        better_panic::Settings::auto().create_panic_handler()(info);
+    }));
+}
+
 fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
     let backend = CrosstermBackend::new(stdout);
     let terminal = Terminal::new(backend)?;
+
+    setup_panic_hook();
 
     Ok(terminal)
 }
