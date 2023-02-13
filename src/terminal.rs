@@ -11,12 +11,23 @@ use tui::{
     Terminal,
 };
 
+#[allow(unused_variables)]
+fn setup_panic_hook() { 
+    std::panic::set_hook(Box::new(|info| {
+        let _ = cleanup();
+        #[cfg(debug_assertions)]
+        better_panic::Settings::auto().create_panic_handler()(info);
+    }));
+}
+
 fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
     let backend = CrosstermBackend::new(stdout);
     let terminal = Terminal::new(backend)?;
+
+    setup_panic_hook();
 
     Ok(terminal)
 }
@@ -34,10 +45,10 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
     let mut terminal = setup()?;
 
     // run app
-    let app = App::new(&path)?;
+    let app = App::new(&path).expect("user should provide path to a valid dot file");
     let _ = run(&mut terminal, app);
 
-    let _ = cleanup();
+    cleanup()?;
 
     Ok(())
 }
