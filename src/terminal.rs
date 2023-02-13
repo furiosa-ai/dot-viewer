@@ -45,10 +45,10 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
     let mut terminal = setup()?;
 
     // run app
-    let app = App::new(&path)?;
+    let app = App::new(&path).expect("user should provide path to a valid dot file");
     let _ = run(&mut terminal, app);
 
-    let _ = cleanup();
+    cleanup()?;
 
     Ok(())
 }
