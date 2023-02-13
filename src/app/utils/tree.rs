@@ -16,7 +16,7 @@ pub struct Tree {
 
 impl Tree {
     pub fn with_graph(graph: &Graph) -> Self {
-        let root = graph.search_subgraph(&graph.id).unwrap();
+        let root = graph.search_subgraph(graph.id()).unwrap();
 
         let item = to_item(root, graph);
         let tree = to_tree(&item, graph);
@@ -80,10 +80,13 @@ impl Tree {
 }
 
 fn to_item(root: &SubGraph, graph: &Graph) -> Node {
-    let id = root.id.clone();
+    let id = root.id().clone();
 
-    let children = graph.collect_subgraphs(&root.id).expect("root should exist in the graph");
-    let mut children: Vec<Node> = children.par_iter().map(|&child| to_item(child, graph)).collect();
+    let children = graph.collect_subgraphs(root.id()).expect("root should exist in the graph");
+    let mut children: Vec<Node> = children.par_iter().map(|&id| {
+        let child = graph.search_subgraph(id).unwrap();
+        to_item(child, graph)
+    }).collect();
     children.sort_by(|a, b| (a.id).cmp(&b.id));
 
     Node { id, children }

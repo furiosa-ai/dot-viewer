@@ -42,7 +42,7 @@ impl View {
     /// Constructs a new `View`, given a `title` and a `graph`, which is a portion of the original
     /// graph.
     pub fn new(title: String, graph: Graph) -> View {
-        let nodes: Vec<String> = graph.topsort();
+        let nodes: Vec<String> = graph.topsort().par_iter().map(|&id| id.clone()).collect();
         let subtree = Tree::with_graph(&graph);
 
         let mut view = View {
@@ -79,13 +79,12 @@ impl View {
     pub fn filter(&mut self, prefix: &str) -> Result<View, DotViewerError> {
         let graph = self.graph.filter(prefix);
 
-        graph.map_or(
-            Err(DotViewerError::ViewerError(format!("no match for prefix {}", prefix))),
-            |graph| {
-                let view = Self::new(format!("{} - {}", self.title, prefix), graph);
-                Ok(view)
-            },
-        )
+        if graph.is_empty() {
+            return Err(DotViewerError::ViewerError(format!("no match for prefix {}", prefix)));
+        }
+
+        let view = Self::new(format!("{} - {}", self.title, prefix), graph);
+        Ok(view)
     }
 
     /// Extract a subgraph from the view.
@@ -97,13 +96,12 @@ impl View {
                 self.graph.subgraph(&key).map_or_else(
                     |e| Err(DotViewerError::ViewerError(e.to_string())),
                     |graph| {
-                        graph.map_or(
-                            Err(DotViewerError::ViewerError("empty graph".to_string())),
-                            |graph| {
-                                let view = Self::new(format!("{} - {}", self.title, key), graph);
-                                Ok(view)
-                            },
-                        )
+                        if graph.is_empty() {
+                            return Err(DotViewerError::ViewerError("empty graph".to_string()));
+                        }
+
+                        let view = Self::new(format!("{} - {}", self.title, key), graph);
+                        Ok(view)
                     },
                 )
             },

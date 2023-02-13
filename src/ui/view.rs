@@ -66,9 +66,9 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vie
         .par_iter()
         .map(|id| {
             let mut item = ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]);
-            if froms.contains(id.as_str()) {
+            if froms.contains(&id.to_string()) {
                 item = item.style(Style::default().fg(Color::Red));
-            } else if tos.contains(id.as_str()) {
+            } else if tos.contains(&id.to_string()) {
                 item = item.style(Style::default().fg(Color::Blue));
             }
 
@@ -187,11 +187,11 @@ fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, vi
 fn pretty_metadata(node: &Node) -> String {
     let mut metadata = String::new();
 
-    writeln!(metadata, "[{}]", node.id).unwrap();
+    writeln!(metadata, "[{}]", node.id()).unwrap();
     writeln!(metadata).unwrap();
 
     let empty = String::new();
-    let attrs = node.attrs.get("label").unwrap_or(&empty);
+    let attrs = node.attrs().get("label").unwrap_or(&empty);
     let attrs = htmlparser::parse(attrs);
 
     for attr in attrs {

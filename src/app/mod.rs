@@ -46,7 +46,7 @@ impl App {
         let result: Res = Ok(None);
 
         let graph = parser::parse(path)?;
-        let view = View::new(graph.id.clone(), graph);
+        let view = View::new(graph.id().clone(), graph);
         let tabs = Tabs::with_tabs(vec![view])?;
 
         let input = Input::default();
@@ -99,14 +99,13 @@ impl App {
         graph.neighbors(node, depth).map_or_else(
             |e| Err(DotViewerError::ViewerError(e.to_string())),
             |neighbor_graph| {
-                neighbor_graph.map_or(
-                    Err(DotViewerError::ViewerError("empty graph".to_string())),
-                    |neighbor_graph| {
-                        write(filename, &neighbor_graph).map_or_else(
-                            |e| Err(DotViewerError::IOError(e.to_string())),
-                            |res| Ok(Some(res)),
-                        )
-                    },
+                if neighbor_graph.is_empty() {
+                    return Err(DotViewerError::ViewerError("empty graph".to_string()));
+                }
+
+                write(filename, &neighbor_graph).map_or_else(
+                    |e| Err(DotViewerError::IOError(e.to_string())),
+                    |res| Ok(Some(res)),
                 )
             },
         )
