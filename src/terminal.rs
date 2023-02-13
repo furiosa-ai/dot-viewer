@@ -11,9 +11,11 @@ use tui::{
     Terminal,
 };
 
-fn setup_panic_hook() {
+#[allow(unused_variables)]
+fn setup_panic_hook() { 
     std::panic::set_hook(Box::new(|info| {
         let _ = cleanup();
+        #[cfg(debug_assertions)]
         better_panic::Settings::auto().create_panic_handler()(info);
     }));
 }
