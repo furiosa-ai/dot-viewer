@@ -83,7 +83,8 @@ fn to_item(root: &SubGraph, graph: &Graph) -> Node {
     let id = root.id.clone();
 
     let children = graph.collect_subgraphs(&root.id).expect("root should exist in the graph");
-    let children: Vec<Node> = children.par_iter().map(|&child| to_item(child, graph)).collect();
+    let mut children: Vec<Node> = children.par_iter().map(|&child| to_item(child, graph)).collect();
+    children.sort_by(|a, b| (a.id).cmp(&b.id));
 
     Node { id, children }
 }
