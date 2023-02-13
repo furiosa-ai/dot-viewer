@@ -18,11 +18,11 @@ impl Tree {
     pub fn with_graph(graph: &Graph) -> Self {
         let root = graph.search_subgraph(&graph.id).unwrap();
 
-        let tree = to_tree(root, graph);
-        let tree = vec![tree];
-
         let item = to_item(root, graph);
+        let tree = to_tree(&item, graph);
+
         let items = vec![item];
+        let tree = vec![tree];
 
         let mut tree = Self { state: TreeState::default(), items, tree };
 
@@ -36,6 +36,8 @@ impl Tree {
 
     pub fn selected(&self) -> Option<String> {
         let mut idxs = self.state.selected();
+
+        println!("idxs: {:?}", idxs);
 
         if idxs.is_empty() {
             return None;
@@ -79,20 +81,6 @@ impl Tree {
     }
 }
 
-fn to_tree(root: &SubGraph, graph: &Graph) -> TreeItem<'static> {
-    let children = graph.collect_subgraphs(&root.id).expect("root should exist in the graph");
-
-    let subgraph_cnt = children.len();
-    let node_cnt = graph.collect_nodes(&root.id).expect("root should exist in the graph").len();
-    let edge_cnt = graph.collect_edges(&root.id).expect("root should exist in the graph").len();
-
-    let id = format!("{} (s: {} n: {} e: {})", root.id, subgraph_cnt, node_cnt, edge_cnt);
-
-    let children: Vec<TreeItem> = children.par_iter().map(|&child| to_tree(child, graph)).collect();
-
-    TreeItem::new(id, children)
-}
-
 fn to_item(root: &SubGraph, graph: &Graph) -> Node {
     let id = root.id.clone();
 
@@ -100,4 +88,18 @@ fn to_item(root: &SubGraph, graph: &Graph) -> Node {
     let children: Vec<Node> = children.par_iter().map(|&child| to_item(child, graph)).collect();
 
     Node { id, children }
+}
+
+fn to_tree(root: &Node, graph: &Graph) -> TreeItem<'static> {
+    let id = &root.id;
+    let children = &root.children;
+
+    let subgraph_cnt = children.len();
+    let node_cnt = graph.collect_nodes(id).expect("root should exist in the graph").len();
+    let edge_cnt = graph.collect_edges(id).expect("root should exist in the graph").len();
+
+    let id = format!("{} (s: {} n: {} e: {})", id, subgraph_cnt, node_cnt, edge_cnt);
+    let children: Vec<TreeItem<'static>> = children.iter().map(|node| to_tree(node, graph)).collect();
+
+    TreeItem::new(id, children)
 }
