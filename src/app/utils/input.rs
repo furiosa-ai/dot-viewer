@@ -6,7 +6,7 @@ pub struct Input {
 
 impl Input {
     pub fn new() -> Input {
-        Input { key: String::from(""), history: Vec::new(), cursor: 0 }
+        Input::default()
     }
 
     pub fn key(&self) -> String {
@@ -50,7 +50,7 @@ impl Input {
 }
 
 impl Default for Input {
-    fn default() -> Self {
-        Self::new()
+    fn default() -> Input {
+        Input { key: String::from(""), history: Vec::new(), cursor: 0 }
     }
 }
