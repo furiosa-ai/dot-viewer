@@ -4,6 +4,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use log::error;
 use std::io::Stdout;
 use std::{error::Error, io};
 use tui::{
@@ -36,12 +37,12 @@ fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     Ok(terminal)
 }
 
-#[allow(unused_variables)]
 fn setup_panic_hook() {
     std::panic::set_hook(Box::new(|info| {
         let _ = cleanup();
 
-        #[cfg(debug_assertions)]
+        error!("dot-viewer {}", info);
+
         better_panic::Settings::auto().create_panic_handler()(info);
     }));
 }

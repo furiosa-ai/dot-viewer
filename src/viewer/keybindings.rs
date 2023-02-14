@@ -4,9 +4,12 @@ use crate::viewer::{
     App,
 };
 use crossterm::event::{KeyCode, KeyEvent};
+use log::{info, warn};
 
 impl App {
     pub fn key(&mut self, key: KeyEvent) {
+        info!("{:?}", key.code);
+
         self.result = match key.code {
             KeyCode::Char(c) => self.char(c),
             KeyCode::Enter => self.enter(),
@@ -20,6 +23,11 @@ impl App {
             KeyCode::Left => self.left(),
             _ => Ok(None),
         };
+
+        match &self.result {
+            Err(err) => warn!("{}", err),
+            _ => {},
+        }
     }
 
     fn char(&mut self, c: char) -> Result<Option<String>> {
