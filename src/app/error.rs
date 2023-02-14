@@ -6,11 +6,11 @@ pub type Res = Result<Option<String>, DotViewerError>;
 
 #[derive(Error, Debug)]
 pub enum DotViewerError {
-    #[error("Err: dot-graph failed with, `{0}`")]
+    #[error(transparent)]
     DotGraphError(#[from] DotGraphError),
     #[error("Err: viewer failed with, `{0}`")]
     ViewerError(String),
-    #[error("Err: no keybinding for {:?}", .0)]
+    #[error("Err: no keybinding for {0:?}")]
     KeyError(KeyCode),
     #[error("Err: file io failed with, `{0}`")]
     IOError(String),
