@@ -124,12 +124,12 @@ impl App {
         xdot.map(|_| None).map_err(|_| DotViewerError::XdotError)
     }
 
-    pub(crate) fn to_nav_mode(&mut self) {
+    pub(crate) fn set_nav_mode(&mut self) {
         self.mode = Mode::Main(MainMode::Navigate(NavMode::Current));
         self.input.clear();
     }
 
-    pub(crate) fn to_input_mode(&mut self, imode: InputMode) {
+    pub(crate) fn set_input_mode(&mut self, imode: InputMode) {
         self.mode = Mode::Main(MainMode::Input(imode));
 
         let view = self.tabs.selected();
@@ -139,7 +139,7 @@ impl App {
         view.matches = List::with_items(init);
     }
 
-    pub(crate) fn to_popup_mode(&mut self) {
+    pub(crate) fn set_popup_mode(&mut self) {
         self.mode = Mode::Popup;
     }
 

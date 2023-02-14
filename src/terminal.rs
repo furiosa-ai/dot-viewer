@@ -1,11 +1,11 @@
-use crate::{viewer::App, ui};
+use crate::{ui, viewer::App};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{error::Error, io};
 use std::io::Stdout;
+use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
     Terminal,
@@ -37,7 +37,7 @@ fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
 }
 
 #[allow(unused_variables)]
-fn setup_panic_hook() { 
+fn setup_panic_hook() {
     std::panic::set_hook(Box::new(|info| {
         let _ = cleanup();
 
@@ -57,7 +57,7 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
         if app.quit {
             break;
         }
-    } 
+    }
 
     Ok(())
 }

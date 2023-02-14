@@ -85,10 +85,13 @@ fn to_item(root: &String, graph: &Graph) -> Item {
     let id = root.clone();
 
     let children = graph.collect_subgraphs(root).expect("root should exist in the graph");
-    let mut children: Vec<Item> = children.par_iter().map(|&id| {
-        let child = graph.search_subgraph(id).unwrap();
-        to_item(child.id(), graph)
-    }).collect();
+    let mut children: Vec<Item> = children
+        .par_iter()
+        .map(|&id| {
+            let child = graph.search_subgraph(id).unwrap();
+            to_item(child.id(), graph)
+        })
+        .collect();
     children.sort_by(|a, b| (a.id).cmp(&b.id));
 
     Item { id, children }
@@ -103,7 +106,8 @@ fn to_tree(root: &Item, graph: &Graph) -> TreeItem<'static> {
     let edge_cnt = graph.collect_edges(id).expect("root should exist in the graph").len();
 
     let id = format!("{} (s: {} n: {} e: {})", id, subgraph_cnt, node_cnt, edge_cnt);
-    let children: Vec<TreeItem<'static>> = children.iter().map(|node| to_tree(node, graph)).collect();
+    let children: Vec<TreeItem<'static>> =
+        children.iter().map(|node| to_tree(node, graph)).collect();
 
     TreeItem::new(id, children)
 }

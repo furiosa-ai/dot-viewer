@@ -3,8 +3,8 @@ mod ui;
 mod viewer;
 
 use clap::Parser;
-use terminal::launch;
 use std::error::Error;
+use terminal::launch;
 
 #[derive(Parser, Default, Debug)]
 struct Cli {

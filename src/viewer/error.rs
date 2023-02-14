@@ -5,6 +5,7 @@ use thiserror::Error;
 pub type DotViewerResult<T> = Result<T, DotViewerError>;
 
 #[derive(Error, Debug)]
+#[allow(clippy::enum_variant_names)]
 pub enum DotViewerError {
     #[error(transparent)]
     DotGraphError(#[from] DotGraphError),

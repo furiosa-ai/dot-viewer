@@ -39,19 +39,19 @@ impl App {
                 Ok(None)
             }
             '/' => {
-                self.to_input_mode(InputMode::Search(SearchMode::Fuzzy));
+                self.set_input_mode(InputMode::Search(SearchMode::Fuzzy));
                 Ok(None)
             }
             'r' => {
-                self.to_input_mode(InputMode::Search(SearchMode::Regex));
+                self.set_input_mode(InputMode::Search(SearchMode::Regex));
                 Ok(None)
             }
             'f' => {
-                self.to_input_mode(InputMode::Filter);
+                self.set_input_mode(InputMode::Filter);
                 Ok(None)
             }
             's' => {
-                self.to_popup_mode();
+                self.set_popup_mode();
                 Ok(None)
             }
             'c' => self.tabs.close(),
@@ -105,14 +105,14 @@ impl App {
                         InputMode::Search(_) => self.goto(),
                         InputMode::Filter => self.filter(),
                     };
-                    self.to_nav_mode();
+                    self.set_nav_mode();
 
                     res
                 }
             },
             Mode::Popup => {
                 let res = self.subgraph();
-                self.to_nav_mode();
+                self.set_nav_mode();
 
                 res
             }
@@ -146,13 +146,13 @@ impl App {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
                 MainMode::Input(_) => {
-                    self.to_nav_mode();
+                    self.set_nav_mode();
                     Ok(None)
                 }
                 _ => Err(DotViewerError::KeyError(KeyCode::Esc)),
             },
             _ => {
-                self.to_nav_mode();
+                self.set_nav_mode();
                 Ok(None)
             }
         }

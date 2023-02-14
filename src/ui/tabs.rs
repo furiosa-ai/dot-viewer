@@ -1,5 +1,5 @@
-use crate::viewer::{App, MainMode};
 use crate::ui::view::draw_view;
+use crate::viewer::{App, MainMode};
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
@@ -9,7 +9,12 @@ use tui::{
     Frame,
 };
 
-pub(super) fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, app: &mut App) {
+pub(super) fn draw_tabs<B: Backend>(
+    f: &mut Frame<B>,
+    chunk: Rect,
+    mmode: &MainMode,
+    app: &mut App,
+) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)

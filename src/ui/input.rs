@@ -1,5 +1,5 @@
-use crate::viewer::{App, InputMode, MainMode, SearchMode};
 use crate::ui::surrounding_block;
+use crate::viewer::{App, InputMode, MainMode, SearchMode};
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
@@ -10,7 +10,12 @@ use tui::{
 };
 
 // input block
-pub(super) fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, app: &mut App) {
+pub(super) fn draw_input<B: Backend>(
+    f: &mut Frame<B>,
+    chunk: Rect,
+    mmode: &MainMode,
+    app: &mut App,
+) {
     // surrounding block
     let title = match mmode {
         MainMode::Navigate(_) => "Navigate",

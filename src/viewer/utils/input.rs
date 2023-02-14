@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+#[derive(Default)]
 pub(crate) struct Input {
     pub(crate) key: String,
     pub(crate) history: Vec<String>,
@@ -48,11 +49,5 @@ impl Input {
         self.history.push(self.key.clone());
         self.key = String::from("");
         self.cursor = 0;
-    }
-}
-
-impl Default for Input {
-    fn default() -> Input {
-        Input { key: String::from(""), history: Vec::new(), cursor: 0 }
     }
 }

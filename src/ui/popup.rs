@@ -1,5 +1,5 @@
-use crate::viewer::App;
 use crate::ui::surrounding_block;
+use crate::viewer::App;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
@@ -22,9 +22,7 @@ fn draw_tree<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let subtree = &mut view.subtree;
 
     let tree = TUITree::new(subtree.tree.clone())
-        .block(
-            Block::default().borders(Borders::ALL),
-        )
+        .block(Block::default().borders(Borders::ALL))
         .highlight_style(
             Style::default().fg(Color::Black).bg(Color::LightGreen).add_modifier(Modifier::BOLD),
         )
