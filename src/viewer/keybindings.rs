@@ -1,6 +1,6 @@
 use crate::viewer::{
     error::{DotViewerError, DotViewerResult as Result},
-    modes::{InputMode, MainMode, Mode, NavMode, SearchMode},
+    modes::{InputMode, MainMode, Mode, NavMode, PopupMode, SearchMode},
     App,
 };
 use crossterm::event::{KeyCode, KeyEvent};
@@ -36,7 +36,10 @@ impl App {
                 MainMode::Navigate(_) => self.char_nav(c),
                 MainMode::Input(imode) => self.char_input(c, &imode.clone()),
             },
-            Mode::Popup => self.char_popup(c),
+            Mode::Popup(pmode) => match pmode {
+                PopupMode::Tree => self.char_tree(c),
+                PopupMode::Help => self.char_help(c),
+            }
         }
     }
 
@@ -59,7 +62,11 @@ impl App {
                 Ok(None)
             }
             's' => {
-                self.set_popup_mode();
+                self.set_popup_mode(PopupMode::Tree);
+                Ok(None)
+            }
+            '?' => {
+                self.set_popup_mode(PopupMode::Help);
                 Ok(None)
             }
             'c' => self.tabs.close(),
@@ -91,7 +98,17 @@ impl App {
         Ok(None)
     }
 
-    fn char_popup(&mut self, c: char) -> Result<Option<String>> {
+    fn char_tree(&mut self, c: char) -> Result<Option<String>> {
+        match c {
+            'q' => {
+                self.quit = true;
+                Ok(None)
+            }
+            _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),
+        }
+    }
+
+    fn char_help(&mut self, c: char) -> Result<Option<String>> {
         match c {
             'q' => {
                 self.quit = true;
@@ -118,11 +135,14 @@ impl App {
                     res
                 }
             },
-            Mode::Popup => {
-                let res = self.subgraph();
-                self.set_nav_mode();
+            Mode::Popup(pmode) => match pmode {
+                PopupMode::Tree => {
+                    let res = self.subgraph();
+                    self.set_nav_mode();
 
-                res
+                    res
+                },
+                _ => Ok(None)
             }
         }
     }
@@ -221,7 +241,8 @@ impl App {
                 },
                 MainMode::Input(_) => view.matches.previous(),
             },
-            Mode::Popup => view.subtree.up(),
+            Mode::Popup(PopupMode::Tree) => view.subtree.up(),
+            _ => {},
         };
 
         Ok(None)
@@ -242,7 +263,8 @@ impl App {
                 },
                 MainMode::Input(_) => view.matches.next(),
             },
-            Mode::Popup => view.subtree.down(),
+            Mode::Popup(PopupMode::Tree) => view.subtree.down(),
+            _ => {},
         };
 
         Ok(None)
@@ -262,10 +284,11 @@ impl App {
                 }
                 MainMode::Input(_) => self.input.front(),
             },
-            Mode::Popup => {
+            Mode::Popup(PopupMode::Tree) => {
                 let view = self.tabs.selected();
                 view.subtree.right();
-            }
+            },
+            _ => {},
         }
 
         Ok(None)
@@ -285,10 +308,11 @@ impl App {
                 }
                 MainMode::Input(_) => self.input.back(),
             },
-            Mode::Popup => {
+            Mode::Popup(PopupMode::Tree) => {
                 let view = self.tabs.selected();
                 view.subtree.left();
-            }
+            },
+            _ => {},
         }
 
         Ok(None)

@@ -7,6 +7,6 @@ mod view;
 
 pub(crate) use crate::viewer::{
     app::App,
-    modes::{InputMode, MainMode, Mode, NavMode, SearchMode},
+    modes::{InputMode, MainMode, Mode, NavMode, PopupMode, SearchMode},
     view::View,
 };

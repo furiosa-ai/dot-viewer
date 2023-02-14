@@ -1,6 +1,6 @@
 use crate::viewer::{
     error::{DotViewerError, DotViewerResult as Result},
-    modes::{InputMode, MainMode, Mode, NavMode},
+    modes::{InputMode, MainMode, Mode, NavMode, PopupMode},
     utils::{Input, List, Tabs},
     view::View,
 };
@@ -139,8 +139,8 @@ impl App {
         view.matches = List::with_items(init);
     }
 
-    pub(crate) fn set_popup_mode(&mut self) {
-        self.mode = Mode::Popup;
+    pub(crate) fn set_popup_mode(&mut self, pmode: PopupMode) {
+        self.mode = Mode::Popup(pmode);
     }
 
     pub(crate) fn selected_id(&mut self) -> Option<String> {
@@ -155,7 +155,7 @@ impl App {
                 },
                 MainMode::Input(_) => viewer.matches.selected().map(|(id, _)| id),
             },
-            Mode::Popup => None,
+            Mode::Popup(_) => None,
         }
     }
 }
