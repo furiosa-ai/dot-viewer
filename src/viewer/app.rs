@@ -1,6 +1,7 @@
 use crate::viewer::{
     error::{DotViewerError, DotViewerResult as Result},
-    modes::{InputMode, MainMode, Mode, NavMode},
+    help::Help,
+    modes::{InputMode, MainMode, Mode, NavMode, PopupMode},
     utils::{Input, List, Tabs},
     view::View,
 };
@@ -25,6 +26,9 @@ pub(crate) struct App {
 
     /// Input form to be shown in the main screen
     pub(crate) input: Input,
+
+    /// Keybinding helps
+    pub(crate) help: Help,
 }
 
 impl App {
@@ -42,7 +46,10 @@ impl App {
 
         let input = Input::default();
 
-        Ok(App { quit, mode, result, tabs, input })
+        //let help = HELP.iter().map(|row| row.iter().map(|s| s.to_string()).collect()).collect();
+        let help = Help::new();
+
+        Ok(App { quit, mode, result, tabs, input, help })
     }
 
     /// Navigate to the currently selected node.
@@ -139,8 +146,8 @@ impl App {
         view.matches = List::with_items(init);
     }
 
-    pub(crate) fn set_popup_mode(&mut self) {
-        self.mode = Mode::Popup;
+    pub(crate) fn set_popup_mode(&mut self, pmode: PopupMode) {
+        self.mode = Mode::Popup(pmode);
     }
 
     pub(crate) fn selected_id(&mut self) -> Option<String> {
@@ -155,7 +162,7 @@ impl App {
                 },
                 MainMode::Input(_) => viewer.matches.selected().map(|(id, _)| id),
             },
-            Mode::Popup => None,
+            Mode::Popup(_) => None,
         }
     }
 }

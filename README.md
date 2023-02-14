@@ -99,38 +99,44 @@ With `dot-viewer`, users may
 
 ## Keybindings
 
-### Navigation
+### General
 
-Key | Effect
+Key | Actions
 --- | ---
 `q` | quit
+`?` | show help
 `esc ` | go back to the main screen
 `c` | close the current tab (except for the root tab)
-`tab`/`backtab` | navigate tabs or autocomplete input keyword
-`up`/`k` | traverse the focused node list
-`down`/`j` | traverse the focused node list
-`right`/`l` | move focus between lists (highlighted in yellow borders)
-`left`/`h` | move focus between lists (highlighted in yellow borders)
-`enter` | goto the selected (prev/next) node
 
-### Search
+### Navigation
 
-Key | Effect
---- | ---
-`/[node-id-pattern]` (e.g. `/g1s35t`) | search for node by fuzzy matcher
-`r[node-prefix]` (e.g. `r(H: ., D: .)`) | search for node by regex matcher (matched on raw dot file)
-`enter` | goto the selected (searched) node
+Key | Mode | Actions
+--- | --- | ---
+`tab`/`backtab` | `Nav` | move between tabs
+`up` | `Nav`/`Search` | traverse the focused node list
+`down` | `Nav`/`Search` | traverse the focused node list
+`right` | `Nav` | move focus between lists (highlighted in yellow borders)
+`left` | `Nav` | move focus between lists (highlighted in yellow borders)
 
-### Making Subgraphs
+### Mode Switch
 
-Key | Effect
---- | ---
-`s` | opens a popup showing subgraphs of the current graph
-`f[node-prefix]` (e.g. `fgraph1_subgraph34`) | apply filter with prefix
-`enter` | apply filter (opens a new tab)
-`e` | export the current tab to dot
-`0-9` | export the subgraph containing neighbors of the currently selected node with given depth (in digits)
-`x` | launch xdot, showing `./exports/current.dot`
+Key | Mode | Actions
+--- | --- | ---
+`/` | `Nav` | switch to fuzzy `Search` mode (`/[node-id-pattern]`)
+`r` | `Nav` | switch to regex `Search` mode (`r[node-attr-regex]`)
+`f` | `Nav` | switch to prefix `Filter` mode (`f[node-id-prefix]`)
+`s` | `Nav` | switch to subgraph `Popup` mode
+`enter` | `Nav`/`Search` | go to the selected node
+--- | `Filter` | apply entered prefix (opens a new tab)
+--- | `Subgraph` | extract selected subgraph (opens a new tab)
+
+### Exporting
+
+Key | Mode | Actions
+--- | --- | ---
+`e` | `Nav` | export the current tab to dot
+`0-9` | `Nav` | export the subgraph containing neighbors of the current node with given depth
+`x` | `Nav` | launch xdot, showing `./exports/current.dot`
 
 All exported files are saved in `exports` directory in the project root.
 Most recently exported file is copied in `exports/current.dot`.

@@ -2,7 +2,7 @@
 /// `Mode` represents the context that the application, `dot-viewer` is in.
 pub enum Mode {
     Main(MainMode),
-    Popup,
+    Popup(PopupMode),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -12,6 +12,15 @@ pub enum Mode {
 pub enum MainMode {
     Navigate(NavMode),
     Input(InputMode),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+/// In `PopupMode`, users can
+/// - navigate the subgraphs, or
+/// - see help message.
+pub enum PopupMode {
+    Tree,
+    Help,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

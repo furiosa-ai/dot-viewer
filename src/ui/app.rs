@@ -20,7 +20,7 @@ pub(crate) fn draw_app<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
     match &app.mode {
         Mode::Main(mmode) => draw_main(f, size, &mmode.clone(), app),
-        Mode::Popup => draw_popup(f, size, app),
+        Mode::Popup(pmode) => draw_popup(f, size, &pmode.clone(), app),
     }
 }
 
