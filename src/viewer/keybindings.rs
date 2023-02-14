@@ -24,9 +24,8 @@ impl App {
             _ => Ok(None),
         };
 
-        match &self.result {
-            Err(err) => warn!("{}", err),
-            _ => {},
+        if let Err(err) = &self.result {
+            warn!("{}", err);
         }
     }
 
@@ -39,7 +38,7 @@ impl App {
             Mode::Popup(pmode) => match pmode {
                 PopupMode::Tree => self.char_tree(c),
                 PopupMode::Help => self.char_help(c),
-            }
+            },
         }
     }
 
@@ -141,9 +140,9 @@ impl App {
                     self.set_nav_mode();
 
                     res
-                },
-                _ => Ok(None)
-            }
+                }
+                _ => Ok(None),
+            },
         }
     }
 
@@ -242,7 +241,7 @@ impl App {
                 MainMode::Input(_) => view.matches.previous(),
             },
             Mode::Popup(PopupMode::Tree) => view.subtree.up(),
-            _ => {},
+            _ => {}
         };
 
         Ok(None)
@@ -264,7 +263,7 @@ impl App {
                 MainMode::Input(_) => view.matches.next(),
             },
             Mode::Popup(PopupMode::Tree) => view.subtree.down(),
-            _ => {},
+            _ => {}
         };
 
         Ok(None)
@@ -287,8 +286,8 @@ impl App {
             Mode::Popup(PopupMode::Tree) => {
                 let view = self.tabs.selected();
                 view.subtree.right();
-            },
-            _ => {},
+            }
+            _ => {}
         }
 
         Ok(None)
@@ -311,8 +310,8 @@ impl App {
             Mode::Popup(PopupMode::Tree) => {
                 let view = self.tabs.selected();
                 view.subtree.left();
-            },
-            _ => {},
+            }
+            _ => {}
         }
 
         Ok(None)

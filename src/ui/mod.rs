@@ -6,8 +6,8 @@ mod utils;
 mod view;
 
 use tui::{
-    style::{Color, Style},
     layout::{Constraint, Direction, Layout, Rect},
+    style::{Color, Style},
     widgets::{Block, Borders},
 };
 

@@ -28,7 +28,7 @@ pub(crate) struct App {
     pub(crate) input: Input,
 
     /// Keybinding helps
-    pub(crate) help: Help, 
+    pub(crate) help: Help,
 }
 
 impl App {
@@ -46,7 +46,7 @@ impl App {
 
         let input = Input::default();
 
-        //let help = HELP.iter().map(|row| row.iter().map(|s| s.to_string()).collect()).collect(); 
+        //let help = HELP.iter().map(|row| row.iter().map(|s| s.to_string()).collect()).collect();
         let help = Help::new();
 
         Ok(App { quit, mode, result, tabs, input, help })

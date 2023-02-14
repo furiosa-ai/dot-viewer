@@ -9,7 +9,12 @@ use tui::{
 };
 use tui_tree_widget::Tree as TUITree;
 
-pub(super) fn draw_popup<B: Backend>(f: &mut Frame<B>, size: Rect, pmode: &PopupMode, app: &mut App) { 
+pub(super) fn draw_popup<B: Backend>(
+    f: &mut Frame<B>,
+    size: Rect,
+    pmode: &PopupMode,
+    app: &mut App,
+) {
     let popup = centered_rect(70, 70, size);
 
     match pmode {
@@ -37,7 +42,9 @@ fn draw_tree<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 }
 
 fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let header = app.help.header.iter().map(|s| Cell::from(s.as_str()).style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)));
+    let header = app.help.header.iter().map(|s| {
+        Cell::from(s.as_str()).style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
+    });
     let header = Row::new(header).height(1).bottom_margin(1);
 
     let rows = app.help.rows.iter().map(|row| {
@@ -45,10 +52,8 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         Row::new(row).height(1).bottom_margin(1)
     });
 
-    let table = Table::new(rows)
-        .header(header)
-        .block(Block::default().borders(Borders::ALL))
-        .widths(&[
+    let table =
+        Table::new(rows).header(header).block(Block::default().borders(Borders::ALL)).widths(&[
             Constraint::Percentage(15),
             Constraint::Percentage(10),
             Constraint::Percentage(10),

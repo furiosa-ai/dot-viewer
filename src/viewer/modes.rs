@@ -16,11 +16,11 @@ pub enum MainMode {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// In `PopupMode`, users can
-/// - navigate the subgraphs, or 
+/// - navigate the subgraphs, or
 /// - see help message.
 pub enum PopupMode {
     Tree,
-    Help
+    Help,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
