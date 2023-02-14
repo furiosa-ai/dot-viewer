@@ -2,7 +2,7 @@ use crossterm::event::KeyCode;
 use dot_graph::DotGraphError;
 use thiserror::Error;
 
-pub type Res = Result<Option<String>, DotViewerError>;
+pub type DotViewerResult<T> = Result<T, DotViewerError>;
 
 #[derive(Error, Debug)]
 pub enum DotViewerError {
@@ -12,8 +12,8 @@ pub enum DotViewerError {
     ViewerError(String),
     #[error("Err: no keybinding for {0:?}")]
     KeyError(KeyCode),
-    #[error("Err: file io failed with, `{0}`")]
-    IOError(String),
+    #[error(transparent)]
+    IOError(#[from] std::io::Error),
     #[error("Err: failed to launch xdot.py")]
     XdotError,
     #[error("Err: tab manipulation failed with, `{0}`")]

@@ -10,7 +10,7 @@ pub(crate) use crate::app::{
 };
 
 use crate::app::{
-    error::{DotViewerError, Res},
+    error::{DotViewerError, DotViewerResult as Result},
     utils::{Input, List, Tabs},
 };
 use dot_graph::{parser, Graph};
@@ -27,7 +27,7 @@ pub(crate) struct App {
     pub(crate) mode: Mode,
 
     /// Result of the last command that was made
-    pub(crate) result: Res,
+    pub(crate) result: Result<Option<String>>,
 
     /// Tabs to be shown in the main screen
     pub(crate) tabs: Tabs<View>,
@@ -38,12 +38,12 @@ pub(crate) struct App {
 
 impl App {
     /// Constructs a new `App`, given a `path` to a dot format DAG.
-    pub(crate) fn new(path: &str) -> Result<App, DotViewerError> {
+    pub(crate) fn new(path: &str) -> Result<App> {
         let quit = false;
 
         let mode = Mode::Main(MainMode::Navigate(NavMode::Current));
 
-        let result: Res = Ok(None);
+        let result: Result<Option<String>> = Ok(None);
 
         let graph = parser::parse(path)?;
         let view = View::new(graph.id().clone(), graph);
@@ -56,7 +56,7 @@ impl App {
 
     /// Navigate to the currently selected node.
     /// The current node list will be focused on the selected node.
-    pub(crate) fn goto(&mut self) -> Res {
+    pub(crate) fn goto(&mut self) -> Result<Option<String>> {
         let id = self.selected_id();
 
         id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
@@ -68,7 +68,7 @@ impl App {
     /// Apply prefix filter on the current view.
     /// Based on the currently typed input, it applies a prefix filter on the current view,
     /// and opens a new tab with the filtered view.
-    pub(crate) fn filter(&mut self) -> Res {
+    pub(crate) fn filter(&mut self) -> Result<Option<String>> {
         let view_current = self.tabs.selected();
         let view_new = view_current.filter(&self.input.key())?;
         self.tabs.open(view_new);
@@ -79,7 +79,7 @@ impl App {
     /// Extract a subgraph from the current view.
     /// When a subgraph id is selected in the subgraph tree,
     /// it opens a new tab containing only the selected subgraph.
-    pub(crate) fn subgraph(&mut self) -> Res {
+    pub(crate) fn subgraph(&mut self) -> Result<Option<String>> {
         let view_current = self.tabs.selected();
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
@@ -89,7 +89,7 @@ impl App {
 
     /// Export a neigbor graph from the currently selected node to dot,
     /// given the neighbor depth by `0-9` keybindings.
-    pub(crate) fn neighbors(&mut self, depth: usize) -> Res {
+    pub(crate) fn neighbors(&mut self, depth: usize) -> Result<Option<String>> {
         let view = self.tabs.selected();
         let graph = &view.graph;
         let node = &view.current_id().unwrap();
@@ -103,26 +103,23 @@ impl App {
                     return Err(DotViewerError::ViewerError("empty graph".to_string()));
                 }
 
-                write(filename, &neighbor_graph).map_or_else(
-                    |e| Err(DotViewerError::IOError(e.to_string())),
-                    |res| Ok(Some(res)),
-                )
+                write_graph(filename, &neighbor_graph)
             },
         )
     }
 
     /// Export the current view to dot.
-    pub(crate) fn export(&mut self) -> Res {
+    pub(crate) fn export(&mut self) -> Result<Option<String>> {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
         let filename: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
 
-        write(filename, graph).map(Some).map_err(|e| DotViewerError::IOError(e.to_string()))
+        write_graph(filename, graph)
     }
 
     /// Launch `xdot.py`, coming from `x` keybinding.
-    pub(crate) fn xdot(&mut self) -> Res {
+    pub(crate) fn xdot(&mut self) -> Result<Option<String>> {
         if !std::path::Path::new("./exports/current.dot").exists() {
             return Err(DotViewerError::XdotError);
         }
@@ -172,7 +169,7 @@ impl App {
     }
 }
 
-fn write(filename: String, graph: &Graph) -> Result<String, std::io::Error> {
+fn write_graph(filename: String, graph: &Graph) -> Result<Option<String>> {
     std::fs::create_dir_all("./exports")?;
     let mut file_export = std::fs::OpenOptions::new()
         .write(true)
@@ -188,5 +185,5 @@ fn write(filename: String, graph: &Graph) -> Result<String, std::io::Error> {
         .open("./exports/current.dot")?;
     graph.to_dot(&mut file_current)?;
 
-    Ok(format!("file successfully written to {}", filename))
+    Ok(Some(format!("file successfully written to {}", filename)))
 }
