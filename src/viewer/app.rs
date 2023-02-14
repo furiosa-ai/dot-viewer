@@ -1,17 +1,8 @@
-mod error;
-mod keybindings;
-mod modes;
-mod utils;
-mod view;
-
-pub(crate) use crate::app::{
-    modes::{InputMode, MainMode, Mode, NavMode, SearchMode},
-    view::View,
-};
-
-use crate::app::{
+use crate::viewer::{
     error::{DotViewerError, DotViewerResult as Result},
+    modes::{InputMode, MainMode, Mode, NavMode},
     utils::{Input, List, Tabs},
+    view::View,
 };
 use dot_graph::{parser, Graph};
 

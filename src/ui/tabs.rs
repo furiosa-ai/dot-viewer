@@ -1,4 +1,4 @@
-use crate::app::{App, MainMode};
+use crate::viewer::{App, MainMode};
 use crate::ui::view::draw_view;
 use tui::{
     backend::Backend,

@@ -1,4 +1,4 @@
-use crate::app::{App, InputMode, MainMode, SearchMode};
+use crate::viewer::{App, InputMode, MainMode, SearchMode};
 use crate::ui::surrounding_block;
 use tui::{
     backend::Backend,

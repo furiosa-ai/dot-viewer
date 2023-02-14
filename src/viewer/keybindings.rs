@@ -1,4 +1,4 @@
-use crate::app::{
+use crate::viewer::{
     error::{DotViewerError, DotViewerResult as Result},
     modes::{InputMode, MainMode, Mode, NavMode, SearchMode},
     App,

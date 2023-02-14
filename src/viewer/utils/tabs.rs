@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::app::error::{DotViewerError, DotViewerResult as Result};
+use crate::viewer::error::{DotViewerError, DotViewerResult as Result};
 
 // https://github.com/fdehau/tui-rs/blob/master/examples/tabs.rs
 pub(crate) struct Tabs<T> {

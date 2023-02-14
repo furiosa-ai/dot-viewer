@@ -1,5 +1,5 @@
 use crate::{
-    app::{InputMode, MainMode, NavMode, SearchMode, View},
+    viewer::{InputMode, MainMode, NavMode, SearchMode, View},
     ui::{surrounding_block, utils::htmlparser},
 };
 use dot_graph::Node;

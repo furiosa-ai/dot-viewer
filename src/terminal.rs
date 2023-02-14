@@ -1,4 +1,4 @@
-use crate::{app::App, ui};
+use crate::{viewer::App, ui};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event},
     execute,
@@ -11,13 +11,17 @@ use tui::{
     Terminal,
 };
 
-#[allow(unused_variables)]
-fn setup_panic_hook() { 
-    std::panic::set_hook(Box::new(|info| {
-        let _ = cleanup();
-        #[cfg(debug_assertions)]
-        better_panic::Settings::auto().create_panic_handler()(info);
-    }));
+pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
+    // setup terminal
+    let mut terminal = setup()?;
+
+    // create and run app
+    let app = App::new(&path).expect("user should provide path to a valid dot file");
+    let _ = run(&mut terminal, app);
+
+    cleanup()?;
+
+    Ok(())
 }
 
 fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
@@ -32,30 +36,19 @@ fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     Ok(terminal)
 }
 
-fn cleanup() -> Result<(), Box<dyn Error>> {
-    let mut stdout = io::stdout();
-    execute!(stdout, LeaveAlternateScreen, DisableMouseCapture)?;
-    disable_raw_mode()?;
+#[allow(unused_variables)]
+fn setup_panic_hook() { 
+    std::panic::set_hook(Box::new(|info| {
+        let _ = cleanup();
 
-    Ok(())
-}
-
-pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
-    // setup terminal
-    let mut terminal = setup()?;
-
-    // run app
-    let app = App::new(&path).expect("user should provide path to a valid dot file");
-    let _ = run(&mut terminal, app);
-
-    cleanup()?;
-
-    Ok(())
+        #[cfg(debug_assertions)]
+        better_panic::Settings::auto().create_panic_handler()(info);
+    }));
 }
 
 fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
     loop {
-        terminal.draw(|f| ui::draw(f, &mut app))?;
+        terminal.draw(|f| ui::draw_app(f, &mut app))?;
 
         if let Event::Key(key) = event::read()? {
             app.key(key);
@@ -65,6 +58,14 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
             break;
         }
     } 
+
+    Ok(())
+}
+
+fn cleanup() -> Result<(), Box<dyn Error>> {
+    let mut stdout = io::stdout();
+    execute!(stdout, LeaveAlternateScreen, DisableMouseCapture)?;
+    disable_raw_mode()?;
 
     Ok(())
 }

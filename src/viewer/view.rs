@@ -1,4 +1,4 @@
-use crate::app::{
+use crate::viewer::{
     error::{DotViewerError, DotViewerResult as Result},
     utils::{List, Tree, Trie},
 };

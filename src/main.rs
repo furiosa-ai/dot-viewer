@@ -1,5 +1,9 @@
+mod terminal;
+mod ui;
+mod viewer;
+
 use clap::Parser;
-use dot_viewer::launch;
+use terminal::launch;
 use std::error::Error;
 
 #[derive(Parser, Default, Debug)]
@@ -11,5 +15,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = Cli::parse();
 
     launch(args.path)?;
+
     Ok(())
 }

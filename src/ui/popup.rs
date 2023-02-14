@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::viewer::App;
 use crate::ui::surrounding_block;
 use tui::{
     backend::Backend,
