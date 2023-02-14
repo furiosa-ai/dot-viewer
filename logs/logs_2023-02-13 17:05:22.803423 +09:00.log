@@ -1,0 +1,21 @@
+08:05:26 [INFO] Down
+08:05:26 [INFO] Down
+08:05:26 [INFO] Down
+08:05:26 [INFO] Down
+08:05:26 [INFO] Down
+08:05:27 [INFO] Right
+08:05:27 [INFO] Enter
+08:05:27 [WARN] Err: viewer failed with, `no node selected`
+08:05:27 [INFO] Enter
+08:05:27 [WARN] Err: viewer failed with, `no node selected`
+08:05:27 [INFO] Enter
+08:05:27 [WARN] Err: viewer failed with, `no node selected`
+08:05:27 [INFO] Enter
+08:05:27 [WARN] Err: viewer failed with, `no node selected`
+08:05:28 [INFO] Enter
+08:05:28 [WARN] Err: viewer failed with, `no node selected`
+08:05:28 [INFO] Char('c')
+08:05:28 [WARN] Err: tab manipulation failed with, `cannot close the first tab`
+08:05:28 [INFO] Char('c')
+08:05:28 [WARN] Err: tab manipulation failed with, `cannot close the first tab`
+08:05:28 [INFO] Char('q')

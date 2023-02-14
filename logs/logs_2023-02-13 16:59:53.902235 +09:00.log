@@ -1,0 +1,74 @@
+07:59:57 [INFO] Down
+07:59:57 [INFO] Down
+07:59:57 [INFO] Down
+07:59:57 [INFO] Down
+07:59:58 [INFO] Down
+07:59:58 [INFO] Down
+07:59:58 [INFO] Down
+07:59:58 [INFO] Down
+07:59:59 [INFO] Right
+07:59:59 [INFO] Right
+07:59:59 [INFO] Down
+07:59:59 [INFO] Down
+07:59:59 [INFO] Down
+07:59:59 [INFO] Down
+08:00:00 [INFO] Down
+08:00:01 [INFO] Enter
+08:00:03 [INFO] Left
+08:00:03 [INFO] Down
+08:00:03 [INFO] Enter
+08:00:04 [INFO] Down
+08:00:04 [INFO] Down
+08:00:05 [INFO] Down
+08:00:05 [INFO] Down
+08:00:05 [INFO] Right
+08:00:05 [INFO] Down
+08:00:05 [INFO] Down
+08:00:05 [INFO] Down
+08:00:06 [INFO] Down
+08:00:06 [INFO] Down
+08:00:06 [INFO] Down
+08:00:06 [INFO] Down
+08:00:06 [INFO] Down
+08:00:06 [INFO] Enter
+08:00:08 [INFO] Left
+08:00:08 [INFO] Down
+08:00:08 [INFO] Down
+08:00:09 [INFO] Enter
+08:00:10 [INFO] Enter
+08:00:11 [INFO] Enter
+08:00:11 [INFO] Enter
+08:00:19 [INFO] Char('f')
+08:00:21 [INFO] Esc
+08:00:22 [INFO] Char('s')
+08:00:22 [INFO] Down
+08:00:23 [INFO] Down
+08:00:23 [INFO] Right
+08:00:23 [INFO] Down
+08:00:23 [INFO] Enter
+08:00:24 [INFO] Right
+08:00:25 [INFO] Enter
+08:00:25 [INFO] Err: viewer failed with, `no node selected`
+08:00:25 [INFO] Enter
+08:00:25 [INFO] Err: viewer failed with, `no node selected`
+08:00:25 [INFO] Enter
+08:00:25 [INFO] Err: viewer failed with, `no node selected`
+08:00:26 [INFO] Enter
+08:00:26 [INFO] Err: viewer failed with, `no node selected`
+08:00:26 [INFO] Enter
+08:00:26 [INFO] Err: viewer failed with, `no node selected`
+08:00:26 [INFO] Enter
+08:00:26 [INFO] Err: viewer failed with, `no node selected`
+08:00:26 [INFO] Enter
+08:00:26 [INFO] Err: viewer failed with, `no node selected`
+08:00:28 [INFO] Right
+08:00:28 [INFO] Enter
+08:00:28 [INFO] Enter
+08:00:28 [INFO] Enter
+08:00:28 [INFO] Err: viewer failed with, `no node selected`
+08:00:28 [INFO] Enter
+08:00:28 [INFO] Err: viewer failed with, `no node selected`
+08:00:29 [INFO] Enter
+08:00:29 [INFO] Err: viewer failed with, `no node selected`
+08:00:31 [INFO] Char('c')
+08:00:32 [INFO] Char('q')

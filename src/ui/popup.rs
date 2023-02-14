@@ -19,18 +19,18 @@ pub fn draw_popup<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
 
 fn draw_tree<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let view = app.tabs.selected();
-    let tree = &mut view.subtree;
+    let subtree = &mut view.subtree;
 
-    let widget = TUITree::new(tree.tree.clone())
+    let tree = TUITree::new(subtree.tree.clone())
         .block(
-            Block::default().borders(Borders::ALL).title(format!("Tree Widget {:?}", tree.state)),
+            Block::default().borders(Borders::ALL),
         )
         .highlight_style(
             Style::default().fg(Color::Black).bg(Color::LightGreen).add_modifier(Modifier::BOLD),
         )
         .highlight_symbol(">> ");
 
-    f.render_stateful_widget(widget, chunk, &mut tree.state);
+    f.render_stateful_widget(tree, chunk, &mut subtree.state);
 }
 
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {

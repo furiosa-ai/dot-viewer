@@ -51,14 +51,8 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vie
     let title = format!("Nodes {}", view.progress_current());
     let block = surrounding_block(title, *mmode == MainMode::Navigate(NavMode::Current));
 
-    let (froms, tos) = match &view.current_id() {
-        Some(id) => {
-            let froms = view.graph.froms(id).unwrap();
-            let tos = view.graph.tos(id).unwrap();
-            (froms, tos)
-        }
-        None => (HashSet::new(), HashSet::new()),
-    };
+    let froms: HashSet<&String> = HashSet::from_iter(&view.prevs.items);
+    let tos: HashSet<&String> = HashSet::from_iter(&view.nexts.items);
 
     let list: Vec<ListItem> = view
         .current
@@ -66,9 +60,9 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vie
         .par_iter()
         .map(|id| {
             let mut item = ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]);
-            if froms.contains(&id.to_string()) {
+            if froms.contains(&id) {
                 item = item.style(Style::default().fg(Color::Red));
-            } else if tos.contains(&id.to_string()) {
+            } else if tos.contains(&id) {
                 item = item.style(Style::default().fg(Color::Blue));
             }
 
