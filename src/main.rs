@@ -1,8 +1,10 @@
-extern crate dot_viewer;
+mod terminal;
+mod ui;
+mod viewer;
 
 use clap::Parser;
-use dot_viewer::terminal::launch;
 use std::error::Error;
+use terminal::launch;
 
 #[derive(Parser, Default, Debug)]
 struct Cli {
@@ -13,5 +15,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = Cli::parse();
 
     launch(args.path)?;
+
     Ok(())
 }

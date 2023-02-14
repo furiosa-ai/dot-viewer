@@ -1,5 +1,5 @@
-use crate::app::{App, MainMode};
 use crate::ui::view::draw_view;
+use crate::viewer::{App, MainMode};
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
@@ -9,7 +9,12 @@ use tui::{
     Frame,
 };
 
-pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, app: &mut App) {
+pub(super) fn draw_tabs<B: Backend>(
+    f: &mut Frame<B>,
+    chunk: Rect,
+    mmode: &MainMode,
+    app: &mut App,
+) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
@@ -22,7 +27,7 @@ pub fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, ap
     draw_view(f, chunks[1], mmode, view);
 }
 
-pub fn draw_nav_bar<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+fn draw_nav_bar<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let block = Block::default().borders(Borders::ALL).title("Views");
 
     let titles: Vec<String> = app.tabs.tabs.iter().map(|view| view.title.clone()).collect();

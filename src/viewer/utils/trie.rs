@@ -1,13 +1,15 @@
+#![allow(dead_code)]
+
 use std::str;
 use trie_rs::TrieBuilder;
 
-pub struct Trie {
-    pub items: Vec<String>,
-    pub trie: trie_rs::Trie<u8>,
+pub(crate) struct Trie {
+    pub(crate) items: Vec<String>,
+    pub(crate) trie: trie_rs::Trie<u8>,
 }
 
 impl Trie {
-    pub fn new(ids: &[String]) -> Trie {
+    pub(crate) fn new(ids: &[String]) -> Trie {
         let items = ids.to_vec();
 
         let mut builder = TrieBuilder::new();
@@ -19,14 +21,14 @@ impl Trie {
         Trie { items, trie }
     }
 
-    pub fn autocomplete(&self, str: &str) -> Option<String> {
-        let predictions = if str.is_empty() { self.items.clone() } else { self.predict(str) };
+    pub(crate) fn autocomplete(&self, key: &str) -> Option<String> {
+        let predictions = if key.is_empty() { self.items.clone() } else { self.predict(key) };
 
         Self::longest_common_prefix(predictions)
     }
 
-    fn predict(&self, str: &str) -> Vec<String> {
-        let result = self.trie.predictive_search(str);
+    fn predict(&self, key: &str) -> Vec<String> {
+        let result = self.trie.predictive_search(key);
         let result: Vec<String> =
             result.iter().map(|s| str::from_utf8(s).unwrap().to_string()).collect();
 

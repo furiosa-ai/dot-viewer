@@ -1,5 +1,5 @@
-use crate::app::App;
 use crate::ui::surrounding_block;
+use crate::viewer::App;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
@@ -9,7 +9,7 @@ use tui::{
 };
 use tui_tree_widget::Tree as TUITree;
 
-pub fn draw_popup<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
+pub(super) fn draw_popup<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
     let block = surrounding_block("Filter by Subgraph".to_string(), false);
     let popup = centered_rect(70, 70, size);
 
@@ -22,9 +22,7 @@ fn draw_tree<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let subtree = &mut view.subtree;
 
     let tree = TUITree::new(subtree.tree.clone())
-        .block(
-            Block::default().borders(Borders::ALL),
-        )
+        .block(Block::default().borders(Borders::ALL))
         .highlight_style(
             Style::default().fg(Color::Black).bg(Color::LightGreen).add_modifier(Modifier::BOLD),
         )
