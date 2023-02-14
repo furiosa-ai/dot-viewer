@@ -1,8 +1,8 @@
-use dot_graph::{Graph, SubGraph};
+use dot_graph::Graph;
 use rayon::prelude::*;
 use tui_tree_widget::{TreeItem, TreeState};
 
-pub(super) struct Item {
+struct Item {
     id: String,
     children: Vec<Item>,
 }
@@ -11,12 +11,12 @@ pub(super) struct Item {
 pub struct Tree {
     pub state: TreeState,
     pub tree: Vec<TreeItem<'static>>,
-    pub items: Vec<Item>,
+    items: Vec<Item>,
 }
 
 impl Tree {
     pub fn with_graph(graph: &Graph) -> Self {
-        let root = graph.search_subgraph(graph.id()).unwrap();
+        let root = graph.search_subgraph(graph.id()).unwrap().id();
 
         let item = to_item(root, graph);
         let tree = to_tree(&item, graph);
@@ -79,13 +79,13 @@ impl Tree {
     }
 }
 
-fn to_item(root: &SubGraph, graph: &Graph) -> Item {
-    let id = root.id().clone();
+fn to_item(root: &String, graph: &Graph) -> Item {
+    let id = root.clone();
 
-    let children = graph.collect_subgraphs(root.id()).expect("root should exist in the graph");
+    let children = graph.collect_subgraphs(root).expect("root should exist in the graph");
     let mut children: Vec<Item> = children.par_iter().map(|&id| {
         let child = graph.search_subgraph(id).unwrap();
-        to_item(child, graph)
+        to_item(child.id(), graph)
     }).collect();
     children.sort_by(|a, b| (a.id).cmp(&b.id));
 
