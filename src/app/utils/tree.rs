@@ -1,21 +1,23 @@
+#![allow(dead_code)]
+
 use dot_graph::Graph;
 use rayon::prelude::*;
 use tui_tree_widget::{TreeItem, TreeState};
 
-struct Item {
+pub(crate) struct Item {
     id: String,
     children: Vec<Item>,
 }
 
 // https://github.com/EdJoPaTo/tui-rs-tree-widget/blob/main/examples/util/mod.rs
-pub struct Tree {
-    pub state: TreeState,
-    pub tree: Vec<TreeItem<'static>>,
-    items: Vec<Item>,
+pub(crate) struct Tree {
+    pub(crate) state: TreeState,
+    pub(crate) tree: Vec<TreeItem<'static>>,
+    pub(crate) items: Vec<Item>,
 }
 
 impl Tree {
-    pub fn with_graph(graph: &Graph) -> Self {
+    pub(crate) fn with_graph(graph: &Graph) -> Self {
         let root = graph.search_subgraph(graph.id()).unwrap().id();
 
         let item = to_item(root, graph);
@@ -34,7 +36,7 @@ impl Tree {
         tree
     }
 
-    pub fn selected(&self) -> Option<String> {
+    pub(crate) fn selected(&self) -> Option<String> {
         let mut idxs = self.state.selected();
 
         if idxs.is_empty() {
@@ -50,31 +52,31 @@ impl Tree {
         Some(node.id.clone())
     }
 
-    pub fn first(&mut self) {
+    pub(crate) fn first(&mut self) {
         self.state.select_first();
     }
 
-    pub fn last(&mut self) {
+    pub(crate) fn last(&mut self) {
         self.state.select_last(&self.tree);
     }
 
-    pub fn down(&mut self) {
+    pub(crate) fn down(&mut self) {
         self.state.key_down(&self.tree);
     }
 
-    pub fn up(&mut self) {
+    pub(crate) fn up(&mut self) {
         self.state.key_up(&self.tree);
     }
 
-    pub fn left(&mut self) {
+    pub(crate) fn left(&mut self) {
         self.state.key_left();
     }
 
-    pub fn right(&mut self) {
+    pub(crate) fn right(&mut self) {
         self.state.key_right();
     }
 
-    pub fn toggle(&mut self) {
+    pub(crate) fn toggle(&mut self) {
         self.state.toggle_selected();
     }
 }

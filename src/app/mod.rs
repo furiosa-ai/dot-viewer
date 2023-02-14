@@ -1,10 +1,10 @@
-pub mod error;
-pub mod keybindings;
-pub mod modes;
-pub mod utils;
-pub mod view;
+mod error;
+mod keybindings;
+mod modes;
+mod utils;
+mod view;
 
-pub use crate::app::{
+pub(crate) use crate::app::{
     modes::{InputMode, MainMode, Mode, NavMode, SearchMode},
     view::View,
 };
@@ -19,26 +19,26 @@ use dot_graph::{parser, Graph};
 ///
 /// `tui-rs` simply redraws the entire screen in a loop while accepting keyboard inputs.
 /// Thus `App` should keep track of the application context in its fields.
-pub struct App {
+pub(crate) struct App {
     /// Whether to quit the application or not, by `q` keybinding
-    pub quit: bool,
+    pub(crate) quit: bool,
 
     /// Current mode the application is in
-    pub mode: Mode,
+    pub(crate) mode: Mode,
 
     /// Result of the last command that was made
-    pub result: Res,
+    pub(crate) result: Res,
 
     /// Tabs to be shown in the main screen
-    pub tabs: Tabs<View>,
+    pub(crate) tabs: Tabs<View>,
 
     /// Input form to be shown in the main screen
-    pub input: Input,
+    pub(crate) input: Input,
 }
 
 impl App {
     /// Constructs a new `App`, given a `path` to a dot format DAG.
-    pub fn new(path: &str) -> Result<App, DotViewerError> {
+    pub(crate) fn new(path: &str) -> Result<App, DotViewerError> {
         let quit = false;
 
         let mode = Mode::Main(MainMode::Navigate(NavMode::Current));
@@ -56,7 +56,7 @@ impl App {
 
     /// Navigate to the currently selected node.
     /// The current node list will be focused on the selected node.
-    pub fn goto(&mut self) -> Res {
+    pub(crate) fn goto(&mut self) -> Res {
         let id = self.selected_id();
 
         id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
@@ -68,7 +68,7 @@ impl App {
     /// Apply prefix filter on the current view.
     /// Based on the currently typed input, it applies a prefix filter on the current view,
     /// and opens a new tab with the filtered view.
-    pub fn filter(&mut self) -> Res {
+    pub(crate) fn filter(&mut self) -> Res {
         let view_current = self.tabs.selected();
         let view_new = view_current.filter(&self.input.key())?;
         self.tabs.open(view_new);
@@ -79,7 +79,7 @@ impl App {
     /// Extract a subgraph from the current view.
     /// When a subgraph id is selected in the subgraph tree,
     /// it opens a new tab containing only the selected subgraph.
-    pub fn subgraph(&mut self) -> Res {
+    pub(crate) fn subgraph(&mut self) -> Res {
         let view_current = self.tabs.selected();
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
@@ -89,7 +89,7 @@ impl App {
 
     /// Export a neigbor graph from the currently selected node to dot,
     /// given the neighbor depth by `0-9` keybindings.
-    pub fn neighbors(&mut self, depth: usize) -> Res {
+    pub(crate) fn neighbors(&mut self, depth: usize) -> Res {
         let view = self.tabs.selected();
         let graph = &view.graph;
         let node = &view.current_id().unwrap();
@@ -112,7 +112,7 @@ impl App {
     }
 
     /// Export the current view to dot.
-    pub fn export(&mut self) -> Res {
+    pub(crate) fn export(&mut self) -> Res {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
@@ -122,7 +122,7 @@ impl App {
     }
 
     /// Launch `xdot.py`, coming from `x` keybinding.
-    pub fn xdot(&mut self) -> Res {
+    pub(crate) fn xdot(&mut self) -> Res {
         if !std::path::Path::new("./exports/current.dot").exists() {
             return Err(DotViewerError::XdotError);
         }
@@ -136,12 +136,12 @@ impl App {
         xdot.map(|_| None).map_err(|_| DotViewerError::XdotError)
     }
 
-    pub fn to_nav_mode(&mut self) {
+    pub(crate) fn to_nav_mode(&mut self) {
         self.mode = Mode::Main(MainMode::Navigate(NavMode::Current));
         self.input.clear();
     }
 
-    pub fn to_input_mode(&mut self, imode: InputMode) {
+    pub(crate) fn to_input_mode(&mut self, imode: InputMode) {
         self.mode = Mode::Main(MainMode::Input(imode));
 
         let view = self.tabs.selected();
@@ -151,11 +151,11 @@ impl App {
         view.matches = List::with_items(init);
     }
 
-    pub fn to_popup_mode(&mut self) {
+    pub(crate) fn to_popup_mode(&mut self) {
         self.mode = Mode::Popup;
     }
 
-    pub fn selected_id(&mut self) -> Option<String> {
+    pub(crate) fn selected_id(&mut self) -> Option<String> {
         let viewer = self.tabs.selected();
 
         match &self.mode {

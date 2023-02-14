@@ -9,7 +9,7 @@ use tui::{
 };
 use tui_tree_widget::Tree as TUITree;
 
-pub fn draw_popup<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
+pub(super) fn draw_popup<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
     let block = surrounding_block("Filter by Subgraph".to_string(), false);
     let popup = centered_rect(70, 70, size);
 

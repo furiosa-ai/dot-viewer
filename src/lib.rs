@@ -1,3 +1,5 @@
-pub mod app;
-pub mod terminal;
-pub mod ui;
+mod app;
+mod terminal;
+mod ui;
+
+pub use terminal::launch;

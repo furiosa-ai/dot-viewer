@@ -1,13 +1,15 @@
+#![allow(dead_code)]
+
 use tui::widgets::ListState;
 
 // https://github.com/fdehau/tui-rs/blob/master/examples/list.rs
-pub struct List<T> {
-    pub state: ListState,
-    pub items: Vec<T>,
+pub(crate) struct List<T> {
+    pub(crate) state: ListState,
+    pub(crate) items: Vec<T>,
 }
 
 impl<T: Clone + Eq> List<T> {
-    pub fn with_items(items: Vec<T>) -> List<T> {
+    pub(crate) fn with_items(items: Vec<T>) -> List<T> {
         let mut list = List { state: ListState::default(), items };
 
         if !list.items.is_empty() {
@@ -17,7 +19,7 @@ impl<T: Clone + Eq> List<T> {
         list
     }
 
-    pub fn next(&mut self) {
+    pub(crate) fn next(&mut self) {
         if !self.items.is_empty() {
             let i = match self.state.selected() {
                 Some(i) => {
@@ -33,7 +35,7 @@ impl<T: Clone + Eq> List<T> {
         }
     }
 
-    pub fn previous(&mut self) {
+    pub(crate) fn previous(&mut self) {
         if !self.items.is_empty() {
             let i = match self.state.selected() {
                 Some(i) => {
@@ -49,17 +51,17 @@ impl<T: Clone + Eq> List<T> {
         }
     }
 
-    pub fn select(&mut self, idx: usize) {
+    pub(crate) fn select(&mut self, idx: usize) {
         if idx < self.items.len() {
             self.state.select(Some(idx));
         }
     }
 
-    pub fn selected(&self) -> Option<T> {
+    pub(crate) fn selected(&self) -> Option<T> {
         self.state.selected().map(|i| self.items[i].clone())
     }
 
-    pub fn find(&self, key: T) -> Option<usize> {
+    pub(crate) fn find(&self, key: T) -> Option<usize> {
         self.items.iter().position(|item| *item == key)
     }
 }

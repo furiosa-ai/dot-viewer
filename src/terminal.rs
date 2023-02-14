@@ -32,7 +32,7 @@ fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     Ok(terminal)
 }
 
-pub fn cleanup() -> Result<(), Box<dyn Error>> {
+fn cleanup() -> Result<(), Box<dyn Error>> {
     let mut stdout = io::stdout();
     execute!(stdout, LeaveAlternateScreen, DisableMouseCapture)?;
     disable_raw_mode()?;

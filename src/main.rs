@@ -1,7 +1,5 @@
-extern crate dot_viewer;
-
 use clap::Parser;
-use dot_viewer::terminal::launch;
+use dot_viewer::launch;
 use std::error::Error;
 
 #[derive(Parser, Default, Debug)]
