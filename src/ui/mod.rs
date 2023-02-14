@@ -2,6 +2,7 @@ mod app;
 mod input;
 mod popup;
 mod tabs;
+mod tree;
 mod utils;
 mod view;
 
