@@ -2,9 +2,9 @@ use crate::ui::{centered_rect, surrounding_block};
 use crate::viewer::{App, PopupMode};
 use tui::{
     backend::Backend,
-    layout::Rect,
+    layout::{Constraint, Rect},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders},
+    widgets::{Block, Borders, Cell, Row, Table},
     Frame,
 };
 use tui_tree_widget::Tree as TUITree;
@@ -36,8 +36,24 @@ fn draw_tree<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     f.render_widget(block, chunk);
 }
 
-fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, _app: &mut App) {
-    let block = surrounding_block("Help".to_string(), false);
+fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+    let header = app.help.header.iter().map(|s| Cell::from(s.as_str()).style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)));
+    let header = Row::new(header).height(1).bottom_margin(1);
 
-    f.render_widget(block, chunk);
+    let rows = app.help.rows.iter().map(|row| {
+        let row = row.iter().map(|s| Cell::from(s.as_str()));
+        Row::new(row).height(1).bottom_margin(1)
+    });
+
+    let table = Table::new(rows)
+        .header(header)
+        .block(Block::default().borders(Borders::ALL))
+        .widths(&[
+            Constraint::Percentage(15),
+            Constraint::Percentage(10),
+            Constraint::Percentage(10),
+            Constraint::Percentage(65),
+        ]);
+
+    f.render_widget(table, chunk);
 }

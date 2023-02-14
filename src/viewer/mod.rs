@@ -1,5 +1,6 @@
 mod app;
 mod error;
+mod help;
 mod keybindings;
 mod modes;
 mod utils;
