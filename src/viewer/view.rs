@@ -9,7 +9,7 @@ use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use rayon::prelude::*;
 use regex::Regex;
 
-type Matcher = fn(&str, &str, &Graph) -> Option<(String, Vec<usize>)>;
+type Matcher = fn(&str, &str, &Graph) -> Option<Vec<usize>>;
 
 /// `View` holds a "view" of the graph that `dot-viewer` is dealing with.
 ///
@@ -31,7 +31,7 @@ pub(crate) struct View {
     pub nexts: List<String>,
 
     /// List of matching nodes given some input, with highlight index
-    pub matches: List<(String, Vec<usize>)>,
+    pub matches: List<(usize, Vec<usize>)>,
 
     /// Trie for user input autocompletion
     pub trie: Trie,
@@ -87,6 +87,7 @@ impl View {
 
         let title = &self.title;
         let view = Self::new(format!("{title} - {prefix}"), graph);
+
         Ok(view)
     }
 
@@ -133,8 +134,8 @@ impl View {
 
     /// Update matches based on the given matching function `match` with input `key`.
     fn update_matches(&mut self, matcher: Matcher, key: &str) {
-        let matches: Vec<(String, Vec<usize>)> =
-            self.current.items.par_iter().filter_map(|id| matcher(id, key, &self.graph)).collect();
+        let matches: Vec<(usize, Vec<usize>)> =
+            self.current.items.par_iter().enumerate().filter_map(|(idx, id)| matcher(id, key, &self.graph).map(|highlight| (idx, highlight))).collect();
 
         self.matches = List::from_iter(matches);
     }
@@ -158,7 +159,7 @@ impl View {
 
     /// Update trie based on the current matches.
     pub(crate) fn update_trie(&mut self) {
-        let nodes: Vec<String> = self.matches.items.par_iter().map(|(id, _)| id.clone()).collect();
+        let nodes: Vec<String> = self.matches.items.par_iter().map(|(idx, _)| self.current.items[*idx].clone()).collect();
         self.trie = Trie::new(&nodes);
     }
 
@@ -167,7 +168,7 @@ impl View {
     }
 
     pub(crate) fn matched_id(&self) -> Option<String> {
-        self.matches.selected().map(|(item, _)| item)
+        self.matches.selected().map(|(idx, _)| self.current.items[idx].clone())
     }
 
     pub(crate) fn progress_current(&self) -> String {
@@ -177,26 +178,15 @@ impl View {
 
         format!("[{} / {} ({:.3}%)]", idx + 1, len, percentage)
     }
-
-    pub(crate) fn progress_matches(&self) -> String {
-        if let Some(idx) = self.matches.state.selected() {
-            let len = self.matches.items.len();
-            let percentage = (idx as f32 / len as f32) * 100_f32;
-
-            format!("[{} / {} ({:.3}%)]", idx + 1, len, percentage)
-        } else {
-            "No Match...".to_string()
-        }
-    }
 }
 
-fn match_fuzzy(id: &str, key: &str, _graph: &Graph) -> Option<(String, Vec<usize>)> {
+fn match_fuzzy(id: &str, key: &str, _graph: &Graph) -> Option<Vec<usize>> {
     let matcher = SkimMatcherV2::default();
 
-    matcher.fuzzy_indices(id, key).map(|(_, idxs)| (id.to_string(), idxs))
+    matcher.fuzzy_indices(id, key).map(|(_, idxs)| idxs)
 }
 
-fn match_regex(id: &str, key: &str, graph: &Graph) -> Option<(String, Vec<usize>)> {
+fn match_regex(id: &str, key: &str, graph: &Graph) -> Option<Vec<usize>> {
     if let Ok(matcher) = Regex::new(key) {
         let node = graph.search_node(&id.to_string()).unwrap();
 
@@ -204,13 +194,14 @@ fn match_regex(id: &str, key: &str, graph: &Graph) -> Option<(String, Vec<usize>
         node.to_dot(0, &mut buffer).expect("to_dot should succeed");
         let raw = std::str::from_utf8(&buffer).unwrap();
 
-        matcher.is_match(raw).then_some((id.to_string(), Vec::new()))
+        let highlight: Vec<usize> = (0..id.len()).collect();
+        matcher.is_match(raw).then_some(highlight)
     } else {
         None
     }
 }
 
-fn match_prefix(id: &str, key: &str, _graph: &Graph) -> Option<(String, Vec<usize>)> {
+fn match_prefix(id: &str, key: &str, _graph: &Graph) -> Option<Vec<usize>> {
     let highlight: Vec<usize> = (0..key.len()).collect();
-    id.starts_with(key).then_some((id.to_string(), highlight))
+    id.starts_with(key).then_some(highlight)
 }

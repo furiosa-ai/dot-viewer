@@ -48,13 +48,12 @@ impl App {
 
         let input = Input::default();
 
-        //let help = HELP.iter().map(|row| row.iter().map(|s| s.to_string()).collect()).collect();
         let help = Help::new();
 
         Ok(App { quit, mode, result, tabs, input, help })
     }
 
-    /// Navigate to the currently selected node.
+    /// Navigate to the currently selected node in prevs, nexts list.
     /// The current node list will be focused on the selected node.
     pub(crate) fn goto(&mut self) -> DotViewerResult<()> {
         let id = self.selected_id();
@@ -67,6 +66,23 @@ impl App {
             let view = self.tabs.selected();
             view.goto(&id)
         })
+    }
+
+    /// Navigate to the next or previous matched node.
+    /// The current node list will be focused on that node.
+    pub(crate) fn goto_match(&mut self, is_next: bool) -> DotViewerResult<()> {
+        let view = self.tabs.selected();
+
+        if is_next {
+            view.matches.next();
+        } else {
+            view.matches.previous();
+        }
+
+        view.matched_id().map_or(
+            Err(DotViewerError::ViewerError("no node selected".to_string())),
+            |id| view.goto(&id)
+        )
     }
 
     /// Apply prefix filter on the current view.
@@ -141,16 +157,18 @@ impl App {
 
     pub(crate) fn set_nav_mode(&mut self) {
         self.mode = Mode::Main(MainMode::Navigate(NavMode::Current));
-        self.input.clear();
     }
 
     pub(crate) fn set_input_mode(&mut self, imode: InputMode) {
+        self.input.clear();
+
         self.mode = Mode::Main(MainMode::Input(imode));
 
         let view = self.tabs.selected();
 
-        let init = view.current.items.iter().map(|id| (id.clone(), Vec::new()));
-        view.matches = List::from_iter(init);
+        view.matches = List::from_iter(Vec::new());
+        view.prevs = List::from_iter(Vec::new());
+        view.nexts = List::from_iter(Vec::new());
     }
 
     pub(crate) fn set_popup_mode(&mut self, pmode: PopupMode) {
@@ -167,7 +185,7 @@ impl App {
                     NavMode::Prevs => viewer.prevs.selected(),
                     NavMode::Nexts => viewer.nexts.selected(),
                 },
-                MainMode::Input(_) => viewer.matches.selected().map(|(id, _)| id),
+                MainMode::Input(_) => None,
             },
             Mode::Popup(_) => None,
         }

@@ -1,9 +1,9 @@
 use crate::{
     ui::{surrounding_block, utils::htmlparser},
-    viewer::{InputMode, MainMode, NavMode, SearchMode, View},
+    viewer::{MainMode, NavMode, View},
 };
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 
 use dot_graph::Node;
@@ -34,25 +34,17 @@ pub(super) fn draw_view<B: Backend>(
 }
 
 fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
-    match &mmode {
-        MainMode::Navigate(_) => draw_current(f, chunk, mmode, view),
-        MainMode::Input(imode) => draw_matches(f, chunk, imode, view),
-    }
+    draw_current(f, chunk, mmode, view);
 }
 
 fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
-    match &mmode {
-        MainMode::Navigate(_) => {
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-                .split(chunk);
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .split(chunk);
 
-            draw_adjacent(f, chunks[0], mmode, view);
-            draw_metadata(f, chunks[1], mmode, view);
-        }
-        MainMode::Input(_) => draw_metadata(f, chunk, mmode, view),
-    }
+    draw_adjacent(f, chunks[0], mmode, view);
+    draw_metadata(f, chunks[1], mmode, view);
 }
 
 fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
@@ -62,13 +54,26 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vie
 
     let froms: HashSet<&String> = HashSet::from_iter(&view.prevs.items);
     let tos: HashSet<&String> = HashSet::from_iter(&view.nexts.items);
+    let mut matches = HashMap::new();
+    for (idx, highlight) in &view.matches.items {
+        matches.insert(*idx, highlight);
+    }
 
     let list: Vec<ListItem> = view
         .current
         .items
         .par_iter()
-        .map(|id| {
-            let mut item = ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]);
+        .enumerate()
+        .map(|(idx, id)| {
+            let mut spans: Vec<Span> = id.chars().map(|c| Span::raw(c.to_string())).collect();
+            if let Some(&highlight) = matches.get(&idx) {
+                for &idx in highlight {
+                    spans[idx].style = Style::default().bg(Color::Black).add_modifier(Modifier::BOLD);
+                }
+            }
+
+            let mut item = ListItem::new(Spans(spans));
+
             if froms.contains(&id) {
                 item = item.style(Style::default().fg(Color::Red));
             } else if tos.contains(&id) {
@@ -152,40 +157,6 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vi
     } else {
         f.render_widget(block, chunk);
     }
-}
-
-fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, view: &mut View) {
-    let title = match input {
-        InputMode::Search(smode) => match smode {
-            SearchMode::Fuzzy => "Fuzzy Searching...".to_string(),
-            SearchMode::Regex => "Regex Searching...".to_string(),
-        },
-        InputMode::Filter => "Filtering...".to_string(),
-    };
-    let progress = view.progress_matches();
-    let title = format!("{title} {progress}");
-    let block = surrounding_block(title, true);
-
-    let list: Vec<ListItem> = view
-        .matches
-        .items
-        .par_iter()
-        .map(|(id, highlight)| {
-            let mut spans: Vec<Span> = id.chars().map(|c| Span::raw(c.to_string())).collect();
-            for &idx in highlight {
-                spans[idx].style = Style::default().bg(Color::Black).add_modifier(Modifier::BOLD);
-            }
-
-            ListItem::new(Spans(spans))
-        })
-        .collect();
-
-    let list = List::new(list)
-        .block(block)
-        .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
-        .highlight_symbol("> ");
-
-    f.render_stateful_widget(list, chunk, &mut view.matches.state);
 }
 
 fn pretty_metadata(node: &Node) -> String {

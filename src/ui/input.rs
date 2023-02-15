@@ -5,7 +5,6 @@ use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
-    text::{Span, Spans, Text},
     widgets::Paragraph,
     Frame,
 };
@@ -39,28 +38,8 @@ pub(super) fn draw_input<B: Backend>(
         .margin(1)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
-    draw_help(f, chunks[0]);
-    match mmode {
-        MainMode::Navigate(_) => draw_error(f, chunks[1], app),
-        MainMode::Input(_) => draw_form(f, chunks[1], mmode, app),
-    };
-}
-
-// help block
-fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect) {
-    let text = vec![
-        Span::raw("Press "),
-        Span::styled("?", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-        Span::raw(" for help. "),
-        Span::raw("Press "),
-        Span::styled("q", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
-        Span::raw(" to exit"),
-    ];
-    let mut text = Text::from(Spans::from(text));
-    text.patch_style(Style::default().add_modifier(Modifier::RAPID_BLINK));
-
-    let help = Paragraph::new(text);
-    f.render_widget(help, chunk);
+    draw_error(f, chunks[0], app);
+    draw_form(f, chunks[1], mmode, app);
 }
 
 // error block

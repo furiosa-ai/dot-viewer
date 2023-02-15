@@ -19,10 +19,6 @@ impl App {
             KeyCode::Esc => self.esc().map(|_| SuccessState::default()),
             KeyCode::Tab => self.tab().map(|_| SuccessState::default()),
             KeyCode::BackTab => self.backtab().map(|_| SuccessState::default()),
-            KeyCode::Up => self.up().map(|_| SuccessState::default()),
-            KeyCode::Down => self.down().map(|_| SuccessState::default()),
-            KeyCode::Right => self.right().map(|_| SuccessState::default()),
-            KeyCode::Left => self.left().map(|_| SuccessState::default()),
             _ => Ok(SuccessState::default()),
         };
 
@@ -71,10 +67,12 @@ impl App {
             '?' => {
                 self.set_popup_mode(PopupMode::Help);
                 Ok(SuccessState::default())
-            }
+            } 
             'c' => self.tabs.close().map(|_| SuccessState::default()),
             'e' => self.export(),
             'x' => self.xdot(),
+            'n' => self.goto_match(true).map(|_| SuccessState::default()), 
+            'N' => self.goto_match(false).map(|_| SuccessState::default()),
             'h' => self.left().map(|_| SuccessState::default()),
             'j' => self.down().map(|_| SuccessState::default()),
             'k' => self.up().map(|_| SuccessState::default()),
@@ -107,6 +105,10 @@ impl App {
                 self.quit = true;
                 Ok(())
             }
+            'h' => self.left(),
+            'j' => self.down(),
+            'k' => self.up(),
+            'l' => self.right(),
             _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),
         }
     }
@@ -127,11 +129,14 @@ impl App {
                 MainMode::Navigate(nav) => match nav {
                     NavMode::Prevs | NavMode::Nexts => self.goto(),
                     NavMode::Current => Ok(()),
-                },
+                }
                 MainMode::Input(imode) => match imode {
-                    InputMode::Search(_) => self.goto(),
+                    InputMode::Search(_) => {
+                        self.set_nav_mode();
+                        Ok(())
+                    },
                     InputMode::Filter => self.filter(),
-                },
+                }
             },
             Mode::Popup(pmode) => match pmode {
                 PopupMode::Tree => self.subgraph(),
