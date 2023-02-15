@@ -16,19 +16,33 @@ pub(super) fn draw_input<B: Backend>(
     mmode: &MainMode,
     app: &mut App,
 ) {
+    let view = app.tabs.selected();
+
     // surrounding block
     let title = match mmode {
-        MainMode::Navigate(_) => "Navigate",
+        MainMode::Navigate(_) => if view.matches.items.is_empty() {
+            "Navigate".to_string()
+        } else {
+            format!("Navigate {}", view.progress_matches())
+        }
         MainMode::Input(imode) => match imode {
             InputMode::Search(smode) => match smode {
-                SearchMode::Fuzzy => "Fuzzy Search",
-                SearchMode::Regex => "Regex Search",
+                SearchMode::Fuzzy => if view.matches.items.is_empty() {
+                    "Fuzzy Search".to_string()
+                } else {
+                    format!("Fuzzy Search {}", view.progress_matches())
+                }
+                SearchMode::Regex => if view.matches.items.is_empty() {
+                    "Regex Search".to_string()
+                } else {
+                    format!("Regex Search {}", view.progress_matches())
+                }
             },
-            InputMode::Filter => "Filter",
+            InputMode::Filter => "Filter".to_string(),
         },
     };
 
-    let block = surrounding_block(title.to_string(), matches!(mmode, MainMode::Input(_)));
+    let block = surrounding_block(title, matches!(mmode, MainMode::Input(_)));
 
     f.render_widget(block, chunk);
 

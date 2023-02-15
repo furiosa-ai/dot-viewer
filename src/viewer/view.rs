@@ -178,6 +178,14 @@ impl View {
 
         format!("[{} / {} ({:.3}%)]", idx + 1, len, percentage)
     }
+
+    pub(crate) fn progress_matches(&self) -> String {
+        let idx = self.matches.state.selected().unwrap();
+        let len = self.matches.items.len();
+        let percentage = (idx as f32 / len as f32) * 100_f32;
+
+        format!("[{} / {} ({:.3}%)]", idx + 1, len, percentage)
+    }
 }
 
 fn match_fuzzy(id: &str, key: &str, _graph: &Graph) -> Option<Vec<usize>> {
