@@ -186,11 +186,6 @@ impl View {
         self.update_matches(match_regex, key);
     }
 
-    /// Update matches in prefix filter mode.
-    pub(crate) fn update_filter(&mut self, key: &str) {
-        self.update_matches(match_prefix, key);
-    }
-
     /// Update trie based on the current matches.
     pub(crate) fn update_trie(&mut self) {
         let nodes: Vec<String> = self.matches.items.par_iter().map(|(idx, _)| self.current.items[*idx].clone()).collect();
@@ -241,9 +236,4 @@ fn match_regex(id: &str, key: &str, graph: &Graph) -> Option<Vec<usize>> {
     } else {
         None
     }
-}
-
-fn match_prefix(id: &str, key: &str, _graph: &Graph) -> Option<Vec<usize>> {
-    let highlight: Vec<usize> = (0..key.len()).collect();
-    id.starts_with(key).then_some(highlight)
 }

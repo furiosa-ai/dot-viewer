@@ -102,10 +102,7 @@ impl App {
 
                     view.goto_match()
                 }
-                InputMode::Command => {
-                    self.update_command();
-                    Ok(())
-                }
+                InputMode::Command => Ok(()),
             }
             _ => unreachable!(),
         }
@@ -206,7 +203,7 @@ impl App {
                     SearchMode::Fuzzy => self.autocomplete_fuzzy(),
                     SearchMode::Regex => self.autocomplete_regex(),
                 }
-                InputMode::Command => self.autocomplete_command(),
+                InputMode::Command => {},
             }
             _ => {},
         }

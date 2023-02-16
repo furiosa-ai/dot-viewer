@@ -54,23 +54,6 @@ impl App {
         Ok(App { quit, mode, result, tabs, input, help })
     } 
 
-    /// Update command on user input
-    pub(crate) fn update_command(&mut self) {
-        let command = Command::parse(&self.input.key);
-
-        match command {
-            Command::Filter(filter) => {
-                let prefix = filter.prefix.unwrap_or_default();
-
-                let view = self.tabs.selected();
-
-                view.update_filter(&prefix);
-                view.update_trie();
-            }
-            _ => {}
-        }
-    }
-
     /// Parse and execute dot-viewer command
     pub(crate) fn exec(&mut self) -> DotViewerResult<()> {
         let command = Command::parse(&self.input.key);
@@ -112,28 +95,6 @@ impl App {
             self.input.set(key);
         }
     }
-
-    /// Autocomplete user input
-    pub(crate) fn autocomplete_command(&mut self) {
-        let command = Command::parse(&self.input.key);
-
-        match command {
-            Command::Filter(filter) => {
-                let empty = String::new();
-                let prefix = filter.prefix.as_ref().unwrap_or(&empty);
-
-                let view = self.tabs.selected();
-
-                if let Some(prefix) = view.autocomplete(&prefix) {
-                    view.update_filter(&prefix);
-                    view.update_trie();
-
-                    self.input.set(format!("filter {}", prefix));
-                }
-            }
-            Command::NoMatch => {}
-        }
-    } 
 
     /// Apply prefix filter on the current view.
     /// Based on the currently typed input, it applies a prefix filter on the current view,
