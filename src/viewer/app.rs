@@ -1,4 +1,5 @@
 use crate::viewer::{
+    command::Command,
     error::{DotViewerError, DotViewerResult},
     help::Help,
     modes::{InputMode, MainMode, Mode, NavMode, PopupMode},
@@ -7,13 +8,7 @@ use crate::viewer::{
     view::View,
 };
 
-
 use dot_graph::{parser, Graph};
-
-use clap::{
-    builder::{Arg, Command},
-    ArgMatches,
-};
 
 /// `App` holds `dot-viewer` application states.
 ///
@@ -57,39 +52,40 @@ impl App {
         let help = Help::new();
 
         Ok(App { quit, mode, result, tabs, input, help })
-    }
+    } 
 
-    /// Create a clap parser for dot-viewer commands
-    pub(crate) fn parser() -> Command {
-        Command::new("dot-viewer")
-            .multicall(true)
-            .subcommand_required(true)
-            .subcommand(
-                Command::new("filter").arg(Arg::new("prefix"))
-            )
-    }
+    /// Update command on user input
+    pub(crate) fn update_command(&mut self) {
+        let command = Command::parse(&self.input.key);
 
+        match command {
+            Command::Filter(filter) => {
+                let prefix = filter.prefix.unwrap_or_default();
 
-    fn parse(&self) -> DotViewerResult<ArgMatches> {
-        let command = self.input.key.clone();
-        let command: Vec<&str> = command.split_whitespace().collect();
+                let view = self.tabs.selected();
 
-        Self::parser().try_get_matches_from(command).map_err(
-            |e| DotViewerError::CommandError(e)
-        )
+                view.update_filter(&prefix);
+                view.update_trie();
+            }
+            _ => {}
+        }
     }
 
     /// Parse and execute dot-viewer command
-    pub(crate) fn command(&mut self) -> DotViewerResult<()> {
-        let matches = self.parse()?;
-        match matches.subcommand() {
-            Some(("filter", matches)) => if let Some(prefix) = matches.get_one::<String>("prefix") {
-                self.filter(prefix)
-            } else {
+    pub(crate) fn exec(&mut self) -> DotViewerResult<()> {
+        let command = Command::parse(&self.input.key);
+
+        match command {
+            Command::Filter(filter) => filter.prefix.map_or(
+                Err(DotViewerError::CommandError("No argument supplied for filter".to_string())),
+                |prefix| self.filter(&prefix)
+            ),
+            Command::NoMatch => {
                 self.set_nav_mode();
-                Ok(())
+
+                let key = &self.input.key;
+                Err(DotViewerError::CommandError(format!("No such command {key}")))
             }
-            _ => unreachable!()
         }
     }
 
@@ -119,38 +115,25 @@ impl App {
 
     /// Autocomplete user input
     pub(crate) fn autocomplete_command(&mut self) {
-        match self.parse() {
-            Ok(matches) => match matches.subcommand() {
-                Some(("filter", matches)) => if let Some(prefix) = matches.get_one::<String>("prefix") {
-                    let view = self.tabs.selected();
+        let command = Command::parse(&self.input.key);
 
-                    if let Some(prefix) = view.autocomplete(prefix) {
-                        view.update_filter(&prefix);
-                        view.update_trie();
-                        self.input.set(format!("filter {}", prefix));
-                    }
-                } else {}
-                _ => unreachable!(),
-            }
-            _ => {}
-        }
-    }
+        match command {
+            Command::Filter(filter) => {
+                let empty = String::new();
+                let prefix = filter.prefix.as_ref().unwrap_or(&empty);
 
-    /// Update status on user input
-    pub(crate) fn update_command(&mut self) {
-        match self.parse() {
-            Ok(matches) => match matches.subcommand() {
-                Some(("filter", matches)) => if let Some(prefix) = matches.get_one::<String>("prefix") {
-                    let view = self.tabs.selected();
+                let view = self.tabs.selected();
 
+                if let Some(prefix) = view.autocomplete(&prefix) {
                     view.update_filter(&prefix);
                     view.update_trie();
+
+                    self.input.set(format!("filter {}", prefix));
                 }
-                _ => unreachable!(),
             }
-            _ => {}
+            Command::NoMatch => {}
         }
-    }
+    } 
 
     /// Navigate to the currently selected node in prevs, nexts list.
     /// The current node list will be focused on the selected node.

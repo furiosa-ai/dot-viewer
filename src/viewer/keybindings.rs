@@ -139,7 +139,7 @@ impl App {
                         self.set_nav_mode();
                         Ok(())
                     }
-                    InputMode::Command => self.command(),
+                    InputMode::Command => self.exec(),
                 }
             },
             Mode::Popup(pmode) => match pmode {

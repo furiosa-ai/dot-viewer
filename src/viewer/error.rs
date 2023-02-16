@@ -1,6 +1,5 @@
 use dot_graph::DotGraphError;
 
-use clap::Error as ClapError;
 use crossterm::event::KeyCode;
 use thiserror::Error;
 
@@ -13,8 +12,8 @@ pub enum DotViewerError {
     DotGraphError(#[from] DotGraphError),
     #[error("Err: viewer failed with, `{0}`")]
     ViewerError(String),
-    #[error("Unknown command")]
-    CommandError(#[from] ClapError),
+    #[error("Err: `{0}`")]
+    CommandError(String),
     #[error("Err: no keybinding for {0:?}")]
     KeyError(KeyCode),
     #[error(transparent)]
