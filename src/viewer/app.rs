@@ -9,6 +9,8 @@ use crate::viewer::{
 
 use dot_graph::{parser, Graph};
 
+use clap::builder::{Arg, Command};
+
 /// `App` holds `dot-viewer` application states.
 ///
 /// `tui-rs` simply redraws the entire screen in a loop while accepting keyboard inputs.
@@ -53,6 +55,31 @@ impl App {
         Ok(App { quit, mode, result, tabs, input, help })
     }
 
+    pub(crate) fn parser() -> Command {
+        Command::new("dot-viewer")
+            .multicall(true)
+            .subcommand_required(true)
+            .subcommand(
+                Command::new("filter").arg(Arg::new("prefix"))
+            )
+    }
+
+    pub(crate) fn command(&mut self) -> DotViewerResult<()> {
+        let command = self.input.key.clone();
+        let command: Vec<&str> = command.split_whitespace().collect();
+
+        let matches = Self::parser().try_get_matches_from(command)?;
+        match matches.subcommand() {
+            Some(("filter", matches)) => if let Some(prefix) = matches.get_one::<String>("prefix") {
+                self.filter(prefix)
+            } else {
+                self.set_nav_mode();
+                Ok(())
+            }
+            _ => unreachable!()
+        }
+    }
+
     /// Navigate to the currently selected node in prevs, nexts list.
     /// The current node list will be focused on the selected node.
     pub(crate) fn goto_adjacent(&mut self) -> DotViewerResult<()> {
@@ -88,9 +115,9 @@ impl App {
     /// Apply prefix filter on the current view.
     /// Based on the currently typed input, it applies a prefix filter on the current view,
     /// and opens a new tab with the filtered view.
-    pub(crate) fn filter(&mut self) -> DotViewerResult<()> {
+    pub(crate) fn filter(&mut self, prefix: &str) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
-        let view_new = view_current.filter(&self.input.key)?;
+        let view_new = view_current.filter(prefix)?;
         self.tabs.open(view_new);
 
         self.set_nav_mode();

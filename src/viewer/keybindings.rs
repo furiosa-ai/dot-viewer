@@ -130,9 +130,12 @@ impl App {
                     NavMode::Prevs | NavMode::Nexts => self.goto_adjacent(),
                     NavMode::Current => Ok(()),
                 },
-                MainMode::Input(imode) => {
-                    self.set_nav_mode();
-                    Ok(())
+                MainMode::Input(imode) => match imode {
+                    InputMode::Search(_) => {
+                        self.set_nav_mode();
+                        Ok(())
+                    }
+                    InputMode::Command => self.command(),
                 }
             },
             Mode::Popup(pmode) => match pmode {
