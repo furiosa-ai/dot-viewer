@@ -2,7 +2,7 @@ use crate::viewer::{
     command::Command,
     error::{DotViewerError, DotViewerResult},
     help::Help,
-    modes::{InputMode, Mode, PopupMode},
+    modes::{Mode, PopupMode, SearchMode},
     success::SuccessState,
     utils::{Input, List, Tabs},
     view::View,
@@ -55,17 +55,30 @@ impl App {
     } 
 
     /// Parse and execute dot-viewer command
-    pub(crate) fn exec(&mut self) -> DotViewerResult<()> {
+    pub(crate) fn exec(&mut self) -> DotViewerResult<SuccessState> {
         let command = Command::parse(&self.input.key);
+        self.set_normal_mode();
 
         match command {
             Command::Filter(filter) => filter.prefix.map_or(
                 Err(DotViewerError::CommandError("No argument supplied for filter".to_string())),
-                |prefix| self.filter(&prefix)
+                |prefix| self.filter(&prefix).map(|_| SuccessState::default())
             ),
+            Command::Neighbors(neighbors) => neighbors.depth.map_or(
+                Err(DotViewerError::CommandError("No argument supplied for neighbors".to_string())),
+                |depth| self.neighbors(depth)
+            ),
+            Command::Help => {
+                self.set_popup_mode(PopupMode::Help);
+                Ok(SuccessState::default())
+            }
+            Command::Subgraph => {
+                self.set_popup_mode(PopupMode::Tree);
+                Ok(SuccessState::default())
+            },
+            Command::Export => self.export(),
+            Command::Xdot => self.xdot(),
             Command::NoMatch => {
-                self.set_normal_mode();
-
                 let key = &self.input.key;
                 Err(DotViewerError::CommandError(format!("No such command {key}")))
             }
@@ -103,8 +116,6 @@ impl App {
         let view_current = self.tabs.selected();
         let view_new = view_current.filter(prefix)?;
         self.tabs.open(view_new);
-
-        self.set_normal_mode();
 
         Ok(())
     }
@@ -170,10 +181,16 @@ impl App {
         self.mode = Mode::Normal;
     }
 
-    pub(crate) fn set_input_mode(&mut self, imode: InputMode) {
+    pub(crate) fn set_command_mode(&mut self) {
         self.input.clear();
 
-        self.mode = Mode::Input(imode);
+        self.mode = Mode::Command;
+    }
+
+    pub(crate) fn set_search_mode(&mut self, smode: SearchMode) {
+        self.input.clear();
+
+        self.mode = Mode::Search(smode);
 
         let view = self.tabs.selected();
 

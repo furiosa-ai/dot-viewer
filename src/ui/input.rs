@@ -1,5 +1,5 @@
 use crate::ui::surrounding_block;
-use crate::viewer::{App, Mode, InputMode, SearchMode};
+use crate::viewer::{App, Mode, SearchMode};
 
 use tui::{
     backend::Backend,
@@ -18,17 +18,18 @@ pub(super) fn draw_input<B: Backend>(
     // surrounding block
     let title = match &app.mode {
         Mode::Normal => "Normal",
-        Mode::Input(imode) => match imode {
-            InputMode::Search(smode) => match smode {
-                SearchMode::Fuzzy => "Fuzzy Search",
-                SearchMode::Regex => "Regex Search",
-            }
-            InputMode::Command => "Command",
-        },
+        Mode::Command => "Command",
+        Mode::Search(smode) => match smode {
+            SearchMode::Fuzzy => "Fuzzy Search",
+            SearchMode::Regex => "Regex Search",
+        }
         _ => unreachable!(),
     };
 
-    let block = surrounding_block(title.to_string(), matches!(app.mode, Mode::Input(_)));
+    let block = surrounding_block(
+        title.to_string(), 
+        matches!(app.mode, Mode::Command) || matches!(app.mode, Mode::Search(_))
+    );
 
     f.render_widget(block, chunk);
 
@@ -61,7 +62,7 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let input = Paragraph::new(app.input.key.clone()).style(match &app.mode {
         Mode::Normal => Style::default(),
-        Mode::Input(_) => Style::default().fg(Color::Yellow),
+        Mode::Command | Mode::Search(_) => Style::default().fg(Color::Yellow),
         _ => unreachable!(),
     });
     f.render_widget(input, chunk);
@@ -69,7 +70,7 @@ fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // cursor
     match &app.mode {
         Mode::Normal => {}
-        Mode::Input(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
+        Mode::Command | Mode::Search(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
         _ => unreachable!(),
     }
 }

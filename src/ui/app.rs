@@ -20,7 +20,7 @@ pub(crate) fn draw_app<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     f.render_widget(block, size);
 
     match &app.mode {
-        Mode::Normal | Mode::Input(_) => draw_main(f, size, app),
+        Mode::Normal | Mode::Command | Mode::Search(_) => draw_main(f, size, app),
         Mode::Popup(pmode) => draw_popup(f, size, &pmode.clone(), app),
     }
 }

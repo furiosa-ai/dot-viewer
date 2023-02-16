@@ -2,7 +2,8 @@
 /// `Mode` represents the context that the application, `dot-viewer` is in.
 pub(crate) enum Mode {
     Normal,
-    Input(InputMode),
+    Command,
+    Search(SearchMode),
     Popup(PopupMode),
 }
 
@@ -13,15 +14,6 @@ pub(crate) enum Mode {
 pub(crate) enum PopupMode {
     Tree,
     Help,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-/// In `InputMode`, users can type in inputs for,
-/// - node search, or
-/// - filter application with node id prefix
-pub(crate) enum InputMode {
-    Search(SearchMode),
-    Command,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
