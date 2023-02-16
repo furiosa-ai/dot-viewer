@@ -1,8 +1,9 @@
 use crate::viewer::{
+    app::App,
     error::{DotViewerError, DotViewerResult},
-    modes::{InputMode, MainMode, Mode, NavMode, PopupMode, SearchMode},
+    modes::{InputMode, MainMode, Mode, PopupMode, SearchMode},
     success::SuccessState,
-    App,
+    view::{Focus, View},
 };
 
 use crossterm::event::{KeyCode, KeyEvent};
@@ -30,10 +31,8 @@ impl App {
     fn char(&mut self, c: char) -> DotViewerResult<SuccessState> {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
-                MainMode::Navigate(_) => self.char_nav(c),
-                MainMode::Input(imode) => {
-                    self.char_input(c, &imode.clone()).map(|_| SuccessState::default())
-                }
+                MainMode::Normal => self.char_normal(c),
+                MainMode::Input(imode) => self.char_input(c, &imode.clone()).map(|_| SuccessState::default()),
             },
             Mode::Popup(pmode) => match pmode {
                 PopupMode::Tree => self.char_tree(c).map(|_| SuccessState::default()),
@@ -42,7 +41,7 @@ impl App {
         }
     }
 
-    fn char_nav(&mut self, c: char) -> DotViewerResult<SuccessState> {
+    fn char_normal(&mut self, c: char) -> DotViewerResult<SuccessState> {
         match c {
             'q' => {
                 self.quit = true;
@@ -71,8 +70,14 @@ impl App {
             'c' => self.tabs.close().map(|_| SuccessState::default()),
             'e' => self.export(),
             'x' => self.xdot(),
-            'n' => self.goto_match(true).map(|_| SuccessState::default()), 
-            'N' => self.goto_match(false).map(|_| SuccessState::default()),
+            'n' => {
+                let view = self.tabs.selected();
+                view.goto_match(true).map(|_| SuccessState::default())
+            }
+            'N' => {
+                let view = self.tabs.selected();
+                view.goto_match(false).map(|_| SuccessState::default())
+            }
             'h' => self.left().map(|_| SuccessState::default()),
             'j' => self.down().map(|_| SuccessState::default()),
             'k' => self.up().map(|_| SuccessState::default()),
@@ -130,10 +135,10 @@ impl App {
     fn enter(&mut self) -> DotViewerResult<()> {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
-                MainMode::Navigate(nav) => match nav {
-                    NavMode::Prevs | NavMode::Nexts => self.goto_adjacent(),
-                    NavMode::Current => Ok(()),
-                },
+                MainMode::Normal => {
+                    let view = self.tabs.selected();
+                    view.enter()
+                }
                 MainMode::Input(imode) => match imode {
                     InputMode::Search(_) => {
                         self.set_nav_mode();
@@ -191,7 +196,7 @@ impl App {
     fn tab(&mut self) -> DotViewerResult<()> {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
-                MainMode::Navigate(_) => self.tabs.next(),
+                MainMode::Normal => self.tabs.next(),
                 MainMode::Input(imode) => match imode {
                     InputMode::Search(smode) => match smode {
                         SearchMode::Fuzzy => self.autocomplete_fuzzy(),
@@ -208,7 +213,7 @@ impl App {
 
     fn backtab(&mut self) -> DotViewerResult<()> {
         match &self.mode {
-            Mode::Main(MainMode::Navigate(_)) => {
+            Mode::Main(MainMode::Normal) => {
                 self.tabs.previous();
                 Ok(())
             }
@@ -221,18 +226,11 @@ impl App {
 
         match &self.mode {
             Mode::Main(mmode) => match mmode {
-                MainMode::Navigate(nav) => match nav {
-                    NavMode::Current => {
-                        view.current.previous();
-                        view.update_adjacent()?;
-                    }
-                    NavMode::Prevs => view.prevs.previous(),
-                    NavMode::Nexts => view.nexts.previous(),
-                },
+                MainMode::Normal => view.up()?,
                 MainMode::Input(_) => view.matches.previous(),
             },
             Mode::Popup(PopupMode::Tree) => view.subtree.up(),
-            _ => {}
+            _ => {},
         };
 
         Ok(())
@@ -243,16 +241,9 @@ impl App {
 
         match &self.mode {
             Mode::Main(mmode) => match mmode {
-                MainMode::Navigate(nav) => match nav {
-                    NavMode::Current => {
-                        view.current.next();
-                        view.update_adjacent()?;
-                    }
-                    NavMode::Prevs => view.prevs.next(),
-                    NavMode::Nexts => view.nexts.next(),
-                },
+                MainMode::Normal => view.down()?,
                 MainMode::Input(_) => view.matches.next(),
-            },
+            }
             Mode::Popup(PopupMode::Tree) => view.subtree.down(),
             _ => {}
         };
@@ -265,12 +256,9 @@ impl App {
 
         match mode {
             Mode::Main(mmode) => match mmode {
-                MainMode::Navigate(nav) => {
-                    self.mode = match nav {
-                        NavMode::Current => Mode::Main(MainMode::Navigate(NavMode::Prevs)),
-                        NavMode::Prevs => Mode::Main(MainMode::Navigate(NavMode::Nexts)),
-                        NavMode::Nexts => Mode::Main(MainMode::Navigate(NavMode::Current)),
-                    };
+                MainMode::Normal => {
+                    let view = self.tabs.selected();
+                    view.right();
                 }
                 MainMode::Input(_) => self.input.front(),
             },
@@ -289,12 +277,9 @@ impl App {
 
         match mode {
             Mode::Main(mmode) => match mmode {
-                MainMode::Navigate(nav) => {
-                    self.mode = match nav {
-                        NavMode::Current => Mode::Main(MainMode::Navigate(NavMode::Nexts)),
-                        NavMode::Prevs => Mode::Main(MainMode::Navigate(NavMode::Current)),
-                        NavMode::Nexts => Mode::Main(MainMode::Navigate(NavMode::Prevs)),
-                    };
+                MainMode::Normal => {
+                    let view = self.tabs.selected();
+                    view.left();
                 }
                 MainMode::Input(_) => self.input.back(),
             },
@@ -306,5 +291,56 @@ impl App {
         }
 
         Ok(())
+    }
+}
+
+impl View {
+    pub(super) fn enter(&mut self) -> DotViewerResult<()> {
+        match &self.focus {
+            Focus::Prev | Focus::Next => self.goto_adjacent(),
+            Focus::Current => Ok(())
+        }
+    }
+
+    pub(super) fn up(&mut self) -> DotViewerResult<()> {
+        match &self.focus {
+            Focus::Current => {
+                self.current.previous();
+                self.update_adjacent()?
+            }
+            Focus::Prev => self.prevs.previous(),
+            Focus::Next => self.nexts.previous(),
+        }
+
+        Ok(())
+    }
+
+    pub(super) fn down(&mut self) -> DotViewerResult<()> {
+        match &self.focus {
+            Focus::Current => {
+                self.current.next();
+                self.update_adjacent()?
+            }
+            Focus::Prev => self.prevs.next(),
+            Focus::Next => self.nexts.next(),
+        }
+
+        Ok(())
+    }
+
+    pub(super) fn right(&mut self) {
+        self.focus = match &self.focus {
+            Focus::Current => Focus::Prev,
+            Focus::Prev => Focus::Next,
+            Focus::Next => Focus::Current,
+        };
+    }
+
+    pub(super) fn left(&mut self) {
+        self.focus = match &self.focus {
+            Focus::Current => Focus::Next,
+            Focus::Prev => Focus::Current,
+            Focus::Next => Focus::Prev,
+        };
     }
 }

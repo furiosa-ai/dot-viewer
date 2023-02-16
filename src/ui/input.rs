@@ -18,7 +18,7 @@ pub(super) fn draw_input<B: Backend>(
 ) {
     // surrounding block
     let title = match mmode {
-        MainMode::Navigate(_) => "Navigate",
+        MainMode::Normal => "Normal",
         MainMode::Input(imode) => match imode {
             InputMode::Search(smode) => match smode {
                 SearchMode::Fuzzy => "Fuzzy Search",
@@ -60,14 +60,14 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 // input block
 fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, app: &mut App) {
     let input = Paragraph::new(app.input.key.clone()).style(match mmode {
-        MainMode::Navigate(_) => Style::default(),
+        MainMode::Normal => Style::default(),
         MainMode::Input(_) => Style::default().fg(Color::Yellow),
     });
     f.render_widget(input, chunk);
 
     // cursor
     match mmode {
-        MainMode::Navigate(_) => {}
+        MainMode::Normal => {}
         MainMode::Input(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
     }
 }

@@ -10,7 +10,7 @@ pub(crate) enum Mode {
 /// - navigate the current, prev, next lists, or
 /// - type in inputs to the input form.
 pub(crate) enum MainMode {
-    Navigate(NavMode),
+    Normal,
     Input(InputMode),
 }
 
@@ -21,17 +21,6 @@ pub(crate) enum MainMode {
 pub(crate) enum PopupMode {
     Tree,
     Help,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-/// In `NavMode`, users can navigate
-/// - current nodes list,
-/// - previous nodes list, and
-/// - next nodes list.
-pub(crate) enum NavMode {
-    Current,
-    Prevs,
-    Nexts,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

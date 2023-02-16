@@ -2,7 +2,7 @@ use crate::viewer::{
     command::Command,
     error::{DotViewerError, DotViewerResult},
     help::Help,
-    modes::{InputMode, MainMode, Mode, NavMode, PopupMode},
+    modes::{InputMode, MainMode, Mode, PopupMode},
     success::SuccessState,
     utils::{Input, List, Tabs},
     view::View,
@@ -39,7 +39,7 @@ impl App {
     pub(crate) fn new(path: &str) -> DotViewerResult<App> {
         let quit = false;
 
-        let mode = Mode::Main(MainMode::Navigate(NavMode::Current));
+        let mode = Mode::Main(MainMode::Normal);
 
         let result: DotViewerResult<SuccessState> = Ok(SuccessState::default());
 
@@ -135,38 +135,6 @@ impl App {
         }
     } 
 
-    /// Navigate to the currently selected node in prevs, nexts list.
-    /// The current node list will be focused on the selected node.
-    pub(crate) fn goto_adjacent(&mut self) -> DotViewerResult<()> {
-        let id = self.selected_id();
-
-        if matches!(self.mode, Mode::Main(MainMode::Input(_))) {
-            self.set_nav_mode();
-        }
-
-        id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
-            let view = self.tabs.selected();
-            view.goto(&id)
-        })
-    }
-
-    /// Navigate to the next or previous matched node.
-    /// The current node list will be focused on that node.
-    pub(crate) fn goto_match(&mut self, is_next: bool) -> DotViewerResult<()> {
-        let view = self.tabs.selected();
-
-        if is_next {
-            view.matches.next();
-        } else {
-            view.matches.previous();
-        }
-
-        view.matched_id().map_or(
-            Err(DotViewerError::ViewerError("no node selected".to_string())),
-            |id| view.goto(&id)
-        )
-    }
-
     /// Apply prefix filter on the current view.
     /// Based on the currently typed input, it applies a prefix filter on the current view,
     /// and opens a new tab with the filtered view.
@@ -238,7 +206,7 @@ impl App {
     }
 
     pub(crate) fn set_nav_mode(&mut self) {
-        self.mode = Mode::Main(MainMode::Navigate(NavMode::Current));
+        self.mode = Mode::Main(MainMode::Normal);
     }
 
     pub(crate) fn set_input_mode(&mut self, imode: InputMode) {
@@ -255,22 +223,6 @@ impl App {
 
     pub(crate) fn set_popup_mode(&mut self, pmode: PopupMode) {
         self.mode = Mode::Popup(pmode);
-    }
-
-    pub(crate) fn selected_id(&mut self) -> Option<String> {
-        let viewer = self.tabs.selected();
-
-        match &self.mode {
-            Mode::Main(mmode) => match mmode {
-                MainMode::Navigate(nmode) => match nmode {
-                    NavMode::Current => viewer.current.selected(),
-                    NavMode::Prevs => viewer.prevs.selected(),
-                    NavMode::Nexts => viewer.nexts.selected(),
-                },
-                MainMode::Input(_) => None,
-            },
-            Mode::Popup(_) => None,
-        }
     }
 }
 

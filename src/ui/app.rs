@@ -31,6 +31,6 @@ fn draw_main<B: Backend>(f: &mut Frame<B>, size: Rect, mode: &MainMode, app: &mu
         .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())
         .split(size);
 
-    draw_tabs(f, chunks[0], mode, app);
+    draw_tabs(f, chunks[0], app);
     draw_input(f, chunks[1], mode, app);
 }

@@ -1,6 +1,6 @@
 use crate::{
     ui::{surrounding_block, utils::htmlparser},
-    viewer::{MainMode, NavMode, View},
+    viewer::{View, Focus},
 };
 
 use std::collections::{HashMap, HashSet};
@@ -21,7 +21,6 @@ use tui::{
 pub(super) fn draw_view<B: Backend>(
     f: &mut Frame<B>,
     chunk: Rect,
-    mmode: &MainMode,
     view: &mut View,
 ) {
     let chunks = Layout::default()
@@ -29,38 +28,38 @@ pub(super) fn draw_view<B: Backend>(
         .constraints([Constraint::Percentage(35), Constraint::Percentage(65)].as_ref())
         .split(chunk);
 
-    draw_left(f, chunks[0], mmode, view);
-    draw_right(f, chunks[1], mmode, view);
+    draw_left(f, chunks[0], view);
+    draw_right(f, chunks[1], view);
 }
 
-fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     if view.matches.items.is_empty() {
-        draw_current(f, chunk, mmode, view);
+        draw_current(f, chunk, view);
     } else {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([Constraint::Percentage(99), Constraint::Percentage(1)].as_ref())
             .split(chunk);
 
-        draw_current(f, chunks[0], mmode, view);
+        draw_current(f, chunks[0], view);
         draw_match(f, chunks[1], view);
     }
 }
 
-fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
 
-    draw_adjacent(f, chunks[0], mmode, view);
-    draw_metadata(f, chunks[1], mmode, view);
+    draw_adjacent(f, chunks[0], view);
+    draw_metadata(f, chunks[1], view);
 }
 
-fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let progress = view.progress_current();
     let title = format!("Nodes {progress}");
-    let block = surrounding_block(title, *mmode == MainMode::Navigate(NavMode::Current));
+    let block = surrounding_block(title, view.focus == Focus::Current);
 
     let froms: HashSet<&String> = HashSet::from_iter(&view.prevs.items);
     let tos: HashSet<&String> = HashSet::from_iter(&view.nexts.items);
@@ -109,19 +108,19 @@ fn draw_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     f.render_widget(block, chunk);
 }
 
-fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
 
-    draw_prevs(f, chunks[0], mmode, view);
-    draw_nexts(f, chunks[1], mmode, view);
+    draw_prevs(f, chunks[0], view);
+    draw_nexts(f, chunks[1], view);
 }
 
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let block =
-        surrounding_block("Prev Nodes".to_string(), *mmode == MainMode::Navigate(NavMode::Prevs));
+        surrounding_block("Prev Nodes".to_string(), view.focus == Focus::Prev);
 
     let list: Vec<ListItem> = view
         .prevs
@@ -138,9 +137,9 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view:
     f.render_stateful_widget(list, chunk, &mut view.prevs.state);
 }
 
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let block =
-        surrounding_block("Next Nodes".to_string(), *mmode == MainMode::Navigate(NavMode::Nexts));
+        surrounding_block("Next Nodes".to_string(), view.focus == Focus::Next);
 
     let list: Vec<ListItem> = view
         .nexts
@@ -157,23 +156,16 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view:
     f.render_stateful_widget(list, chunk, &mut view.nexts.state);
 }
 
-fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let block = surrounding_block("Attrs".to_string(), false);
 
-    let id = match mmode {
-        MainMode::Navigate(_) => Some(view.current_id()),
-        MainMode::Input(_) => view.matched_id(),
-    };
+    let id = view.current_id();
+    let node = view.graph.search_node(&id).unwrap();
 
-    if let Some(id) = id {
-        let node = view.graph.search_node(&id).unwrap();
-        let paragraph =
-            Paragraph::new(pretty_metadata(node)).block(block).wrap(Wrap { trim: true });
+    let paragraph =
+        Paragraph::new(pretty_metadata(node)).block(block).wrap(Wrap { trim: true });
 
-        f.render_widget(paragraph, chunk);
-    } else {
-        f.render_widget(block, chunk);
-    }
+    f.render_widget(paragraph, chunk);
 }
 
 fn pretty_metadata(node: &Node) -> String {

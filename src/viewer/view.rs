@@ -22,9 +22,10 @@ pub(crate) struct View {
     /// Graph that the view is representing (a portion of the original graph)
     pub graph: Graph,
 
+    /// Current focus
+    pub focus: Focus,
     /// Topologically sorted list of all nodes in the view
     pub current: List<String>,
-
     /// List of previous nodes of the currently selected node
     pub prevs: List<String>,
     /// List of next nodes of the currently selected node
@@ -40,6 +41,13 @@ pub(crate) struct View {
     pub subtree: Tree,
 }
 
+#[derive(PartialEq)]
+pub(crate) enum Focus {
+    Current,
+    Prev,
+    Next,
+}
+
 impl View {
     /// Constructs a new `View`, given a `title` and a `graph`, which is a portion of the original
     /// graph.
@@ -48,6 +56,7 @@ impl View {
 
         let trie = Trie::new(&node_ids);
 
+        let focus = Focus::Current;
         let current = List::from_iter(node_ids);
         let prevs = List::from_iter(Vec::new());
         let nexts = List::from_iter(Vec::new());
@@ -55,11 +64,42 @@ impl View {
 
         let subtree = Tree::from_graph(&graph);
 
-        let mut view = View { title, graph, current, prevs, nexts, matches, trie, subtree };
+        let mut view = View { title, graph, focus, current, prevs, nexts, matches, trie, subtree };
 
         view.update_adjacent().expect("there is always a selected current node on initialization");
 
         view
+    }
+
+    /// Navigate to the selected adjacent node.
+    pub(crate) fn goto_adjacent(&mut self) -> DotViewerResult<()> {
+        let err = Err(DotViewerError::ViewerError("no node selected".to_string())); 
+
+        match &self.focus {
+            Focus::Prev => self.prevs.selected().map_or(
+                err,
+                |id| self.goto(&id)
+            ),
+            Focus::Next => self.nexts.selected().map_or(
+                err,
+                |id| self.goto(&id)
+            ),
+            _ => err,
+        }
+    }
+
+    /// Navigate to the matched node.
+    pub(crate) fn goto_match(&mut self, forward: bool) -> DotViewerResult<()> {
+        if forward {
+            self.matches.next();
+        } else {
+            self.matches.previous();
+        }
+
+        self.matched_id().map_or(
+            Err(DotViewerError::ViewerError("no node selected".to_string())),
+            |id| self.goto(&id)
+        )
     }
 
     /// Navigate to the currently selected node with `id`.
