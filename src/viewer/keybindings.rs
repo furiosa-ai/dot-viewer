@@ -56,6 +56,10 @@ impl App {
                 self.set_input_mode(InputMode::Search(SearchMode::Regex));
                 Ok(SuccessState::default())
             }
+            ':' => {
+                self.set_input_mode(InputMode::Command);
+                Ok(SuccessState::default())
+            }
             's' => {
                 self.set_popup_mode(PopupMode::Tree);
                 Ok(SuccessState::default())
@@ -88,6 +92,7 @@ impl App {
                 SearchMode::Fuzzy => view.update_fuzzy(key),
                 SearchMode::Regex => view.update_regex(key),
             },
+            InputMode::Command => {},
         };
         view.update_trie();
 
@@ -122,14 +127,12 @@ impl App {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(nav) => match nav {
-                    NavMode::Prevs | NavMode::Nexts => self.goto(),
+                    NavMode::Prevs | NavMode::Nexts => self.goto_adjacent(),
                     NavMode::Current => Ok(()),
-                }
-                MainMode::Input(imode) => match imode {
-                    InputMode::Search(_) => {
-                        self.set_nav_mode();
-                        Ok(())
-                    },
+                },
+                MainMode::Input(imode) => {
+                    self.set_nav_mode();
+                    Ok(())
                 }
             },
             Mode::Popup(pmode) => match pmode {
@@ -152,6 +155,7 @@ impl App {
                         SearchMode::Fuzzy => view.update_fuzzy(key),
                         SearchMode::Regex => view.update_regex(key),
                     },
+                    InputMode::Command => {},
                 };
                 view.update_trie();
 
@@ -196,6 +200,7 @@ impl App {
                                 SearchMode::Fuzzy => view.update_fuzzy(key),
                                 SearchMode::Regex => view.update_regex(key),
                             },
+                            InputMode::Command => {},
                         };
                     }
 

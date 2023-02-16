@@ -55,7 +55,7 @@ impl App {
 
     /// Navigate to the currently selected node in prevs, nexts list.
     /// The current node list will be focused on the selected node.
-    pub(crate) fn goto(&mut self) -> DotViewerResult<()> {
+    pub(crate) fn goto_adjacent(&mut self) -> DotViewerResult<()> {
         let id = self.selected_id();
 
         if matches!(self.mode, Mode::Main(MainMode::Input(_))) {
