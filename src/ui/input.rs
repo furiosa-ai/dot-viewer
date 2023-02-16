@@ -1,5 +1,5 @@
 use crate::ui::surrounding_block;
-use crate::viewer::{App, InputMode, MainMode, SearchMode};
+use crate::viewer::{App, Mode, InputMode, SearchMode};
 
 use tui::{
     backend::Backend,
@@ -13,22 +13,22 @@ use tui::{
 pub(super) fn draw_input<B: Backend>(
     f: &mut Frame<B>,
     chunk: Rect,
-    mmode: &MainMode,
     app: &mut App,
 ) {
     // surrounding block
-    let title = match mmode {
-        MainMode::Normal => "Normal",
-        MainMode::Input(imode) => match imode {
+    let title = match &app.mode {
+        Mode::Normal => "Normal",
+        Mode::Input(imode) => match imode {
             InputMode::Search(smode) => match smode {
                 SearchMode::Fuzzy => "Fuzzy Search",
                 SearchMode::Regex => "Regex Search",
             }
             InputMode::Command => "Command",
         },
+        _ => unreachable!(),
     };
 
-    let block = surrounding_block(title.to_string(), matches!(mmode, MainMode::Input(_)));
+    let block = surrounding_block(title.to_string(), matches!(app.mode, Mode::Input(_)));
 
     f.render_widget(block, chunk);
 
@@ -40,7 +40,7 @@ pub(super) fn draw_input<B: Backend>(
         .split(chunk);
 
     draw_error(f, chunks[0], app);
-    draw_form(f, chunks[1], mmode, app);
+    draw_form(f, chunks[1], app);
 }
 
 // error block
@@ -58,16 +58,18 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 }
 
 // input block
-fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, app: &mut App) {
-    let input = Paragraph::new(app.input.key.clone()).style(match mmode {
-        MainMode::Normal => Style::default(),
-        MainMode::Input(_) => Style::default().fg(Color::Yellow),
+fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+    let input = Paragraph::new(app.input.key.clone()).style(match &app.mode {
+        Mode::Normal => Style::default(),
+        Mode::Input(_) => Style::default().fg(Color::Yellow),
+        _ => unreachable!(),
     });
     f.render_widget(input, chunk);
 
     // cursor
-    match mmode {
-        MainMode::Normal => {}
-        MainMode::Input(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
+    match &app.mode {
+        Mode::Normal => {}
+        Mode::Input(_) => f.set_cursor(chunk.x + app.input.cursor as u16, chunk.y),
+        _ => unreachable!(),
     }
 }

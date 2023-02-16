@@ -1,17 +1,9 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// `Mode` represents the context that the application, `dot-viewer` is in.
 pub(crate) enum Mode {
-    Main(MainMode),
-    Popup(PopupMode),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-/// In `MainMode`, users can
-/// - navigate the current, prev, next lists, or
-/// - type in inputs to the input form.
-pub(crate) enum MainMode {
     Normal,
     Input(InputMode),
+    Popup(PopupMode),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

@@ -1,7 +1,7 @@
 use crate::viewer::{
     app::App,
     error::{DotViewerError, DotViewerResult},
-    modes::{InputMode, MainMode, Mode, PopupMode, SearchMode},
+    modes::{InputMode, Mode, PopupMode, SearchMode},
     success::SuccessState,
     view::{Focus, View},
 };
@@ -30,10 +30,8 @@ impl App {
 
     fn char(&mut self, c: char) -> DotViewerResult<SuccessState> {
         match &self.mode {
-            Mode::Main(mmode) => match mmode {
-                MainMode::Normal => self.char_normal(c),
-                MainMode::Input(imode) => self.char_input(c, &imode.clone()).map(|_| SuccessState::default()),
-            },
+            Mode::Normal => self.char_normal(c),
+            Mode::Input(imode) => self.char_input(c, &imode.clone()).map(|_| SuccessState::default()),
             Mode::Popup(pmode) => match pmode {
                 PopupMode::Tree => self.char_tree(c).map(|_| SuccessState::default()),
                 PopupMode::Help => self.char_help(c).map(|_| SuccessState::default()),
@@ -134,21 +132,19 @@ impl App {
 
     fn enter(&mut self) -> DotViewerResult<()> {
         match &self.mode {
-            Mode::Main(mmode) => match mmode {
-                MainMode::Normal => {
-                    let view = self.tabs.selected();
-                    view.enter()
+            Mode::Normal => {
+                let view = self.tabs.selected();
+                view.enter()
+            }
+            Mode::Input(imode) => match imode {
+                InputMode::Search(_) => {
+                    self.set_normal_mode();
+                    Ok(())
                 }
-                MainMode::Input(imode) => match imode {
-                    InputMode::Search(_) => {
-                        self.set_nav_mode();
-                        Ok(())
-                    }
-                    InputMode::Command => self.exec(),
-                }
-            },
+                InputMode::Command => self.exec(),
+            }
             Mode::Popup(pmode) => match pmode {
-                PopupMode::Tree => self.subgraph(),
+                PopupMode::Tree => self.subgraph(), 
                 _ => Ok(()),
             },
         }
@@ -158,7 +154,7 @@ impl App {
         let view = self.tabs.selected();
 
         match &self.mode {
-            Mode::Main(MainMode::Input(imode)) => {
+            Mode::Input(imode) => {
                 self.input.delete();
 
                 let key = &self.input.key;
@@ -179,15 +175,9 @@ impl App {
 
     fn esc(&mut self) -> DotViewerResult<()> {
         match &self.mode {
-            Mode::Main(mmode) => match mmode {
-                MainMode::Input(_) => {
-                    self.set_nav_mode();
-                    Ok(())
-                }
-                _ => Err(DotViewerError::KeyError(KeyCode::Esc)),
-            },
+            Mode::Normal => Err(DotViewerError::KeyError(KeyCode::Esc)),
             _ => {
-                self.set_nav_mode();
+                self.set_normal_mode();
                 Ok(())
             }
         }
@@ -195,16 +185,14 @@ impl App {
 
     fn tab(&mut self) -> DotViewerResult<()> {
         match &self.mode {
-            Mode::Main(mmode) => match mmode {
-                MainMode::Normal => self.tabs.next(),
-                MainMode::Input(imode) => match imode {
-                    InputMode::Search(smode) => match smode {
-                        SearchMode::Fuzzy => self.autocomplete_fuzzy(),
-                        SearchMode::Regex => self.autocomplete_regex(),
-                    }
-                    InputMode::Command => self.autocomplete_command(),
+            Mode::Normal => self.tabs.next(),
+            Mode::Input(imode) => match imode {
+                InputMode::Search(smode) => match smode {
+                    SearchMode::Fuzzy => self.autocomplete_fuzzy(),
+                    SearchMode::Regex => self.autocomplete_regex(),
                 }
-            },
+                InputMode::Command => self.autocomplete_command(),
+            }
             _ => {},
         }
 
@@ -213,7 +201,7 @@ impl App {
 
     fn backtab(&mut self) -> DotViewerResult<()> {
         match &self.mode {
-            Mode::Main(MainMode::Normal) => {
+            Mode::Normal => {
                 self.tabs.previous();
                 Ok(())
             }
@@ -225,10 +213,8 @@ impl App {
         let view = self.tabs.selected();
 
         match &self.mode {
-            Mode::Main(mmode) => match mmode {
-                MainMode::Normal => view.up()?,
-                MainMode::Input(_) => view.matches.previous(),
-            },
+            Mode::Normal => view.up()?,
+            Mode::Input(_) => view.matches.previous(),
             Mode::Popup(PopupMode::Tree) => view.subtree.up(),
             _ => {},
         };
@@ -240,54 +226,44 @@ impl App {
         let view = self.tabs.selected();
 
         match &self.mode {
-            Mode::Main(mmode) => match mmode {
-                MainMode::Normal => view.down()?,
-                MainMode::Input(_) => view.matches.next(),
-            }
+            Mode::Normal => view.down()?,
+            Mode::Input(_) => view.matches.next(),
             Mode::Popup(PopupMode::Tree) => view.subtree.down(),
-            _ => {}
+            _ => {},
         };
 
         Ok(())
     }
 
     fn right(&mut self) -> DotViewerResult<()> {
-        let mode = self.mode.clone();
-
-        match mode {
-            Mode::Main(mmode) => match mmode {
-                MainMode::Normal => {
-                    let view = self.tabs.selected();
-                    view.right();
-                }
-                MainMode::Input(_) => self.input.front(),
-            },
+        match &self.mode {
+            Mode::Normal => {
+                let view = self.tabs.selected();
+                view.right();
+            }
+            Mode::Input(_) => self.input.front(),
             Mode::Popup(PopupMode::Tree) => {
                 let view = self.tabs.selected();
                 view.subtree.right();
             }
-            _ => {}
+            _ => {},
         }
 
         Ok(())
     }
 
     fn left(&mut self) -> DotViewerResult<()> {
-        let mode = self.mode.clone();
-
-        match mode {
-            Mode::Main(mmode) => match mmode {
-                MainMode::Normal => {
-                    let view = self.tabs.selected();
-                    view.left();
-                }
-                MainMode::Input(_) => self.input.back(),
-            },
+        match &self.mode {
+            Mode::Normal => {
+                let view = self.tabs.selected();
+                view.left();
+            }
+            Mode::Input(_) => self.input.back(),
             Mode::Popup(PopupMode::Tree) => {
                 let view = self.tabs.selected();
                 view.subtree.left();
             }
-            _ => {}
+            _ => {},
         }
 
         Ok(())

@@ -2,7 +2,7 @@ use crate::viewer::{
     command::Command,
     error::{DotViewerError, DotViewerResult},
     help::Help,
-    modes::{InputMode, MainMode, Mode, PopupMode},
+    modes::{InputMode, Mode, PopupMode},
     success::SuccessState,
     utils::{Input, List, Tabs},
     view::View,
@@ -39,7 +39,7 @@ impl App {
     pub(crate) fn new(path: &str) -> DotViewerResult<App> {
         let quit = false;
 
-        let mode = Mode::Main(MainMode::Normal);
+        let mode = Mode::Normal;
 
         let result: DotViewerResult<SuccessState> = Ok(SuccessState::default());
 
@@ -81,7 +81,7 @@ impl App {
                 |prefix| self.filter(&prefix)
             ),
             Command::NoMatch => {
-                self.set_nav_mode();
+                self.set_normal_mode();
 
                 let key = &self.input.key;
                 Err(DotViewerError::CommandError(format!("No such command {key}")))
@@ -143,7 +143,7 @@ impl App {
         let view_new = view_current.filter(prefix)?;
         self.tabs.open(view_new);
 
-        self.set_nav_mode();
+        self.set_normal_mode();
 
         Ok(())
     }
@@ -156,7 +156,7 @@ impl App {
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
 
-        self.set_nav_mode();
+        self.set_normal_mode();
 
         Ok(())
     }
@@ -205,14 +205,14 @@ impl App {
         xdot.map(|_| SuccessState::XdotSuccess).map_err(|_| DotViewerError::XdotError)
     }
 
-    pub(crate) fn set_nav_mode(&mut self) {
-        self.mode = Mode::Main(MainMode::Normal);
+    pub(crate) fn set_normal_mode(&mut self) {
+        self.mode = Mode::Normal;
     }
 
     pub(crate) fn set_input_mode(&mut self, imode: InputMode) {
         self.input.clear();
 
-        self.mode = Mode::Main(MainMode::Input(imode));
+        self.mode = Mode::Input(imode);
 
         let view = self.tabs.selected();
 

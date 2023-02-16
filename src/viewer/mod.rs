@@ -10,6 +10,6 @@ mod view;
 
 pub(crate) use crate::viewer::{
     app::App,
-    modes::{InputMode, MainMode, Mode, PopupMode, SearchMode},
+    modes::{InputMode, Mode, PopupMode, SearchMode},
     view::{Focus, View},
 };
