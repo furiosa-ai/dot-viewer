@@ -31,11 +31,8 @@ impl App {
     fn char(&mut self, c: char) -> DotViewerResult<SuccessState> {
         match &self.mode {
             Mode::Normal => self.char_normal(c),
-            Mode::Input(imode) => self.char_input(c, &imode.clone()).map(|_| SuccessState::default()),
-            Mode::Popup(pmode) => match pmode {
-                PopupMode::Tree => self.char_tree(c).map(|_| SuccessState::default()),
-                PopupMode::Help => self.char_help(c).map(|_| SuccessState::default()),
-            },
+            Mode::Input(_) => self.char_input(c).map(|_| SuccessState::default()),
+            Mode::Popup(_) => self.char_popup(c).map(|_| SuccessState::default()),
         }
     }
 
@@ -70,11 +67,13 @@ impl App {
             'x' => self.xdot(),
             'n' => {
                 let view = self.tabs.selected();
-                view.goto_match(true).map(|_| SuccessState::default())
+                view.matches.next();
+                view.goto_match().map(|_| SuccessState::default())
             }
             'N' => {
                 let view = self.tabs.selected();
-                view.goto_match(false).map(|_| SuccessState::default())
+                view.matches.previous();
+                view.goto_match().map(|_| SuccessState::default())
             }
             'h' => self.left().map(|_| SuccessState::default()),
             'j' => self.down().map(|_| SuccessState::default()),
@@ -85,25 +84,41 @@ impl App {
         }
     }
 
-    fn char_input(&mut self, c: char, imode: &InputMode) -> DotViewerResult<()> {
+    fn char_input(&mut self, c: char) -> DotViewerResult<()> {
         self.input.insert(c);
 
-        match imode {
-            InputMode::Search(smode) => {
-                let view = self.tabs.selected();
-                let key = &self.input.key;
+        match &self.mode {
+            Mode::Input(imode) => match imode {
+                InputMode::Search(smode) => {
+                    let view = self.tabs.selected();
+                    let key = &self.input.key;
 
-                match smode {
-                    SearchMode::Fuzzy => view.update_fuzzy(key),
-                    SearchMode::Regex => view.update_regex(key),
+                    match smode {
+                        SearchMode::Fuzzy => view.update_fuzzy(key),
+                        SearchMode::Regex => view.update_regex(key),
+                    }
+
+                    view.update_trie();
+
+                    view.goto_match()
                 }
-
-                view.update_trie();
+                InputMode::Command => {
+                    self.update_command();
+                    Ok(())
+                }
             }
-            InputMode::Command => self.update_command(),
-        };
+            _ => unreachable!(),
+        }
+    }
 
-        Ok(())
+    fn char_popup(&mut self, c: char) -> DotViewerResult<()> {
+        match &self.mode {
+            Mode::Popup(pmode) => match pmode {
+                PopupMode::Tree => self.char_tree(c),
+                PopupMode::Help => self.char_help(c),
+            },
+            _ => unreachable!()
+        }
     }
 
     fn char_tree(&mut self, c: char) -> DotViewerResult<()> {

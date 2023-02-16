@@ -89,13 +89,7 @@ impl View {
     }
 
     /// Navigate to the matched node.
-    pub(crate) fn goto_match(&mut self, forward: bool) -> DotViewerResult<()> {
-        if forward {
-            self.matches.next();
-        } else {
-            self.matches.previous();
-        }
-
+    pub(crate) fn goto_match(&mut self) -> DotViewerResult<()> {
         self.matched_id().map_or(
             Err(DotViewerError::ViewerError("no node selected".to_string())),
             |id| self.goto(&id)
