@@ -24,7 +24,6 @@ pub(super) fn draw_input<B: Backend>(
                 SearchMode::Fuzzy => "Fuzzy Search",
                 SearchMode::Regex => "Regex Search",
             }
-            InputMode::Filter => "Filter",
         },
     };
 

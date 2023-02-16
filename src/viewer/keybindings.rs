@@ -56,10 +56,6 @@ impl App {
                 self.set_input_mode(InputMode::Search(SearchMode::Regex));
                 Ok(SuccessState::default())
             }
-            'f' => {
-                self.set_input_mode(InputMode::Filter);
-                Ok(SuccessState::default())
-            }
             's' => {
                 self.set_popup_mode(PopupMode::Tree);
                 Ok(SuccessState::default())
@@ -92,7 +88,6 @@ impl App {
                 SearchMode::Fuzzy => view.update_fuzzy(key),
                 SearchMode::Regex => view.update_regex(key),
             },
-            InputMode::Filter => view.update_filter(key),
         };
         view.update_trie();
 
@@ -135,7 +130,6 @@ impl App {
                         self.set_nav_mode();
                         Ok(())
                     },
-                    InputMode::Filter => self.filter(),
                 }
             },
             Mode::Popup(pmode) => match pmode {
@@ -158,7 +152,6 @@ impl App {
                         SearchMode::Fuzzy => view.update_fuzzy(key),
                         SearchMode::Regex => view.update_regex(key),
                     },
-                    InputMode::Filter => view.update_filter(key),
                 };
                 view.update_trie();
 
@@ -203,7 +196,6 @@ impl App {
                                 SearchMode::Fuzzy => view.update_fuzzy(key),
                                 SearchMode::Regex => view.update_regex(key),
                             },
-                            InputMode::Filter => view.update_filter(key),
                         };
                     }
 

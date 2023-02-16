@@ -40,7 +40,6 @@ pub enum NavMode {
 /// - filter application with node id prefix
 pub enum InputMode {
     Search(SearchMode),
-    Filter,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
