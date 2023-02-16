@@ -16,33 +16,19 @@ pub(super) fn draw_input<B: Backend>(
     mmode: &MainMode,
     app: &mut App,
 ) {
-    let view = app.tabs.selected();
-
     // surrounding block
     let title = match mmode {
-        MainMode::Navigate(_) => if view.matches.items.is_empty() {
-            "Navigate".to_string()
-        } else {
-            format!("Navigate {}", view.progress_matches())
-        }
+        MainMode::Navigate(_) => "Navigate",
         MainMode::Input(imode) => match imode {
             InputMode::Search(smode) => match smode {
-                SearchMode::Fuzzy => if view.matches.items.is_empty() {
-                    "Fuzzy Search".to_string()
-                } else {
-                    format!("Fuzzy Search {}", view.progress_matches())
-                }
-                SearchMode::Regex => if view.matches.items.is_empty() {
-                    "Regex Search".to_string()
-                } else {
-                    format!("Regex Search {}", view.progress_matches())
-                }
-            },
-            InputMode::Filter => "Filter".to_string(),
+                SearchMode::Fuzzy => "Fuzzy Search",
+                SearchMode::Regex => "Regex Search",
+            }
+            InputMode::Filter => "Filter",
         },
     };
 
-    let block = surrounding_block(title, matches!(mmode, MainMode::Input(_)));
+    let block = surrounding_block(title.to_string(), matches!(mmode, MainMode::Input(_)));
 
     f.render_widget(block, chunk);
 
@@ -52,6 +38,7 @@ pub(super) fn draw_input<B: Backend>(
         .margin(1)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
+
     draw_error(f, chunks[0], app);
     draw_form(f, chunks[1], mmode, app);
 }

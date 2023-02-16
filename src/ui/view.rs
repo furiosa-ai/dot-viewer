@@ -11,10 +11,10 @@ use dot_graph::Node;
 use rayon::prelude::*;
 use tui::{
     backend::Backend,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Span, Spans},
-    widgets::{List, ListItem, Paragraph, Wrap},
+    widgets::{Block, List, ListItem, Paragraph, Wrap},
     Frame,
 };
 
@@ -34,7 +34,17 @@ pub(super) fn draw_view<B: Backend>(
 }
 
 fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
-    draw_current(f, chunk, mmode, view);
+    if view.matches.items.is_empty() {
+        draw_current(f, chunk, mmode, view);
+    } else {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Percentage(99), Constraint::Percentage(1)].as_ref())
+            .split(chunk);
+
+        draw_current(f, chunks[0], mmode, view);
+        draw_match(f, chunks[1], view);
+    }
 }
 
 fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
@@ -68,7 +78,7 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vie
             let mut spans: Vec<Span> = id.chars().map(|c| Span::raw(c.to_string())).collect();
             if let Some(&highlight) = matches.get(&idx) {
                 for &idx in highlight {
-                    spans[idx].style = Style::default().bg(Color::Black).add_modifier(Modifier::BOLD);
+                    spans[idx].style = Style::default().bg(Color::Rgb(120, 120, 120)).add_modifier(Modifier::BOLD);
                 }
             }
 
@@ -90,6 +100,13 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vie
         .highlight_symbol("> ");
 
     f.render_stateful_widget(list, chunk, &mut view.current.state);
+}
+
+fn draw_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
+    let title = if view.matches.items.is_empty() { String::new() } else { view.progress_matches() };
+    let block = Block::default().title(title).title_alignment(Alignment::Right);
+
+    f.render_widget(block, chunk);
 }
 
 fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
