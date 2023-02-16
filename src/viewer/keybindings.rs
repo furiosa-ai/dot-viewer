@@ -85,16 +85,20 @@ impl App {
     fn char_input(&mut self, c: char, imode: &InputMode) -> DotViewerResult<()> {
         self.input.insert(c);
 
-        let view = self.tabs.selected();
-        let key = &self.input.key;
         match imode {
-            InputMode::Search(smode) => match smode {
-                SearchMode::Fuzzy => view.update_fuzzy(key),
-                SearchMode::Regex => view.update_regex(key),
-            },
-            InputMode::Command => {},
+            InputMode::Search(smode) => {
+                let view = self.tabs.selected();
+                let key = &self.input.key;
+
+                match smode {
+                    SearchMode::Fuzzy => view.update_fuzzy(key),
+                    SearchMode::Regex => view.update_regex(key),
+                }
+
+                view.update_trie();
+            }
+            InputMode::Command => self.update_command(),
         };
-        view.update_trie();
 
         Ok(())
     }
@@ -155,8 +159,8 @@ impl App {
                 let key = &self.input.key;
                 match imode {
                     InputMode::Search(smode) => match smode {
-                        SearchMode::Fuzzy => view.update_fuzzy(key),
-                        SearchMode::Regex => view.update_regex(key),
+                        SearchMode::Fuzzy => view.update_fuzzy(&key),
+                        SearchMode::Regex => view.update_regex(&key),
                     },
                     InputMode::Command => {},
                 };
@@ -187,31 +191,19 @@ impl App {
     fn tab(&mut self) -> DotViewerResult<()> {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
-                MainMode::Navigate(_) => {
-                    self.tabs.next();
-                    Ok(())
-                }
-                MainMode::Input(imode) => {
-                    let view = self.tabs.selected();
-
-                    if let Some(key) = view.autocomplete(&self.input.key) {
-                        self.input.set(key);
-
-                        let key = &self.input.key;
-                        match imode {
-                            InputMode::Search(smode) => match smode {
-                                SearchMode::Fuzzy => view.update_fuzzy(key),
-                                SearchMode::Regex => view.update_regex(key),
-                            },
-                            InputMode::Command => {},
-                        };
+                MainMode::Navigate(_) => self.tabs.next(),
+                MainMode::Input(imode) => match imode {
+                    InputMode::Search(smode) => match smode {
+                        SearchMode::Fuzzy => self.autocomplete_fuzzy(),
+                        SearchMode::Regex => self.autocomplete_regex(),
                     }
-
-                    Ok(())
+                    InputMode::Command => self.autocomplete_command(),
                 }
             },
-            _ => Err(DotViewerError::KeyError(KeyCode::Tab)),
+            _ => {},
         }
+
+        Ok(())
     }
 
     fn backtab(&mut self) -> DotViewerResult<()> {

@@ -7,9 +7,13 @@ use crate::viewer::{
     view::View,
 };
 
+
 use dot_graph::{parser, Graph};
 
-use clap::builder::{Arg, Command};
+use clap::{
+    builder::{Arg, Command},
+    ArgMatches,
+};
 
 /// `App` holds `dot-viewer` application states.
 ///
@@ -55,6 +59,7 @@ impl App {
         Ok(App { quit, mode, result, tabs, input, help })
     }
 
+    /// Create a clap parser for dot-viewer commands
     pub(crate) fn parser() -> Command {
         Command::new("dot-viewer")
             .multicall(true)
@@ -64,11 +69,19 @@ impl App {
             )
     }
 
-    pub(crate) fn command(&mut self) -> DotViewerResult<()> {
+
+    fn parse(&self) -> DotViewerResult<ArgMatches> {
         let command = self.input.key.clone();
         let command: Vec<&str> = command.split_whitespace().collect();
 
-        let matches = Self::parser().try_get_matches_from(command)?;
+        Self::parser().try_get_matches_from(command).map_err(
+            |e| DotViewerError::CommandError(e)
+        )
+    }
+
+    /// Parse and execute dot-viewer command
+    pub(crate) fn command(&mut self) -> DotViewerResult<()> {
+        let matches = self.parse()?;
         match matches.subcommand() {
             Some(("filter", matches)) => if let Some(prefix) = matches.get_one::<String>("prefix") {
                 self.filter(prefix)
@@ -77,6 +90,65 @@ impl App {
                 Ok(())
             }
             _ => unreachable!()
+        }
+    }
+
+    /// Autocomplete user input
+    pub(crate) fn autocomplete_fuzzy(&mut self) {
+        let view = self.tabs.selected();
+
+        let key = &self.input.key;
+        if let Some(key) = view.autocomplete(key) {
+            view.update_fuzzy(&key);
+            view.update_trie();
+            self.input.set(key);
+        }
+    }
+
+    /// Autocomplete user input
+    pub(crate) fn autocomplete_regex(&mut self) {
+        let view = self.tabs.selected();
+
+        let key = &self.input.key;
+        if let Some(key) = view.autocomplete(key) {
+            view.update_regex(&key);
+            view.update_trie();
+            self.input.set(key);
+        }
+    }
+
+    /// Autocomplete user input
+    pub(crate) fn autocomplete_command(&mut self) {
+        match self.parse() {
+            Ok(matches) => match matches.subcommand() {
+                Some(("filter", matches)) => if let Some(prefix) = matches.get_one::<String>("prefix") {
+                    let view = self.tabs.selected();
+
+                    if let Some(prefix) = view.autocomplete(prefix) {
+                        view.update_filter(&prefix);
+                        view.update_trie();
+                        self.input.set(format!("filter {}", prefix));
+                    }
+                } else {}
+                _ => unreachable!(),
+            }
+            _ => {}
+        }
+    }
+
+    /// Update status on user input
+    pub(crate) fn update_command(&mut self) {
+        match self.parse() {
+            Ok(matches) => match matches.subcommand() {
+                Some(("filter", matches)) => if let Some(prefix) = matches.get_one::<String>("prefix") {
+                    let view = self.tabs.selected();
+
+                    view.update_filter(&prefix);
+                    view.update_trie();
+                }
+                _ => unreachable!(),
+            }
+            _ => {}
         }
     }
 
