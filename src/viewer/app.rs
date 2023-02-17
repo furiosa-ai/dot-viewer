@@ -65,14 +65,11 @@ impl App {
         self.set_normal_mode();
 
         match command {
-            Command::Filter(filter) => filter.prefix.map_or(
-                Err(DotViewerError::CommandError("No argument supplied for filter".to_string())),
-                |prefix| self.filter(&prefix).map(|_| SuccessState::default())
-            ),
             Command::Neighbors(neighbors) => neighbors.depth.map_or(
                 Err(DotViewerError::CommandError("No argument supplied for neighbors".to_string())),
                 |depth| self.neighbors(depth)
             ),
+            Command::Filter => self.filter().map(|_| SuccessState::default()),
             Command::Help => {
                 self.set_popup_mode(PopupMode::Help);
                 Ok(SuccessState::default())
@@ -134,10 +131,12 @@ impl App {
     /// Apply prefix filter on the current view.
     /// Based on the currently typed input, it applies a prefix filter on the current view,
     /// and opens a new tab with the filtered view.
-    pub(crate) fn filter(&mut self, prefix: &str) -> DotViewerResult<()> {
+    pub(crate) fn filter(&mut self) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
-        let view_new = view_current.filter(prefix)?;
+        let view_new = view_current.filter()?;
         self.tabs.open(view_new);
+
+        self.set_normal_mode();
 
         Ok(())
     }

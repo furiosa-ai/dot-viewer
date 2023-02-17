@@ -112,16 +112,15 @@ impl View {
 
     /// Apply prefix filter on the view given prefix `key`.
     /// Returns `Ok` with a new `View` if the prefix yields a valid subgraph.
-    pub(crate) fn filter(&mut self, prefix: &str) -> DotViewerResult<View> {
-        let graph = self.graph.filter(prefix);
+    pub(crate) fn filter(&mut self) -> DotViewerResult<View> {
+        let node_ids: Vec<&String> = self.matches.items.iter().map(|(idx, _)| &self.current.items[*idx]).collect();
+        let graph = self.graph.filter(&node_ids);
 
         if graph.is_empty() {
-            return Err(DotViewerError::ViewerError(format!("no match for prefix {prefix}")));
+            return Err(DotViewerError::ViewerError("no match for keyword".to_string()));
         }
 
-        let title = &self.title;
-        let view = Self::new(format!("{title} - {prefix}"), graph);
-
+        let view = Self::new(self.title.clone(), graph);
         Ok(view)
     }
 

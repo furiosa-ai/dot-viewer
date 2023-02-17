@@ -3,18 +3,13 @@ use clap::builder::{Arg, Command as ClapCommand};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum Command {
-    Filter(Filter),
     Neighbors(Neighbors),
+    Filter,
     Help,
     Subgraph,
     Export,
     Xdot,
     NoMatch,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct Filter {
-    pub(crate) prefix: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -32,7 +27,7 @@ fn commands() -> ClapCommand {
         .multicall(true)
         .subcommand_required(true)
         .subcommand(
-            ClapCommand::new("filter").arg(Arg::new("prefix"))
+            ClapCommand::new("filter")
         )
         .subcommand(
             ClapCommand::new("neighbors").arg(Arg::new("depth").value_parser(clap::value_parser!(usize)))
@@ -57,18 +52,13 @@ impl Command {
 
         match commands().try_get_matches_from(inputs) {
             Ok(matches) => match matches.subcommand() {
-                Some(("filter", matches)) => {
-                    let prefix = matches.get_one::<String>("prefix").map(|s| s.clone());
-                    let filter = Filter { prefix };
-
-                    Command::Filter(filter)
-                }
                 Some(("neighbors", matches)) => {
                     let depth = matches.get_one::<usize>("depth").map(|d| d.clone());
                     let neigbors = Neighbors { depth };
 
                     Command::Neighbors(neigbors)
                 }
+                Some(("filter", _)) => Command::Filter,
                 Some(("help", _)) => Command::Help,
                 Some(("subgraph", _)) => Command::Subgraph,
                 Some(("export", _)) => Command::Export,
@@ -82,7 +72,7 @@ impl Command {
 
 impl CommandTrie {
     pub(crate) fn new() -> CommandTrie {
-        let cmds = ["filter", "neighbors", "help", "subgraph", "export", "xdot"].map(String::from).to_vec();
+        let cmds = ["neighbors", "filter", "help", "subgraph", "export", "xdot"].map(String::from).to_vec();
         let trie_cmd = Trie::new(&cmds);
 
         let empty = Vec::new();
