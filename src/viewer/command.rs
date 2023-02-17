@@ -1,3 +1,4 @@
+use crate::viewer::utils::Trie;
 use clap::builder::{Arg, Command as ClapCommand};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -21,6 +22,11 @@ pub(crate) struct Neighbors {
     pub(crate) depth: Option<usize>,
 }
 
+pub(crate) struct CommandTrie {
+    pub(crate) trie_cmd: Trie,
+    pub(crate) trie_arg: Trie,
+}
+
 fn commands() -> ClapCommand {
     ClapCommand::new("dot-viewer")
         .multicall(true)
@@ -29,7 +35,7 @@ fn commands() -> ClapCommand {
             ClapCommand::new("filter").arg(Arg::new("prefix"))
         )
         .subcommand(
-            ClapCommand::new("neighbors").arg(Arg::new("depth"))
+            ClapCommand::new("neighbors").arg(Arg::new("depth").value_parser(clap::value_parser!(usize)))
         )
         .subcommand(
             ClapCommand::new("help")
@@ -71,5 +77,17 @@ impl Command {
             }
             Err(_) => Command::NoMatch,
         }
+    }
+}
+
+impl CommandTrie {
+    pub(crate) fn new() -> CommandTrie {
+        let cmds = ["filter", "neighbors", "help", "subgraph", "export", "xdot"].map(String::from).to_vec();
+        let trie_cmd = Trie::new(&cmds);
+
+        let empty = Vec::new();
+        let trie_arg = Trie::new(&empty);
+
+        CommandTrie { trie_cmd, trie_arg }
     }
 }

@@ -177,20 +177,16 @@ impl App {
 
     fn tab(&mut self) -> DotViewerResult<()> {
         match &self.mode {
-            Mode::Normal => {
-                self.tabs.next();
-                Ok(())
+            Mode::Normal => self.tabs.next(),
+            Mode::Command => self.autocomplete_command(),
+            Mode::Search(smode) => match smode {
+                SearchMode::Fuzzy => self.autocomplete_fuzzy(),
+                SearchMode::Regex => self.autocomplete_regex(),
             }
-            Mode::Search(smode) => {
-                match smode {
-                    SearchMode::Fuzzy => self.autocomplete_fuzzy(),
-                    SearchMode::Regex => self.autocomplete_regex(),
-                };
+            _ => Err(DotViewerError::KeyError(KeyCode::Tab))?,
+        };
 
-                Ok(())
-            }
-            _ => Err(DotViewerError::KeyError(KeyCode::Tab)),
-        }
+        Ok(())
     }
 
     fn backtab(&mut self) -> DotViewerResult<()> {

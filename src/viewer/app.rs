@@ -1,5 +1,5 @@
 use crate::viewer::{
-    command::Command,
+    command::{Command, CommandTrie},
     error::{DotViewerError, DotViewerResult},
     help::Help,
     modes::{Mode, PopupMode, SearchMode},
@@ -30,6 +30,9 @@ pub(crate) struct App {
     /// Input form to be shown in the main screen
     pub input: Input,
 
+    /// Autocomplete support for commands
+    pub(crate) trie: CommandTrie,
+
     /// Keybinding helps
     pub help: Help,
 }
@@ -49,9 +52,11 @@ impl App {
 
         let input = Input::default();
 
+        let trie = CommandTrie::new();
+
         let help = Help::new();
 
-        Ok(App { quit, mode, result, tabs, input, help })
+        Ok(App { quit, mode, result, tabs, input, trie, help })
     } 
 
     /// Parse and execute dot-viewer command
@@ -106,6 +111,23 @@ impl App {
             view.update_regex(&key);
             view.update_trie();
             self.input.set(key);
+        }
+    }
+
+    /// Autocomplete user input 
+    pub(crate) fn autocomplete_command(&mut self) {
+        let command = Command::parse(&self.input.key);
+
+        match command {
+            Command::NoMatch => self.autocomplete_cmd(),
+            _ => {},
+        }
+    }
+
+    fn autocomplete_cmd(&mut self) {
+        let cmd = &self.input.key;
+        if let Some(cmd) = self.trie.trie_cmd.autocomplete(cmd) {
+            self.input.set(cmd);
         }
     }
 
