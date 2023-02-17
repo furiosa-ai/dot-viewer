@@ -25,6 +25,7 @@ pub(crate) struct CommandTrie {
 fn commands() -> ClapCommand {
     ClapCommand::new("dot-viewer")
         .multicall(true)
+        .disable_help_subcommand(true)
         .subcommand_required(true)
         .subcommand(
             ClapCommand::new("filter")
