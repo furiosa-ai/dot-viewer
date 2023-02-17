@@ -81,9 +81,9 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
             let mut item = ListItem::new(Spans(spans));
 
             if froms.contains(&id) {
-                item = item.style(Style::default().fg(Color::Red));
+                item = item.style(Style::default().fg(Color::Rgb(255, 150, 150)));
             } else if tos.contains(&id) {
-                item = item.style(Style::default().fg(Color::Blue));
+                item = item.style(Style::default().fg(Color::Rgb(150, 150, 255)));
             }
 
             item

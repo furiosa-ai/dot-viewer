@@ -26,6 +26,8 @@ impl App {
         if let Err(err) = &self.result {
             warn!("{}", err);
         }
+
+        self.lookback = Some(key.code);
     }
 
     fn char(&mut self, c: char) -> DotViewerResult<()> {
@@ -58,6 +60,16 @@ impl App {
             'j' => self.down()?,
             'k' => self.up()?,
             'l' => self.right()?,
+            'g' => if let Some(KeyCode::Char('g')) = self.lookback {
+                let view = self.tabs.selected();
+                view.first()?;
+            } else {
+                () 
+            }
+            'G' => {
+                let view = self.tabs.selected();
+                view.last()?;
+            }
             _ => Err(DotViewerError::KeyError(KeyCode::Char(c)))?,
         };
 
@@ -324,5 +336,31 @@ impl View {
             Focus::Prev => Focus::Current,
             Focus::Next => Focus::Prev,
         };
+    }
+
+    pub(super) fn first(&mut self) -> DotViewerResult<()> {
+        match &self.focus {
+            Focus::Current => {
+                self.current.first();
+                self.update_adjacent()?
+            }
+            Focus::Prev => self.prevs.first(),
+            Focus::Next => self.nexts.first(),
+        }
+
+        Ok(())
+    }
+
+    pub(super) fn last(&mut self) -> DotViewerResult<()> {
+        match &self.focus {
+            Focus::Current => {
+                self.current.last();
+                self.update_adjacent()?
+            }
+            Focus::Prev => self.prevs.last(),
+            Focus::Next => self.nexts.last(),
+        }
+
+        Ok(())
     }
 }

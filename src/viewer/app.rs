@@ -10,6 +10,8 @@ use crate::viewer::{
 
 use dot_graph::{parser, Graph};
 
+use crossterm::event::KeyCode;
+
 /// `App` holds `dot-viewer` application states.
 ///
 /// `tui-rs` simply redraws the entire screen in a loop while accepting keyboard inputs.
@@ -29,6 +31,9 @@ pub(crate) struct App {
 
     /// Input form to be shown in the main screen
     pub input: Input,
+
+    /// Most recent key event
+    pub(crate) lookback: Option<KeyCode>,
 
     /// Autocomplete support for commands
     pub(crate) trie: CommandTrie,
@@ -52,11 +57,13 @@ impl App {
 
         let input = Input::default();
 
+        let lookback = None;
+
         let trie = CommandTrie::new();
 
         let help = Help::new();
 
-        Ok(App { quit, mode, result, tabs, input, trie, help })
+        Ok(App { quit, mode, result, tabs, input, lookback, trie, help })
     }
 
     /// Parse and execute dot-viewer command
