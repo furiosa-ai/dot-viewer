@@ -29,7 +29,7 @@ impl Help {
                 "",
                 "",
                 "neighbors [depth]",
-                "export [depth] neighbors of the current node to dot",
+                "get up to [depth] neighbors of the current node",
             ],
             vec!["", "", "export", "export the current tab (view) to dot"],
             vec!["", "", "xdot", "launch xdot on exports/current.dot"],

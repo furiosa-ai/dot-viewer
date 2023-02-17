@@ -67,7 +67,7 @@ impl App {
         match command {
             Command::Neighbors(neighbors) => neighbors.depth.map_or(
                 Err(DotViewerError::CommandError("No argument supplied for neighbors".to_string())),
-                |depth| self.neighbors(depth)
+                |depth| self.neighbors(depth).map(|_| SuccessState::default())
             ),
             Command::Filter => self.filter().map(|_| SuccessState::default()),
             Command::Help => {
@@ -155,21 +155,12 @@ impl App {
 
     /// Export a neigbor graph from the currently selected node to dot,
     /// given the neighbor depth by `0-9` keybindings.
-    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<SuccessState> {
-        let view = self.tabs.selected();
-        let graph = &view.graph;
-        let node = &view.current_id();
+    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<()> {
+        let view_current = self.tabs.selected();
+        let view_new = view_current.neighbors(depth)?;
+        self.tabs.open(view_new);
 
-        let filename = format!("{node}-{depth}");
-
-        let neighbor_graph =
-            graph.neighbors(node, depth).map_err(|e| DotViewerError::ViewerError(e.to_string()))?;
-
-        if neighbor_graph.is_empty() {
-            return Err(DotViewerError::ViewerError("empty graph".to_string()));
-        }
-
-        write_graph(filename, &neighbor_graph)
+        Ok(())
     }
 
     /// Export the current view to dot.

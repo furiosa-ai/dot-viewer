@@ -144,6 +144,20 @@ impl View {
         Ok(view)
     }
 
+    /// Get neighbors graph from the selected id in the view.
+    /// Returns `Ok` with a new `View` if the depth is valid.
+    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<View> {
+        let id = self.current_id();
+        let graph = self.graph.neighbors(&id, depth)?;
+
+        if graph.is_empty() {
+            return Err(DotViewerError::ViewerError("cannot define a neighbors graph".to_string()));
+        }
+
+        let view = Self::new(format!("{} - neighbors-{}-{}", self.title, id, depth), graph);
+        Ok(view)
+    }
+
     /// Autocomplete a given keyword, coming from `tab` keybinding.
     pub(crate) fn autocomplete(&mut self, key: &str) -> Option<String> {
         self.trie.autocomplete(key)
