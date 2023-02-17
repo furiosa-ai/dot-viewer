@@ -31,6 +31,8 @@ pub(crate) struct View {
     /// List of next nodes of the currently selected node
     pub nexts: List<String>,
 
+    /// Keyword for match
+    pub key: String,
     /// List of matching nodes given some input, with highlight index
     pub matches: List<(usize, Vec<usize>)>,
 
@@ -60,11 +62,13 @@ impl View {
         let current = List::from_iter(node_ids);
         let prevs = List::from_iter(Vec::new());
         let nexts = List::from_iter(Vec::new());
+
+        let key = String::new();
         let matches = List::from_iter(Vec::new());
 
         let subtree = Tree::from_graph(&graph);
 
-        let mut view = View { title, graph, focus, current, prevs, nexts, matches, trie, subtree };
+        let mut view = View { title, graph, focus, current, prevs, nexts, key, matches, trie, subtree };
 
         view.update_adjacent().expect("there is always a selected current node on initialization");
 
@@ -117,10 +121,10 @@ impl View {
         let graph = self.graph.filter(&node_ids);
 
         if graph.is_empty() {
-            return Err(DotViewerError::ViewerError("no match for keyword".to_string()));
+            return Err(DotViewerError::ViewerError(format!("no match for keyword {}", self.key)));
         }
 
-        let view = Self::new(self.title.clone(), graph);
+        let view = Self::new(format!("{} - {}", self.title, self.key), graph);
         Ok(view)
     }
 
@@ -170,6 +174,7 @@ impl View {
         let matches: Vec<(usize, Vec<usize>)> =
             self.current.items.par_iter().enumerate().filter_map(|(idx, id)| matcher(id, key, &self.graph).map(|highlight| (idx, highlight))).collect();
 
+        self.key = key.to_string();
         self.matches = List::from_iter(matches);
     }
 

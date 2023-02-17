@@ -19,7 +19,7 @@ pub(crate) struct Neighbors {
 
 pub(crate) struct CommandTrie {
     pub(crate) trie_cmd: Trie,
-    pub(crate) trie_arg: Trie,
+    pub(crate) _trie_arg: Trie,
 }
 
 fn commands() -> ClapCommand {
@@ -76,8 +76,8 @@ impl CommandTrie {
         let trie_cmd = Trie::new(&cmds);
 
         let empty = Vec::new();
-        let trie_arg = Trie::new(&empty);
+        let _trie_arg = Trie::new(&empty);
 
-        CommandTrie { trie_cmd, trie_arg }
+        CommandTrie { trie_cmd, _trie_arg }
     }
 }
