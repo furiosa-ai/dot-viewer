@@ -170,17 +170,24 @@ fn pretty_metadata(node: &Node) -> String {
     writeln!(metadata).unwrap();
 
     let empty = String::new();
-    let attrs = node.attrs().get("label").unwrap_or(&empty);
-    let attrs = htmlparser::parse(attrs);
+    let attrs = node.attrs();
+    let attrs_label = attrs.get("label").unwrap_or(&empty);
+    let attrs_label = htmlparser::parse(attrs_label);
 
-    for attr in attrs {
-        if attr.starts_with("Input") {
-            continue;
+    if attrs.is_empty() {
+        for (key, value) in attrs {
+            writeln!(metadata, "{} : {}", key, value).unwrap();
         }
+    } else {
+        for attr in attrs_label {
+            if attr.starts_with("Input") {
+                continue;
+            }
 
-        let vals = attr.split("\\l");
-        for val in vals {
-            writeln!(metadata, "{}", val).unwrap();
+            let vals = attr.split("\\l");
+            for val in vals {
+                writeln!(metadata, "{}", val).unwrap();
+            }
         }
     }
 
