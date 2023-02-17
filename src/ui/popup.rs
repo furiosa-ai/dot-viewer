@@ -57,8 +57,8 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         Table::new(rows).header(header).block(Block::default().borders(Borders::ALL)).widths(&[
             Constraint::Percentage(15),
             Constraint::Percentage(10),
-            Constraint::Percentage(10),
-            Constraint::Percentage(65),
+            Constraint::Percentage(15),
+            Constraint::Percentage(60),
         ]);
 
     f.render_widget(table, chunk);

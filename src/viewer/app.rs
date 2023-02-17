@@ -69,6 +69,18 @@ impl App {
                 Err(DotViewerError::CommandError("No argument supplied for neighbors".to_string())),
                 |depth| self.neighbors(depth).map(|_| SuccessState::default())
             ),
+            Command::Export(export) => {
+                let res = self.export(export.filename);
+                self.set_normal_mode();
+
+                res
+            }
+            Command::Xdot(xdot) => {
+                let res = self.xdot(xdot.filename);
+                self.set_normal_mode();
+
+                res
+            }
             Command::Filter => self.filter().map(|_| SuccessState::default()),
             Command::Help => {
                 self.set_popup_mode(PopupMode::Help);
@@ -77,9 +89,7 @@ impl App {
             Command::Subgraph => {
                 self.set_popup_mode(PopupMode::Tree);
                 Ok(SuccessState::default())
-            },
-            Command::Export => self.export(),
-            Command::Xdot => self.xdot(),
+            }
             Command::NoMatch => {
                 let key = &self.input.key;
                 Err(DotViewerError::CommandError(format!("No such command {key}")))
@@ -164,17 +174,21 @@ impl App {
     }
 
     /// Export the current view to dot.
-    pub(crate) fn export(&mut self) -> DotViewerResult<SuccessState> {
+    pub(crate) fn export(&mut self, filename: Option<String>) -> DotViewerResult<SuccessState> {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
-        let filename: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
+        let default: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
+        let filename = filename.unwrap_or(format!("{}.dot", default));
 
         write_graph(filename, graph)
     }
 
     /// Launch `xdot.py`, coming from `x` keybinding.
-    pub(crate) fn xdot(&mut self) -> DotViewerResult<SuccessState> {
+    pub(crate) fn xdot(&mut self, filename: Option<String>) -> DotViewerResult<SuccessState> {
+        let filename = filename.unwrap_or_else(|| "current.dot".to_string());
+        let path = format!("./exports/{filename}");
+
         if !std::path::Path::new("./exports/current.dot").exists() {
             return Err(DotViewerError::XdotError);
         }
@@ -182,7 +196,7 @@ impl App {
         let xdot = std::process::Command::new("xdot")
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
-            .arg("./exports/current.dot")
+            .arg(&path)
             .spawn();
 
         xdot.map(|_| SuccessState::XdotSuccess).map_err(|_| DotViewerError::XdotError)
@@ -215,7 +229,15 @@ impl App {
     }
 }
 
+fn valid_filename(filename: &str) -> bool {
+    (!filename.contains("/")) && filename.ends_with(".dot")
+}
+
 fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<SuccessState> {
+    if !valid_filename(&filename) {
+        return Err(DotViewerError::CommandError(format!("invalid dot filename: {}", filename)));
+    }
+
     std::fs::create_dir_all("./exports")?;
     let mut file_export = std::fs::OpenOptions::new()
         .write(true)
