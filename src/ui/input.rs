@@ -10,11 +10,7 @@ use tui::{
 };
 
 // input block
-pub(super) fn draw_input<B: Backend>(
-    f: &mut Frame<B>,
-    chunk: Rect,
-    app: &mut App,
-) {
+pub(super) fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     // surrounding block
     let title = match &app.mode {
         Mode::Normal => "Normal",
@@ -22,13 +18,13 @@ pub(super) fn draw_input<B: Backend>(
         Mode::Search(smode) => match smode {
             SearchMode::Fuzzy => "Fuzzy Search",
             SearchMode::Regex => "Regex Search",
-        }
+        },
         _ => unreachable!(),
     };
 
     let block = surrounding_block(
-        title.to_string(), 
-        matches!(app.mode, Mode::Command) || matches!(app.mode, Mode::Search(_))
+        title.to_string(),
+        matches!(app.mode, Mode::Command) || matches!(app.mode, Mode::Search(_)),
     );
 
     f.render_widget(block, chunk);

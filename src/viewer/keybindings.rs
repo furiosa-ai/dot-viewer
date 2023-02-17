@@ -95,7 +95,7 @@ impl App {
                 PopupMode::Tree => self.char_tree(c),
                 PopupMode::Help => self.char_help(c),
             },
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
@@ -251,7 +251,7 @@ impl App {
             }
             _ => Err(DotViewerError::KeyError(KeyCode::Right)),
         }
-    } 
+    }
 
     fn left(&mut self) -> DotViewerResult<()> {
         match &self.mode {

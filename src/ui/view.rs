@@ -1,6 +1,6 @@
 use crate::{
     ui::{surrounding_block, utils::htmlparser},
-    viewer::{View, Focus},
+    viewer::{Focus, View},
 };
 
 use std::collections::{HashMap, HashSet};
@@ -18,11 +18,7 @@ use tui::{
     Frame,
 };
 
-pub(super) fn draw_view<B: Backend>(
-    f: &mut Frame<B>,
-    chunk: Rect,
-    view: &mut View,
-) {
+pub(super) fn draw_view<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(35), Constraint::Percentage(65)].as_ref())
@@ -77,7 +73,8 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
             let mut spans: Vec<Span> = id.chars().map(|c| Span::raw(c.to_string())).collect();
             if let Some(&highlight) = matches.get(&idx) {
                 for &idx in highlight {
-                    spans[idx].style = Style::default().bg(Color::Rgb(120, 120, 120)).add_modifier(Modifier::BOLD);
+                    spans[idx].style =
+                        Style::default().bg(Color::Rgb(120, 120, 120)).add_modifier(Modifier::BOLD);
                 }
             }
 
@@ -119,8 +116,7 @@ fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
 }
 
 fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
-    let block =
-        surrounding_block("Prev Nodes".to_string(), view.focus == Focus::Prev);
+    let block = surrounding_block("Prev Nodes".to_string(), view.focus == Focus::Prev);
 
     let list: Vec<ListItem> = view
         .prevs
@@ -138,8 +134,7 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
 }
 
 fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
-    let block =
-        surrounding_block("Next Nodes".to_string(), view.focus == Focus::Next);
+    let block = surrounding_block("Next Nodes".to_string(), view.focus == Focus::Next);
 
     let list: Vec<ListItem> = view
         .nexts

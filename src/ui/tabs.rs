@@ -10,11 +10,7 @@ use tui::{
     Frame,
 };
 
-pub(super) fn draw_tabs<B: Backend>(
-    f: &mut Frame<B>,
-    chunk: Rect,
-    app: &mut App,
-) {
+pub(super) fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)

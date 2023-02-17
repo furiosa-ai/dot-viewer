@@ -27,24 +27,15 @@ fn commands() -> ClapCommand {
         .multicall(true)
         .disable_help_subcommand(true)
         .subcommand_required(true)
+        .subcommand(ClapCommand::new("filter"))
         .subcommand(
-            ClapCommand::new("filter")
+            ClapCommand::new("neighbors")
+                .arg(Arg::new("depth").value_parser(clap::value_parser!(usize))),
         )
-        .subcommand(
-            ClapCommand::new("neighbors").arg(Arg::new("depth").value_parser(clap::value_parser!(usize)))
-        )
-        .subcommand(
-            ClapCommand::new("help")
-        )
-        .subcommand(
-            ClapCommand::new("subgraph")
-        )
-        .subcommand(
-            ClapCommand::new("export")
-        )
-        .subcommand(
-            ClapCommand::new("xdot")
-        )
+        .subcommand(ClapCommand::new("help"))
+        .subcommand(ClapCommand::new("subgraph"))
+        .subcommand(ClapCommand::new("export"))
+        .subcommand(ClapCommand::new("xdot"))
 }
 
 impl Command {
@@ -54,7 +45,7 @@ impl Command {
         match commands().try_get_matches_from(inputs) {
             Ok(matches) => match matches.subcommand() {
                 Some(("neighbors", matches)) => {
-                    let depth = matches.get_one::<usize>("depth").map(|d| d.clone());
+                    let depth = matches.get_one::<usize>("depth").copied();
                     let neigbors = Neighbors { depth };
 
                     Command::Neighbors(neigbors)
@@ -65,7 +56,7 @@ impl Command {
                 Some(("export", _)) => Command::Export,
                 Some(("xdot", _)) => Command::Xdot,
                 _ => unreachable!(),
-            }
+            },
             Err(_) => Command::NoMatch,
         }
     }
@@ -73,7 +64,9 @@ impl Command {
 
 impl CommandTrie {
     pub(crate) fn new() -> CommandTrie {
-        let cmds = ["neighbors", "filter", "help", "subgraph", "export", "xdot"].map(String::from).to_vec();
+        let cmds = ["neighbors", "filter", "help", "subgraph", "export", "xdot"]
+            .map(String::from)
+            .to_vec();
         let trie_cmd = Trie::new(&cmds);
 
         let empty = Vec::new();

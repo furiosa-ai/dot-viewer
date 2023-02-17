@@ -57,7 +57,7 @@ impl App {
         let help = Help::new();
 
         Ok(App { quit, mode, result, tabs, input, trie, help })
-    } 
+    }
 
     /// Parse and execute dot-viewer command
     pub(crate) fn exec(&mut self) -> DotViewerResult<SuccessState> {
@@ -111,13 +111,12 @@ impl App {
         }
     }
 
-    /// Autocomplete user input 
+    /// Autocomplete user input
     pub(crate) fn autocomplete_command(&mut self) {
         let command = Command::parse(&self.input.key);
 
-        match command {
-            Command::NoMatch => self.autocomplete_cmd(),
-            _ => {},
+        if command == Command::NoMatch {
+            self.autocomplete_cmd()
         }
     }
 

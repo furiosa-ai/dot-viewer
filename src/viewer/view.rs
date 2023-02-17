@@ -80,14 +80,8 @@ impl View {
         let err = Err(DotViewerError::ViewerError("no node selected".to_string())); 
 
         match &self.focus {
-            Focus::Prev => self.prevs.selected().map_or(
-                err,
-                |id| self.goto(&id)
-            ),
-            Focus::Next => self.nexts.selected().map_or(
-                err,
-                |id| self.goto(&id)
-            ),
+            Focus::Prev => self.prevs.selected().map_or(err, |id| self.goto(&id)),
+            Focus::Next => self.nexts.selected().map_or(err, |id| self.goto(&id)),
             _ => err,
         }
     }
@@ -117,7 +111,8 @@ impl View {
     /// Apply prefix filter on the view given prefix `key`.
     /// Returns `Ok` with a new `View` if the prefix yields a valid subgraph.
     pub(crate) fn filter(&mut self) -> DotViewerResult<View> {
-        let node_ids: Vec<&String> = self.matches.items.iter().map(|(idx, _)| &self.current.items[*idx]).collect();
+        let node_ids: Vec<&String> =
+            self.matches.items.iter().map(|(idx, _)| &self.current.items[*idx]).collect();
         let graph = self.graph.filter(&node_ids);
 
         if graph.is_empty() {
@@ -171,8 +166,13 @@ impl View {
 
     /// Update matches based on the given matching function `match` with input `key`.
     fn update_matches(&mut self, matcher: Matcher, key: &str) {
-        let matches: Vec<(usize, Vec<usize>)> =
-            self.current.items.par_iter().enumerate().filter_map(|(idx, id)| matcher(id, key, &self.graph).map(|highlight| (idx, highlight))).collect();
+        let matches: Vec<(usize, Vec<usize>)> = self
+            .current
+            .items
+            .par_iter()
+            .enumerate()
+            .filter_map(|(idx, id)| matcher(id, key, &self.graph).map(|highlight| (idx, highlight)))
+            .collect();
 
         self.key = key.to_string();
         self.matches = List::from_iter(matches);
@@ -192,7 +192,12 @@ impl View {
 
     /// Update trie based on the current matches.
     pub(crate) fn update_trie(&mut self) {
-        let nodes: Vec<String> = self.matches.items.par_iter().map(|(idx, _)| self.current.items[*idx].clone()).collect();
+        let nodes: Vec<String> = self
+            .matches
+            .items
+            .par_iter()
+            .map(|(idx, _)| self.current.items[*idx].clone())
+            .collect();
         self.trie = Trie::new(&nodes);
     }
 
