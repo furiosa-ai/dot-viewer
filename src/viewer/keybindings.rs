@@ -131,7 +131,7 @@ impl App {
                 MainMode::Input(imode) => match imode {
                     InputMode::Search(_) => self.goto(),
                     InputMode::Filter => self.filter(),
-                }
+                },
             },
             Mode::Popup(pmode) => match pmode {
                 PopupMode::Tree => self.subgraph(),

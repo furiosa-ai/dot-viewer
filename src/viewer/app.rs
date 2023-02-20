@@ -104,16 +104,14 @@ impl App {
 
         let filename = format!("{node}-{depth}");
 
-        graph.neighbors(node, depth).map_or_else(
-            |e| Err(DotViewerError::ViewerError(e.to_string())),
-            |neighbor_graph| {
-                if neighbor_graph.is_empty() {
-                    return Err(DotViewerError::ViewerError("empty graph".to_string()));
-                }
+        let neighbor_graph =
+            graph.neighbors(node, depth).map_err(|e| DotViewerError::ViewerError(e.to_string()))?;
 
-                write_graph(filename, &neighbor_graph)
-            },
-        )
+        if neighbor_graph.is_empty() {
+            return Err(DotViewerError::ViewerError("empty graph".to_string()));
+        }
+
+        write_graph(filename, &neighbor_graph)
     }
 
     /// Export the current view to dot.

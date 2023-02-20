@@ -65,14 +65,15 @@ impl View {
     /// Navigate to the currently selected node with `id`.
     /// The current node list will be focused on the selected node.
     pub(crate) fn goto(&mut self, id: &str) -> DotViewerResult<()> {
-        let idx = self.current.find(id.to_string());
+        let idx = self
+            .current
+            .find(id.to_string())
+            .ok_or(DotViewerError::ViewerError(format!("no such node {id:?}")))?;
 
-        idx.map_or(Err(DotViewerError::ViewerError(format!("no such node {id:?}"))), |idx| {
-            self.current.select(idx);
-            self.update_adjacent()?;
+        self.current.select(idx);
+        self.update_adjacent()?;
 
-            Ok(())
-        })
+        Ok(())
     }
 
     /// Apply prefix filter on the view given prefix `key`.
@@ -92,23 +93,22 @@ impl View {
     /// Extract a subgraph from the view.
     /// Returns `Ok` with a new `View` if the selected subgraph id is valid.
     pub(crate) fn subgraph(&mut self) -> DotViewerResult<View> {
-        self.subtree.selected().map_or(
-            Err(DotViewerError::ViewerError("no subgraph selected".to_string())),
-            |key| {
-                self.graph.subgraph(&key).map_or_else(
-                    |e| Err(DotViewerError::ViewerError(e.to_string())),
-                    |graph| {
-                        if graph.is_empty() {
-                            return Err(DotViewerError::ViewerError("empty graph".to_string()));
-                        }
+        let key = self
+            .subtree
+            .selected()
+            .ok_or(DotViewerError::ViewerError("no subgraph selected".to_string()))?;
 
-                        let title = &self.title;
-                        let view = Self::new(format!("{title} - {key}"), graph);
-                        Ok(view)
-                    },
-                )
-            },
-        )
+        let subgraph =
+            self.graph.subgraph(&key).map_err(|e| DotViewerError::ViewerError(e.to_string()))?;
+
+        if subgraph.is_empty() {
+            return Err(DotViewerError::ViewerError("empty graph".to_string()));
+        }
+
+        let title = &self.title;
+        let view = Self::new(format!("{title} - {key}"), subgraph);
+
+        Ok(view)
     }
 
     /// Autocomplete a given keyword, coming from `tab` keybinding.
