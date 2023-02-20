@@ -49,7 +49,7 @@ fn commands() -> ClapCommand {
 }
 
 impl Command {
-    pub(crate) fn parse(input: &String) -> Command {
+    pub(crate) fn parse(input: &str) -> Command {
         let inputs: Vec<&str> = input.split_whitespace().collect();
 
         match commands().try_get_matches_from(inputs) {

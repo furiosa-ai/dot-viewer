@@ -60,11 +60,11 @@ impl App {
             'j' => self.down()?,
             'k' => self.up()?,
             'l' => self.right()?,
-            'g' => if let Some(KeyCode::Char('g')) = self.lookback {
-                let view = self.tabs.selected();
-                view.first()?;
-            } else {
-                () 
+            'g' => {
+                if let Some(KeyCode::Char('g')) = self.lookback {
+                    let view = self.tabs.selected();
+                    view.first()?;
+                }
             }
             'G' => {
                 let view = self.tabs.selected();
@@ -145,9 +145,9 @@ impl App {
             Mode::Search(_) => {
                 self.set_normal_mode();
                 Ok(SuccessState::default())
-            } 
+            }
             Mode::Popup(pmode) => match pmode {
-                PopupMode::Tree => self.subgraph().map(|_| SuccessState::default()), 
+                PopupMode::Tree => self.subgraph().map(|_| SuccessState::default()),
                 _ => Ok(SuccessState::default()),
             },
         }
@@ -194,7 +194,7 @@ impl App {
             Mode::Search(smode) => match smode {
                 SearchMode::Fuzzy => self.autocomplete_fuzzy(),
                 SearchMode::Regex => self.autocomplete_regex(),
-            }
+            },
             _ => Err(DotViewerError::KeyError(KeyCode::Tab))?,
         };
 
@@ -292,7 +292,7 @@ impl View {
     pub(super) fn enter(&mut self) -> DotViewerResult<()> {
         match &self.focus {
             Focus::Prev | Focus::Next => self.goto_adjacent(),
-            Focus::Current => Ok(())
+            Focus::Current => Ok(()),
         }
     }
 

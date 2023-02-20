@@ -157,8 +157,7 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let id = view.current_id();
     let node = view.graph.search_node(&id).unwrap();
 
-    let paragraph =
-        Paragraph::new(pretty_metadata(node)).block(block).wrap(Wrap { trim: true });
+    let paragraph = Paragraph::new(pretty_metadata(node)).block(block).wrap(Wrap { trim: true });
 
     f.render_widget(paragraph, chunk);
 }

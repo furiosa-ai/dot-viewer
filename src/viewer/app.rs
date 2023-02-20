@@ -33,10 +33,10 @@ pub(crate) struct App {
     pub input: Input,
 
     /// Most recent key event
-    pub(crate) lookback: Option<KeyCode>,
+    pub lookback: Option<KeyCode>,
 
     /// Autocomplete support for commands
-    pub(crate) trie: CommandTrie,
+    pub trie: CommandTrie,
 
     /// Keybinding helps
     pub help: Help,
@@ -75,20 +75,10 @@ impl App {
         match command {
             Command::Neighbors(neighbors) => neighbors.depth.map_or(
                 Err(DotViewerError::CommandError("No argument supplied for neighbors".to_string())),
-                |depth| self.neighbors(depth).map(|_| SuccessState::default())
+                |depth| self.neighbors(depth).map(|_| SuccessState::default()),
             ),
-            Command::Export(export) => {
-                let res = self.export(export.filename);
-                self.set_normal_mode();
-
-                res
-            }
-            Command::Xdot(xdot) => {
-                let res = self.xdot(xdot.filename);
-                self.set_normal_mode();
-
-                res
-            }
+            Command::Export(export) => self.export(export.filename),
+            Command::Xdot(xdot) => self.xdot(xdot.filename),
             Command::Filter => self.filter().map(|_| SuccessState::default()),
             Command::Help => {
                 self.set_popup_mode(PopupMode::Help);
@@ -153,8 +143,6 @@ impl App {
         let view_new = view_current.filter()?;
         self.tabs.open(view_new);
 
-        self.set_normal_mode();
-
         Ok(())
     }
 
@@ -165,8 +153,6 @@ impl App {
         let view_current = self.tabs.selected();
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
-
-        self.set_normal_mode();
 
         Ok(())
     }

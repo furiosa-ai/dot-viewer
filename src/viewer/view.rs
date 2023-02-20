@@ -68,7 +68,8 @@ impl View {
 
         let subtree = Tree::from_graph(&graph);
 
-        let mut view = View { title, graph, focus, current, prevs, nexts, key, matches, trie, subtree };
+        let mut view =
+            View { title, graph, focus, current, prevs, nexts, key, matches, trie, subtree };
 
         view.update_adjacent().expect("there is always a selected current node on initialization");
 
@@ -77,7 +78,7 @@ impl View {
 
     /// Navigate to the selected adjacent node.
     pub(crate) fn goto_adjacent(&mut self) -> DotViewerResult<()> {
-        let err = Err(DotViewerError::ViewerError("no node selected".to_string())); 
+        let err = Err(DotViewerError::ViewerError("no node selected".to_string()));
 
         match &self.focus {
             Focus::Prev => self.prevs.selected().map_or(err, |id| self.goto(&id)),
@@ -88,10 +89,10 @@ impl View {
 
     /// Navigate to the matched node.
     pub(crate) fn goto_match(&mut self) -> DotViewerResult<()> {
-        self.matched_id().map_or(
-            Err(DotViewerError::ViewerError("no node selected".to_string())),
-            |id| self.goto(&id)
-        )
+        self.matched_id()
+            .map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
+                self.goto(&id)
+            })
     }
 
     /// Navigate to the currently selected node with `id`.
