@@ -1,8 +1,10 @@
 #![allow(dead_code)]
 
 use dot_graph::Graph;
-use rayon::prelude::*;
+
 use tui_tree_widget::{TreeItem, TreeState};
+
+use rayon::prelude::*;
 
 pub(crate) struct Item {
     id: String,

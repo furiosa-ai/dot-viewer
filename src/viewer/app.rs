@@ -6,6 +6,7 @@ use crate::viewer::{
     utils::{Input, List, Tabs},
     view::View,
 };
+
 use dot_graph::{parser, Graph};
 
 /// `App` holds `dot-viewer` application states.

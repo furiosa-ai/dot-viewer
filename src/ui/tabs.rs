@@ -1,5 +1,6 @@
 use crate::ui::view::draw_view;
 use crate::viewer::{App, MainMode};
+
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},

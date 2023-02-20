@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use std::str;
+
 use trie_rs::TrieBuilder;
 
 pub(crate) struct Trie {

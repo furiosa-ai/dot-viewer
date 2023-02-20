@@ -18,7 +18,7 @@ impl fmt::Display for SuccessState {
         match &self {
             Self::ExportSuccess(filename) => write!(f, "successfully exported to {filename}"),
             Self::XdotSuccess => write!(f, "launched xdot"),
-            Self::Silent => Ok(())
+            Self::Silent => Ok(()),
         }
     }
 }

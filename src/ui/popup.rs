@@ -1,5 +1,6 @@
 use crate::ui::{centered_rect, surrounding_block};
 use crate::viewer::{App, PopupMode};
+
 use tui::{
     backend::Backend,
     layout::{Constraint, Rect},

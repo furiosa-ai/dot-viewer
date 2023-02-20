@@ -1,5 +1,6 @@
-use crossterm::event::KeyCode;
 use dot_graph::DotGraphError;
+
+use crossterm::event::KeyCode;
 use thiserror::Error;
 
 pub type DotViewerResult<T> = Result<T, DotViewerError>;

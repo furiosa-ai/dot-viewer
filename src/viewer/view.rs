@@ -2,7 +2,9 @@ use crate::viewer::{
     error::{DotViewerError, DotViewerResult},
     utils::{List, Tree, Trie},
 };
+
 use dot_graph::Graph;
+
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use rayon::prelude::*;
 use regex::Regex;

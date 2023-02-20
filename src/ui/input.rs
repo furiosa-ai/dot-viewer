@@ -1,5 +1,6 @@
 use crate::ui::surrounding_block;
 use crate::viewer::{App, InputMode, MainMode, SearchMode};
+
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},

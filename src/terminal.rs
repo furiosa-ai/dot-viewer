@@ -1,12 +1,14 @@
 use crate::{ui, viewer::App};
+
+use std::io::Stdout;
+use std::{error::Error, io};
+
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use log::error;
-use std::io::Stdout;
-use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
     Terminal,

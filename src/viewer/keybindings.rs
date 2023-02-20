@@ -4,6 +4,7 @@ use crate::viewer::{
     success::SuccessState,
     App,
 };
+
 use crossterm::event::{KeyCode, KeyEvent};
 use log::{info, warn};
 
@@ -34,7 +35,9 @@ impl App {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(_) => self.char_nav(c),
-                MainMode::Input(imode) => self.char_input(c, &imode.clone()).map(|_| SuccessState::default()),
+                MainMode::Input(imode) => {
+                    self.char_input(c, &imode.clone()).map(|_| SuccessState::default())
+                }
             },
             Mode::Popup(pmode) => match pmode {
                 PopupMode::Tree => self.char_tree(c).map(|_| SuccessState::default()),

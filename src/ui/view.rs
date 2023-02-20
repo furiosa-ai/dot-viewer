@@ -2,10 +2,13 @@ use crate::{
     ui::{surrounding_block, utils::htmlparser},
     viewer::{InputMode, MainMode, NavMode, SearchMode, View},
 };
-use dot_graph::Node;
-use rayon::prelude::*;
+
 use std::collections::HashSet;
 use std::fmt::Write;
+
+use dot_graph::Node;
+
+use rayon::prelude::*;
 use tui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
