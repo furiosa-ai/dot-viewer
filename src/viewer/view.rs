@@ -15,27 +15,27 @@ type Matcher = fn(&str, &str, &Graph) -> Option<(String, Vec<usize>)>;
 /// it holds a smaller portion of the original graph.
 pub(crate) struct View {
     /// Title of the view
-    pub(crate) title: String,
+    pub title: String,
 
     /// Graph that the view is representing (a portion of the original graph)
-    pub(crate) graph: Graph,
+    pub graph: Graph,
 
     /// Topologically sorted list of all nodes in the view
-    pub(crate) current: List<String>,
+    pub current: List<String>,
 
     /// List of previous nodes of the currently selected node
-    pub(crate) prevs: List<String>,
+    pub prevs: List<String>,
     /// List of next nodes of the currently selected node
-    pub(crate) nexts: List<String>,
+    pub nexts: List<String>,
 
     /// List of matching nodes given some input, with highlight index
-    pub(crate) matches: List<(String, Vec<usize>)>,
+    pub matches: List<(String, Vec<usize>)>,
 
     /// Trie for user input autocompletion
-    pub(crate) trie: Trie,
+    pub trie: Trie,
 
     /// Tree holding the subgraph tree of the view
-    pub(crate) subtree: Tree,
+    pub subtree: Tree,
 }
 
 impl View {

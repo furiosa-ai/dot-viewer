@@ -11,9 +11,9 @@ pub(crate) struct Item {
 
 // https://github.com/EdJoPaTo/tui-rs-tree-widget/blob/main/examples/util/mod.rs
 pub(crate) struct Tree {
-    pub(crate) state: TreeState,
-    pub(crate) tree: Vec<TreeItem<'static>>,
-    pub(crate) items: Vec<Item>,
+    pub state: TreeState,
+    pub tree: Vec<TreeItem<'static>>,
+    pub items: Vec<Item>,
 }
 
 impl Tree {

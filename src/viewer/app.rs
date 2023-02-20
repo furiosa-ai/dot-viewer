@@ -13,22 +13,22 @@ use dot_graph::{parser, Graph};
 /// Thus `App` should keep track of the application context in its fields.
 pub(crate) struct App {
     /// Whether to quit the application or not, by `q` keybinding
-    pub(crate) quit: bool,
+    pub quit: bool,
 
     /// Current mode the application is in
-    pub(crate) mode: Mode,
+    pub mode: Mode,
 
     /// Result of the last command that was made
-    pub(crate) result: DotViewerResult<String>,
+    pub result: DotViewerResult<String>,
 
     /// Tabs to be shown in the main screen
-    pub(crate) tabs: Tabs<View>,
+    pub tabs: Tabs<View>,
 
     /// Input form to be shown in the main screen
-    pub(crate) input: Input,
+    pub input: Input,
 
     /// Keybinding helps
-    pub(crate) help: Help,
+    pub help: Help,
 }
 
 impl App {

@@ -4,8 +4,8 @@ use tui::widgets::ListState;
 
 // https://github.com/fdehau/tui-rs/blob/master/examples/list.rs
 pub(crate) struct List<T> {
-    pub(crate) state: ListState,
-    pub(crate) items: Vec<T>,
+    pub state: ListState,
+    pub items: Vec<T>,
 }
 
 impl<T: Clone + Eq> List<T> {

@@ -2,9 +2,9 @@
 
 #[derive(Default)]
 pub(crate) struct Input {
-    pub(crate) key: String,
-    pub(crate) history: Vec<String>,
-    pub(crate) cursor: usize,
+    pub key: String,
+    pub history: Vec<String>,
+    pub cursor: usize,
 }
 
 impl Input {

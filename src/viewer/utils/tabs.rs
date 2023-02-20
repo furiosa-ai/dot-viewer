@@ -4,8 +4,8 @@ use crate::viewer::error::{DotViewerError, DotViewerResult as Result};
 
 // https://github.com/fdehau/tui-rs/blob/master/examples/tabs.rs
 pub(crate) struct Tabs<T> {
-    pub(crate) state: usize,
-    pub(crate) tabs: Vec<T>,
+    pub state: usize,
+    pub tabs: Vec<T>,
 }
 
 impl<T> Tabs<T> {

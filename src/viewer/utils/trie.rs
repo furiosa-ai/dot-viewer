@@ -4,8 +4,8 @@ use std::str;
 use trie_rs::TrieBuilder;
 
 pub(crate) struct Trie {
-    pub(crate) items: Vec<String>,
-    pub(crate) trie: trie_rs::Trie<u8>,
+    pub items: Vec<String>,
+    pub trie: trie_rs::Trie<u8>,
 }
 
 impl Trie {
