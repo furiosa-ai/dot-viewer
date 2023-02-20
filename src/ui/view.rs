@@ -139,7 +139,7 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vi
     let block = surrounding_block("Attrs".to_string(), false);
 
     let id = match mmode {
-        MainMode::Navigate(_) => view.current_id(),
+        MainMode::Navigate(_) => Some(view.current_id()),
         MainMode::Input(_) => view.matched_id(),
     };
 

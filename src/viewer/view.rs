@@ -119,7 +119,7 @@ impl View {
 
     /// Update prevs and nexts lists based on the selected current node.
     pub(crate) fn update_adjacent(&mut self) -> DotViewerResult<()> {
-        let id = self.current_id().unwrap();
+        let id = self.current_id();
 
         let prevs = self.graph.froms(&id)?.iter().map(|n| n.to_string()).collect();
         self.prevs = List::with_items(prevs);
@@ -161,8 +161,8 @@ impl View {
         self.trie = Trie::new(&nodes);
     }
 
-    pub(crate) fn current_id(&self) -> Option<String> {
-        self.current.selected()
+    pub(crate) fn current_id(&self) -> String {
+        self.current.selected().expect("there is always a current id selected in a view")
     }
 
     pub(crate) fn matched_id(&self) -> Option<String> {

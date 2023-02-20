@@ -92,7 +92,7 @@ impl App {
     pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<SuccessState> {
         let view = self.tabs.selected();
         let graph = &view.graph;
-        let node = &view.current_id().expect("current node is always selected");
+        let node = &view.current_id();
 
         let filename = format!("{node}-{depth}");
 
