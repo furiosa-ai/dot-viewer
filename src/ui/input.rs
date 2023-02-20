@@ -65,11 +65,11 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect) {
 // error block
 fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let msg = match &app.result {
-        Ok(msg) => Some(msg.clone()),
-        Err(err) => Some(format!("{}", err)),
+        Ok(succ) => succ.to_string(),
+        Err(err) => err.to_string(),
     };
 
-    if let Some(msg) = msg {
+    if !msg.is_empty() {
         let msg =
             Paragraph::new(msg).style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD));
         f.render_widget(msg, chunk);

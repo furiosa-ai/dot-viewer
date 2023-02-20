@@ -1,6 +1,7 @@
 use crate::viewer::{
     error::{DotViewerError, DotViewerResult},
     modes::{InputMode, MainMode, Mode, NavMode, PopupMode, SearchMode},
+    success::SuccessState,
     App,
 };
 use crossterm::event::{KeyCode, KeyEvent};
@@ -12,16 +13,16 @@ impl App {
 
         self.result = match key.code {
             KeyCode::Char(c) => self.char(c),
-            KeyCode::Enter => self.enter().map(|_| String::new()),
-            KeyCode::Backspace => self.backspace().map(|_| String::new()),
-            KeyCode::Esc => self.esc().map(|_| String::new()),
-            KeyCode::Tab => self.tab().map(|_| String::new()),
-            KeyCode::BackTab => self.backtab().map(|_| String::new()),
-            KeyCode::Up => self.up().map(|_| String::new()),
-            KeyCode::Down => self.down().map(|_| String::new()),
-            KeyCode::Right => self.right().map(|_| String::new()),
-            KeyCode::Left => self.left().map(|_| String::new()),
-            _ => Ok(String::new()),
+            KeyCode::Enter => self.enter().map(|_| SuccessState::default()),
+            KeyCode::Backspace => self.backspace().map(|_| SuccessState::default()),
+            KeyCode::Esc => self.esc().map(|_| SuccessState::default()),
+            KeyCode::Tab => self.tab().map(|_| SuccessState::default()),
+            KeyCode::BackTab => self.backtab().map(|_| SuccessState::default()),
+            KeyCode::Up => self.up().map(|_| SuccessState::default()),
+            KeyCode::Down => self.down().map(|_| SuccessState::default()),
+            KeyCode::Right => self.right().map(|_| SuccessState::default()),
+            KeyCode::Left => self.left().map(|_| SuccessState::default()),
+            _ => Ok(SuccessState::default()),
         };
 
         if let Err(err) = &self.result {
@@ -29,52 +30,52 @@ impl App {
         }
     }
 
-    fn char(&mut self, c: char) -> DotViewerResult<String> {
+    fn char(&mut self, c: char) -> DotViewerResult<SuccessState> {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(_) => self.char_nav(c),
-                MainMode::Input(imode) => self.char_input(c, &imode.clone()).map(|_| String::new()),
+                MainMode::Input(imode) => self.char_input(c, &imode.clone()).map(|_| SuccessState::default()),
             },
             Mode::Popup(pmode) => match pmode {
-                PopupMode::Tree => self.char_tree(c).map(|_| String::new()),
-                PopupMode::Help => self.char_help(c).map(|_| String::new()),
+                PopupMode::Tree => self.char_tree(c).map(|_| SuccessState::default()),
+                PopupMode::Help => self.char_help(c).map(|_| SuccessState::default()),
             },
         }
     }
 
-    fn char_nav(&mut self, c: char) -> DotViewerResult<String> {
+    fn char_nav(&mut self, c: char) -> DotViewerResult<SuccessState> {
         match c {
             'q' => {
                 self.quit = true;
-                Ok(String::new())
+                Ok(SuccessState::default())
             }
             '/' => {
                 self.set_input_mode(InputMode::Search(SearchMode::Fuzzy));
-                Ok(String::new())
+                Ok(SuccessState::default())
             }
             'r' => {
                 self.set_input_mode(InputMode::Search(SearchMode::Regex));
-                Ok(String::new())
+                Ok(SuccessState::default())
             }
             'f' => {
                 self.set_input_mode(InputMode::Filter);
-                Ok(String::new())
+                Ok(SuccessState::default())
             }
             's' => {
                 self.set_popup_mode(PopupMode::Tree);
-                Ok(String::new())
+                Ok(SuccessState::default())
             }
             '?' => {
                 self.set_popup_mode(PopupMode::Help);
-                Ok(String::new())
+                Ok(SuccessState::default())
             }
-            'c' => self.tabs.close().map(|_| String::new()),
+            'c' => self.tabs.close().map(|_| SuccessState::default()),
             'e' => self.export(),
             'x' => self.xdot(),
-            'h' => self.left().map(|_| String::new()),
-            'j' => self.down().map(|_| String::new()),
-            'k' => self.up().map(|_| String::new()),
-            'l' => self.right().map(|_| String::new()),
+            'h' => self.left().map(|_| SuccessState::default()),
+            'j' => self.down().map(|_| SuccessState::default()),
+            'k' => self.up().map(|_| SuccessState::default()),
+            'l' => self.right().map(|_| SuccessState::default()),
             d if d.is_ascii_digit() => self.neighbors(d.to_digit(10).unwrap() as usize),
             _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),
         }

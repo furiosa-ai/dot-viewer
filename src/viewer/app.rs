@@ -2,6 +2,7 @@ use crate::viewer::{
     error::{DotViewerError, DotViewerResult},
     help::Help,
     modes::{InputMode, MainMode, Mode, NavMode, PopupMode},
+    success::SuccessState,
     utils::{Input, List, Tabs},
     view::View,
 };
@@ -19,7 +20,7 @@ pub(crate) struct App {
     pub mode: Mode,
 
     /// Result of the last command that was made
-    pub result: DotViewerResult<String>,
+    pub result: DotViewerResult<SuccessState>,
 
     /// Tabs to be shown in the main screen
     pub tabs: Tabs<View>,
@@ -38,7 +39,7 @@ impl App {
 
         let mode = Mode::Main(MainMode::Navigate(NavMode::Current));
 
-        let result: DotViewerResult<String> = Ok(String::new());
+        let result: DotViewerResult<SuccessState> = Ok(SuccessState::default());
 
         let graph = parser::parse(path)?;
         let view = View::new(graph.id().clone(), graph);
@@ -87,7 +88,7 @@ impl App {
 
     /// Export a neigbor graph from the currently selected node to dot,
     /// given the neighbor depth by `0-9` keybindings.
-    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<String> {
+    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<SuccessState> {
         let view = self.tabs.selected();
         let graph = &view.graph;
         let node = &view.current_id().unwrap();
@@ -107,7 +108,7 @@ impl App {
     }
 
     /// Export the current view to dot.
-    pub(crate) fn export(&mut self) -> DotViewerResult<String> {
+    pub(crate) fn export(&mut self) -> DotViewerResult<SuccessState> {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
@@ -117,7 +118,7 @@ impl App {
     }
 
     /// Launch `xdot.py`, coming from `x` keybinding.
-    pub(crate) fn xdot(&mut self) -> DotViewerResult<String> {
+    pub(crate) fn xdot(&mut self) -> DotViewerResult<SuccessState> {
         if !std::path::Path::new("./exports/current.dot").exists() {
             return Err(DotViewerError::XdotError);
         }
@@ -128,7 +129,7 @@ impl App {
             .arg("./exports/current.dot")
             .spawn();
 
-        xdot.map(|_| String::new()).map_err(|_| DotViewerError::XdotError)
+        xdot.map(|_| SuccessState::XdotSuccess).map_err(|_| DotViewerError::XdotError)
     }
 
     pub(crate) fn set_nav_mode(&mut self) {
@@ -167,7 +168,7 @@ impl App {
     }
 }
 
-fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<String> {
+fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<SuccessState> {
     std::fs::create_dir_all("./exports")?;
     let mut file_export = std::fs::OpenOptions::new()
         .write(true)
@@ -183,5 +184,5 @@ fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<String> {
         .open("./exports/current.dot")?;
     graph.to_dot(&mut file_current)?;
 
-    Ok(format!("file successfully written to {}", filename))
+    Ok(SuccessState::ExportSuccess(filename))
 }
