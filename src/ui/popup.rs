@@ -54,12 +54,18 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     });
 
     let table =
-        Table::new(rows).header(header).block(Block::default().borders(Borders::ALL)).widths(&[
-            Constraint::Percentage(15),
-            Constraint::Percentage(10),
-            Constraint::Percentage(15),
-            Constraint::Percentage(60),
-        ]);
+        Table::new(rows)
+            .header(header)
+            .block(Block::default()
+            .borders(Borders::ALL))
+            .highlight_style(Style::default().add_modifier(Modifier::REVERSED))
+            .highlight_symbol("> ")
+            .widths(&[
+                Constraint::Percentage(15),
+                Constraint::Percentage(10),
+                Constraint::Percentage(15),
+                Constraint::Percentage(60),
+            ]);
 
-    f.render_widget(table, chunk);
+    f.render_stateful_widget(table, chunk, &mut app.help.state);
 }

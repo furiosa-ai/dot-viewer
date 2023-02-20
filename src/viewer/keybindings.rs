@@ -131,6 +131,8 @@ impl App {
                 self.quit = true;
                 Ok(())
             }
+            'j' => self.down(),
+            'k' => self.up(),
             _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),
         }
     }
@@ -219,9 +221,15 @@ impl App {
                 view.up()?;
                 Ok(())
             }
-            Mode::Popup(PopupMode::Tree) => {
-                view.subtree.up();
-                Ok(())
+            Mode::Popup(pmode) => match pmode {
+                PopupMode::Tree => {
+                    view.subtree.up();
+                    Ok(())
+                }
+                PopupMode::Help => {
+                    self.help.previous();
+                    Ok(())
+                }
             }
             _ => Err(DotViewerError::KeyError(KeyCode::Up)),
         }
@@ -235,9 +243,15 @@ impl App {
                 view.down()?;
                 Ok(())
             }
-            Mode::Popup(PopupMode::Tree) => {
-                view.subtree.down();
-                Ok(())
+            Mode::Popup(pmode) => match pmode {
+                PopupMode::Tree => {
+                    view.subtree.down();
+                    Ok(())
+                }
+                PopupMode::Help => {
+                    self.help.next();
+                    Ok(())
+                }
             }
             _ => Err(DotViewerError::KeyError(KeyCode::Down)),
         }

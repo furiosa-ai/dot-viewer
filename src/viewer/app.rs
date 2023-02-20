@@ -1,10 +1,10 @@
 use crate::viewer::{
     command::{Command, CommandTrie},
     error::{DotViewerError, DotViewerResult},
-    help::Help,
+    help,
     modes::{Mode, PopupMode, SearchMode},
     success::SuccessState,
-    utils::{Input, List, Tabs},
+    utils::{Input, List, Table, Tabs},
     view::View,
 };
 
@@ -39,7 +39,7 @@ pub(crate) struct App {
     pub trie: CommandTrie,
 
     /// Keybinding helps
-    pub help: Help,
+    pub help: Table,
 }
 
 impl App {
@@ -62,7 +62,9 @@ impl App {
 
         let trie = CommandTrie::new();
 
-        let help = Help::new();
+        let header = help::header();
+        let rows = help::rows();
+        let help = Table::new(header, rows);
 
         Ok(App { quit, mode, result, tabs, input, lookback, trie, help })
     }
