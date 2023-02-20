@@ -251,7 +251,7 @@ fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<SuccessState>
         .write(true)
         .truncate(true)
         .create(true)
-        .open(format!("./exports/{filename}.dot"))?;
+        .open(format!("./exports/{filename}"))?;
     graph.to_dot(&mut file_export)?;
 
     let mut file_current = std::fs::OpenOptions::new()
