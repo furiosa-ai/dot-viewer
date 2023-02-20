@@ -65,9 +65,8 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect) {
 // error block
 fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let msg = match &app.result {
-        Ok(Some(msg)) => Some(msg.clone()),
+        Ok(msg) => Some(msg.clone()),
         Err(err) => Some(format!("{}", err)),
-        _ => None,
     };
 
     if let Some(msg) = msg {

@@ -36,7 +36,7 @@ impl<T> Tabs<T> {
         self.state = self.tabs.len() - 1;
     }
 
-    pub(crate) fn close(&mut self) -> Result<Option<String>> {
+    pub(crate) fn close(&mut self) -> Result<()> {
         if self.state == 0 {
             return Err(DotViewerError::TabError("cannot close the first tab".to_string()));
         }
@@ -46,7 +46,7 @@ impl<T> Tabs<T> {
             self.state -= 1;
         }
 
-        Ok(None)
+        Ok(())
     }
 
     pub(crate) fn select(&mut self, state: usize) {

@@ -21,7 +21,7 @@ impl App {
             KeyCode::Down => self.down(),
             KeyCode::Right => self.right(),
             KeyCode::Left => self.left(),
-            _ => Ok(None),
+            _ => Ok(String::new()),
         };
 
         if let Err(err) = &self.result {
@@ -29,7 +29,7 @@ impl App {
         }
     }
 
-    fn char(&mut self, c: char) -> DotViewerResult<Option<String>> {
+    fn char(&mut self, c: char) -> DotViewerResult<String> {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(_) => self.char_nav(c),
@@ -42,33 +42,33 @@ impl App {
         }
     }
 
-    fn char_nav(&mut self, c: char) -> DotViewerResult<Option<String>> {
+    fn char_nav(&mut self, c: char) -> DotViewerResult<String> {
         match c {
             'q' => {
                 self.quit = true;
-                Ok(None)
+                Ok(String::new())
             }
             '/' => {
                 self.set_input_mode(InputMode::Search(SearchMode::Fuzzy));
-                Ok(None)
+                Ok(String::new())
             }
             'r' => {
                 self.set_input_mode(InputMode::Search(SearchMode::Regex));
-                Ok(None)
+                Ok(String::new())
             }
             'f' => {
                 self.set_input_mode(InputMode::Filter);
-                Ok(None)
+                Ok(String::new())
             }
             's' => {
                 self.set_popup_mode(PopupMode::Tree);
-                Ok(None)
+                Ok(String::new())
             }
             '?' => {
                 self.set_popup_mode(PopupMode::Help);
-                Ok(None)
+                Ok(String::new())
             }
-            'c' => self.tabs.close(),
+            'c' => self.tabs.close().map(|_| String::new()),
             'e' => self.export(),
             'x' => self.xdot(),
             'h' => self.left(),
@@ -80,7 +80,7 @@ impl App {
         }
     }
 
-    fn char_input(&mut self, c: char, imode: &InputMode) -> DotViewerResult<Option<String>> {
+    fn char_input(&mut self, c: char, imode: &InputMode) -> DotViewerResult<String> {
         self.input.insert(c);
 
         let view = self.tabs.selected();
@@ -94,35 +94,35 @@ impl App {
         };
         view.update_trie();
 
-        Ok(None)
+        Ok(String::new())
     }
 
-    fn char_tree(&mut self, c: char) -> DotViewerResult<Option<String>> {
+    fn char_tree(&mut self, c: char) -> DotViewerResult<String> {
         match c {
             'q' => {
                 self.quit = true;
-                Ok(None)
+                Ok(String::new())
             }
             _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),
         }
     }
 
-    fn char_help(&mut self, c: char) -> DotViewerResult<Option<String>> {
+    fn char_help(&mut self, c: char) -> DotViewerResult<String> {
         match c {
             'q' => {
                 self.quit = true;
-                Ok(None)
+                Ok(String::new())
             }
             _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),
         }
     }
 
-    fn enter(&mut self) -> DotViewerResult<Option<String>> {
+    fn enter(&mut self) -> DotViewerResult<String> {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(nav) => match nav {
                     NavMode::Prevs | NavMode::Nexts => self.goto(),
-                    NavMode::Current => Ok(None),
+                    NavMode::Current => Ok(String::new()),
                 },
                 MainMode::Input(imode) => {
                     let res = match imode {
@@ -141,12 +141,12 @@ impl App {
 
                     res
                 }
-                _ => Ok(None),
+                _ => Ok(String::new()),
             },
         }
     }
 
-    fn backspace(&mut self) -> DotViewerResult<Option<String>> {
+    fn backspace(&mut self) -> DotViewerResult<String> {
         let view = self.tabs.selected();
 
         match &self.mode {
@@ -163,34 +163,34 @@ impl App {
                 };
                 view.update_trie();
 
-                Ok(None)
+                Ok(String::new())
             }
             _ => Err(DotViewerError::KeyError(KeyCode::Backspace)),
         }
     }
 
-    fn esc(&mut self) -> DotViewerResult<Option<String>> {
+    fn esc(&mut self) -> DotViewerResult<String> {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
                 MainMode::Input(_) => {
                     self.set_nav_mode();
-                    Ok(None)
+                    Ok(String::new())
                 }
                 _ => Err(DotViewerError::KeyError(KeyCode::Esc)),
             },
             _ => {
                 self.set_nav_mode();
-                Ok(None)
+                Ok(String::new())
             }
         }
     }
 
-    fn tab(&mut self) -> DotViewerResult<Option<String>> {
+    fn tab(&mut self) -> DotViewerResult<String> {
         match &self.mode {
             Mode::Main(mmode) => match mmode {
                 MainMode::Navigate(_) => {
                     self.tabs.next();
-                    Ok(None)
+                    Ok(String::new())
                 }
                 MainMode::Input(imode) => {
                     let view = self.tabs.selected();
@@ -208,24 +208,24 @@ impl App {
                         };
                     }
 
-                    Ok(None)
+                    Ok(String::new())
                 }
             },
-            _ => Ok(None),
+            _ => Ok(String::new()),
         }
     }
 
-    fn backtab(&mut self) -> DotViewerResult<Option<String>> {
+    fn backtab(&mut self) -> DotViewerResult<String> {
         match &self.mode {
             Mode::Main(MainMode::Navigate(_)) => {
                 self.tabs.previous();
-                Ok(None)
+                Ok(String::new())
             }
             _ => Err(DotViewerError::KeyError(KeyCode::BackTab)),
         }
     }
 
-    fn up(&mut self) -> DotViewerResult<Option<String>> {
+    fn up(&mut self) -> DotViewerResult<String> {
         let view = self.tabs.selected();
 
         match &self.mode {
@@ -244,10 +244,10 @@ impl App {
             _ => {}
         };
 
-        Ok(None)
+        Ok(String::new())
     }
 
-    fn down(&mut self) -> DotViewerResult<Option<String>> {
+    fn down(&mut self) -> DotViewerResult<String> {
         let view = self.tabs.selected();
 
         match &self.mode {
@@ -266,10 +266,10 @@ impl App {
             _ => {}
         };
 
-        Ok(None)
+        Ok(String::new())
     }
 
-    fn right(&mut self) -> DotViewerResult<Option<String>> {
+    fn right(&mut self) -> DotViewerResult<String> {
         let mode = self.mode.clone();
 
         match mode {
@@ -290,10 +290,10 @@ impl App {
             _ => {}
         }
 
-        Ok(None)
+        Ok(String::new())
     }
 
-    fn left(&mut self) -> DotViewerResult<Option<String>> {
+    fn left(&mut self) -> DotViewerResult<String> {
         let mode = self.mode.clone();
 
         match mode {
@@ -314,6 +314,6 @@ impl App {
             _ => {}
         }
 
-        Ok(None)
+        Ok(String::new())
     }
 }

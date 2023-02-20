@@ -19,7 +19,7 @@ pub(crate) struct App {
     pub(crate) mode: Mode,
 
     /// Result of the last command that was made
-    pub(crate) result: DotViewerResult<Option<String>>,
+    pub(crate) result: DotViewerResult<String>,
 
     /// Tabs to be shown in the main screen
     pub(crate) tabs: Tabs<View>,
@@ -38,7 +38,7 @@ impl App {
 
         let mode = Mode::Main(MainMode::Navigate(NavMode::Current));
 
-        let result: DotViewerResult<Option<String>> = Ok(None);
+        let result: DotViewerResult<String> = Ok(String::new());
 
         let graph = parser::parse(path)?;
         let view = View::new(graph.id().clone(), graph);
@@ -54,7 +54,7 @@ impl App {
 
     /// Navigate to the currently selected node.
     /// The current node list will be focused on the selected node.
-    pub(crate) fn goto(&mut self) -> DotViewerResult<Option<String>> {
+    pub(crate) fn goto(&mut self) -> DotViewerResult<String> {
         let id = self.selected_id();
 
         id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
@@ -66,28 +66,28 @@ impl App {
     /// Apply prefix filter on the current view.
     /// Based on the currently typed input, it applies a prefix filter on the current view,
     /// and opens a new tab with the filtered view.
-    pub(crate) fn filter(&mut self) -> DotViewerResult<Option<String>> {
+    pub(crate) fn filter(&mut self) -> DotViewerResult<String> {
         let view_current = self.tabs.selected();
         let view_new = view_current.filter(&self.input.key())?;
         self.tabs.open(view_new);
 
-        Ok(None)
+        Ok(String::new())
     }
 
     /// Extract a subgraph from the current view.
     /// When a subgraph id is selected in the subgraph tree,
     /// it opens a new tab containing only the selected subgraph.
-    pub(crate) fn subgraph(&mut self) -> DotViewerResult<Option<String>> {
+    pub(crate) fn subgraph(&mut self) -> DotViewerResult<String> {
         let view_current = self.tabs.selected();
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
 
-        Ok(None)
+        Ok(String::new())
     }
 
     /// Export a neigbor graph from the currently selected node to dot,
     /// given the neighbor depth by `0-9` keybindings.
-    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<Option<String>> {
+    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<String> {
         let view = self.tabs.selected();
         let graph = &view.graph;
         let node = &view.current_id().unwrap();
@@ -107,7 +107,7 @@ impl App {
     }
 
     /// Export the current view to dot.
-    pub(crate) fn export(&mut self) -> DotViewerResult<Option<String>> {
+    pub(crate) fn export(&mut self) -> DotViewerResult<String> {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
@@ -117,7 +117,7 @@ impl App {
     }
 
     /// Launch `xdot.py`, coming from `x` keybinding.
-    pub(crate) fn xdot(&mut self) -> DotViewerResult<Option<String>> {
+    pub(crate) fn xdot(&mut self) -> DotViewerResult<String> {
         if !std::path::Path::new("./exports/current.dot").exists() {
             return Err(DotViewerError::XdotError);
         }
@@ -128,7 +128,7 @@ impl App {
             .arg("./exports/current.dot")
             .spawn();
 
-        xdot.map(|_| None).map_err(|_| DotViewerError::XdotError)
+        xdot.map(|_| String::new()).map_err(|_| DotViewerError::XdotError)
     }
 
     pub(crate) fn set_nav_mode(&mut self) {
@@ -167,7 +167,7 @@ impl App {
     }
 }
 
-fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<Option<String>> {
+fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<String> {
     std::fs::create_dir_all("./exports")?;
     let mut file_export = std::fs::OpenOptions::new()
         .write(true)
@@ -183,5 +183,5 @@ fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<Option<String
         .open("./exports/current.dot")?;
     graph.to_dot(&mut file_current)?;
 
-    Ok(Some(format!("file successfully written to {}", filename)))
+    Ok(format!("file successfully written to {}", filename))
 }
