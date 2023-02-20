@@ -54,7 +54,7 @@ impl App {
 
     /// Navigate to the currently selected node.
     /// The current node list will be focused on the selected node.
-    pub(crate) fn goto(&mut self) -> DotViewerResult<String> {
+    pub(crate) fn goto(&mut self) -> DotViewerResult<()> {
         let id = self.selected_id();
 
         id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
@@ -66,23 +66,23 @@ impl App {
     /// Apply prefix filter on the current view.
     /// Based on the currently typed input, it applies a prefix filter on the current view,
     /// and opens a new tab with the filtered view.
-    pub(crate) fn filter(&mut self) -> DotViewerResult<String> {
+    pub(crate) fn filter(&mut self) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
         let view_new = view_current.filter(&self.input.key())?;
         self.tabs.open(view_new);
 
-        Ok(String::new())
+        Ok(())
     }
 
     /// Extract a subgraph from the current view.
     /// When a subgraph id is selected in the subgraph tree,
     /// it opens a new tab containing only the selected subgraph.
-    pub(crate) fn subgraph(&mut self) -> DotViewerResult<String> {
+    pub(crate) fn subgraph(&mut self) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
 
-        Ok(String::new())
+        Ok(())
     }
 
     /// Export a neigbor graph from the currently selected node to dot,

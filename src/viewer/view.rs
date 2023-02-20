@@ -63,14 +63,14 @@ impl View {
 
     /// Navigate to the currently selected node with `id`.
     /// The current node list will be focused on the selected node.
-    pub(crate) fn goto(&mut self, id: &str) -> DotViewerResult<String> {
+    pub(crate) fn goto(&mut self, id: &str) -> DotViewerResult<()> {
         let idx = self.current.find(id.to_string());
 
         idx.map_or(Err(DotViewerError::ViewerError(format!("no such node {:?}", id))), |idx| {
             self.current.select(idx);
             self.update_adjacent()?;
 
-            Ok(String::new())
+            Ok(())
         })
     }
 
