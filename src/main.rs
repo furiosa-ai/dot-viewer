@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     std::fs::create_dir_all("./logs")?;
     let file = std::fs::File::create(format!("logs/log_{}.log", Local::now()))?;
-    WriteLogger::init(LevelFilter::Info, Config::default(), file).unwrap();
+    WriteLogger::init(LevelFilter::Info, Config::default(), file)?;
 
     launch(args.path)?;
 

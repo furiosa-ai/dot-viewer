@@ -13,11 +13,14 @@ use tui::{
 };
 
 pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
-    // setup terminal
     let mut terminal = setup()?;
 
     // create and run app
-    let app = App::new(&path).expect("user should provide path to a valid dot file");
+    let app = App::new(&path).map_err(|_| {
+        let _ = cleanup();
+
+        Box::<dyn Error>::from("user should provide path to a valid dot file")
+    })?;
     let _ = run(&mut terminal, app);
 
     cleanup()?;
@@ -38,12 +41,13 @@ fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
 }
 
 fn setup_panic_hook() {
-    std::panic::set_hook(Box::new(|info| {
+    let panic_handler = better_panic::Settings::auto().create_panic_handler();
+    std::panic::set_hook(Box::new(move |info| {
         let _ = cleanup();
 
         error!("dot-viewer {}", info);
 
-        better_panic::Settings::auto().create_panic_handler()(info);
+        panic_handler(info);
     }));
 }
 
