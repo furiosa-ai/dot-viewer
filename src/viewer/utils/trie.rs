@@ -35,6 +35,10 @@ impl Trie {
 
     // https://leetcode.com/problems/longest-common-prefix/solutions/1134124/faster-than-100-in-memory-and-runtime-by-rust/
     fn longest_common_prefix(strs: &[String]) -> Option<String> {
+        if strs.is_empty() {
+            return None;
+        }
+
         let mut str_iters = strs.iter().map(|s| s.chars()).collect::<Vec<_>>();
 
         for (i, c) in strs[0].char_indices() {
@@ -45,6 +49,6 @@ impl Trie {
             }
         }
 
-        (!strs.is_empty()).then_some(strs[0].clone())
+        Some(strs[0].clone())
     }
 }

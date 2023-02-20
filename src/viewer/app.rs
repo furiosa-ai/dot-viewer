@@ -59,6 +59,10 @@ impl App {
     pub(crate) fn goto(&mut self) -> DotViewerResult<()> {
         let id = self.selected_id();
 
+        if matches!(self.mode, Mode::Main(MainMode::Input(_))) {
+            self.set_nav_mode();
+        }
+
         id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
             let view = self.tabs.selected();
             view.goto(&id)
@@ -73,6 +77,8 @@ impl App {
         let view_new = view_current.filter(&self.input.key)?;
         self.tabs.open(view_new);
 
+        self.set_nav_mode();
+
         Ok(())
     }
 
@@ -83,6 +89,8 @@ impl App {
         let view_current = self.tabs.selected();
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
+
+        self.set_nav_mode();
 
         Ok(())
     }

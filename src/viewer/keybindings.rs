@@ -128,23 +128,13 @@ impl App {
                     NavMode::Prevs | NavMode::Nexts => self.goto(),
                     NavMode::Current => Ok(()),
                 },
-                MainMode::Input(imode) => {
-                    let res = match imode {
-                        InputMode::Search(_) => self.goto(),
-                        InputMode::Filter => self.filter(),
-                    };
-                    self.set_nav_mode();
-
-                    res
+                MainMode::Input(imode) => match imode {
+                    InputMode::Search(_) => self.goto(),
+                    InputMode::Filter => self.filter(),
                 }
             },
             Mode::Popup(pmode) => match pmode {
-                PopupMode::Tree => {
-                    let res = self.subgraph();
-                    self.set_nav_mode();
-
-                    res
-                }
+                PopupMode::Tree => self.subgraph(),
                 _ => Ok(()),
             },
         }
