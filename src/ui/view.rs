@@ -56,7 +56,8 @@ fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view:
 }
 
 fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
-    let title = format!("Nodes {}", view.progress_current());
+    let progress = view.progress_current();
+    let title = format!("Nodes {progress}");
     let block = surrounding_block(title, *mmode == MainMode::Navigate(NavMode::Current));
 
     let froms: HashSet<&String> = HashSet::from_iter(&view.prevs.items);
@@ -161,7 +162,8 @@ fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, vi
         },
         InputMode::Filter => "Filtering...".to_string(),
     };
-    let title = format!("{} {}", title, view.progress_matches());
+    let progress = view.progress_matches();
+    let title = format!("{title} {progress}");
     let block = surrounding_block(title, true);
 
     let list: Vec<ListItem> = view

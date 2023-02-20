@@ -92,9 +92,9 @@ impl App {
     pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<SuccessState> {
         let view = self.tabs.selected();
         let graph = &view.graph;
-        let node = &view.current_id().unwrap();
+        let node = &view.current_id().expect("current node is always selected");
 
-        let filename = format!("{}-{}", node.clone(), depth);
+        let filename = format!("{node}-{depth}");
 
         graph.neighbors(node, depth).map_or_else(
             |e| Err(DotViewerError::ViewerError(e.to_string())),
@@ -175,7 +175,7 @@ fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<SuccessState>
         .write(true)
         .truncate(true)
         .create(true)
-        .open(format!("./exports/{}.dot", filename))?;
+        .open(format!("./exports/{filename}.dot"))?;
     graph.to_dot(&mut file_export)?;
 
     let mut file_current = std::fs::OpenOptions::new()

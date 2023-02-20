@@ -68,7 +68,7 @@ impl View {
     pub(crate) fn goto(&mut self, id: &str) -> DotViewerResult<()> {
         let idx = self.current.find(id.to_string());
 
-        idx.map_or(Err(DotViewerError::ViewerError(format!("no such node {:?}", id))), |idx| {
+        idx.map_or(Err(DotViewerError::ViewerError(format!("no such node {id:?}"))), |idx| {
             self.current.select(idx);
             self.update_adjacent()?;
 
@@ -82,10 +82,11 @@ impl View {
         let graph = self.graph.filter(prefix);
 
         if graph.is_empty() {
-            return Err(DotViewerError::ViewerError(format!("no match for prefix {}", prefix)));
+            return Err(DotViewerError::ViewerError(format!("no match for prefix {prefix}")));
         }
 
-        let view = Self::new(format!("{} - {}", self.title, prefix), graph);
+        let title = &self.title;
+        let view = Self::new(format!("{title} - {prefix}"), graph);
         Ok(view)
     }
 
@@ -102,7 +103,8 @@ impl View {
                             return Err(DotViewerError::ViewerError("empty graph".to_string()));
                         }
 
-                        let view = Self::new(format!("{} - {}", self.title, key), graph);
+                        let title = &self.title;
+                        let view = Self::new(format!("{title} - {key}"), graph);
                         Ok(view)
                     },
                 )
