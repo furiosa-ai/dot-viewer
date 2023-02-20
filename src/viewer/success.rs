@@ -1,7 +1,7 @@
 use std::fmt;
 
 #[derive(Debug)]
-pub enum SuccessState {
+pub(crate) enum SuccessState {
     ExportSuccess(String),
     XdotSuccess,
     Silent,
