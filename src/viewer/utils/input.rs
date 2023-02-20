@@ -3,17 +3,13 @@
 #[derive(Default)]
 pub(crate) struct Input {
     pub key: String,
-    pub history: Vec<String>,
     pub cursor: usize,
+    history: Vec<String>,
 }
 
 impl Input {
     pub(crate) fn new() -> Input {
         Input::default()
-    }
-
-    pub(crate) fn key(&self) -> String {
-        self.key.clone()
     }
 
     pub(crate) fn set(&mut self, key: String) {

@@ -15,11 +15,11 @@ pub(crate) struct Item {
 pub(crate) struct Tree {
     pub state: TreeState,
     pub tree: Vec<TreeItem<'static>>,
-    pub items: Vec<Item>,
+    items: Vec<Item>,
 }
 
 impl Tree {
-    pub(crate) fn with_graph(graph: &Graph) -> Self {
+    pub(crate) fn from_graph(graph: &Graph) -> Self {
         let root = graph.search_subgraph(graph.id()).unwrap().id();
 
         let item = to_item(root, graph);

@@ -79,7 +79,7 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
 
 // input block
 fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, app: &mut App) {
-    let input = Paragraph::new(app.input.key()).style(match mmode {
+    let input = Paragraph::new(app.input.key.clone()).style(match mmode {
         MainMode::Navigate(_) => Style::default(),
         MainMode::Input(_) => Style::default().fg(Color::Yellow),
     });

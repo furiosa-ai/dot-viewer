@@ -88,7 +88,7 @@ impl App {
         self.input.insert(c);
 
         let view = self.tabs.selected();
-        let key = self.input.key();
+        let key = &self.input.key;
         match imode {
             InputMode::Search(smode) => match smode {
                 SearchMode::Fuzzy => view.update_fuzzy(key),
@@ -157,7 +157,7 @@ impl App {
             Mode::Main(MainMode::Input(imode)) => {
                 self.input.delete();
 
-                let key = self.input.key();
+                let key = &self.input.key;
                 match imode {
                     InputMode::Search(smode) => match smode {
                         SearchMode::Fuzzy => view.update_fuzzy(key),
@@ -199,10 +199,10 @@ impl App {
                 MainMode::Input(imode) => {
                     let view = self.tabs.selected();
 
-                    if let Some(key) = view.autocomplete(&self.input.key()) {
+                    if let Some(key) = view.autocomplete(&self.input.key) {
                         self.input.set(key);
 
-                        let key = self.input.key();
+                        let key = &self.input.key;
                         match imode {
                             InputMode::Search(smode) => match smode {
                                 SearchMode::Fuzzy => view.update_fuzzy(key),

@@ -44,7 +44,7 @@ impl App {
 
         let graph = parser::parse(path)?;
         let view = View::new(graph.id().clone(), graph);
-        let tabs = Tabs::with_tabs(vec![view])?;
+        let tabs = Tabs::from_iter(vec![view]);
 
         let input = Input::default();
 
@@ -70,7 +70,7 @@ impl App {
     /// and opens a new tab with the filtered view.
     pub(crate) fn filter(&mut self) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
-        let view_new = view_current.filter(&self.input.key())?;
+        let view_new = view_current.filter(&self.input.key)?;
         self.tabs.open(view_new);
 
         Ok(())
@@ -143,9 +143,8 @@ impl App {
 
         let view = self.tabs.selected();
 
-        let init: Vec<(String, Vec<usize>)> =
-            view.current.items.iter().map(|id| (id.clone(), Vec::new())).collect();
-        view.matches = List::with_items(init);
+        let init = view.current.items.iter().map(|id| (id.clone(), Vec::new()));
+        view.matches = List::from_iter(init);
     }
 
     pub(crate) fn set_popup_mode(&mut self, pmode: PopupMode) {

@@ -8,17 +8,22 @@ pub(crate) struct List<T> {
     pub items: Vec<T>,
 }
 
-impl<T: Clone + Eq> List<T> {
-    pub(crate) fn with_items(items: Vec<T>) -> List<T> {
-        let mut list = List { state: ListState::default(), items };
+impl<T: Clone + Eq> std::iter::FromIterator<T> for List<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let state = ListState::default();
+        let items = Vec::from_iter(iter);
+
+        let mut list = List { state, items };
 
         if !list.items.is_empty() {
-            list.state.select(Some(0));
+            list.state.select(Some(0))
         }
 
         list
     }
+}
 
+impl<T: Clone + Eq> List<T> {
     pub(crate) fn next(&mut self) {
         if !self.items.is_empty() {
             let i = match self.state.selected() {

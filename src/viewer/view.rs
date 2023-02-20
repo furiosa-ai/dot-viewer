@@ -44,19 +44,18 @@ impl View {
     /// Constructs a new `View`, given a `title` and a `graph`, which is a portion of the original
     /// graph.
     pub(crate) fn new(title: String, graph: Graph) -> View {
-        let nodes: Vec<String> = graph.topsort().par_iter().map(|&id| id.clone()).collect();
-        let subtree = Tree::with_graph(&graph);
+        let node_ids: Vec<String> = graph.topsort().iter().map(|&id| id.clone()).collect();
 
-        let mut view = View {
-            title,
-            graph,
-            current: List::with_items(nodes.clone()),
-            prevs: List::with_items(Vec::new()),
-            nexts: List::with_items(Vec::new()),
-            matches: List::with_items(Vec::new()),
-            trie: Trie::new(&nodes),
-            subtree,
-        };
+        let trie = Trie::new(&node_ids);
+
+        let current = List::from_iter(node_ids);
+        let prevs = List::from_iter(Vec::new());
+        let nexts = List::from_iter(Vec::new());
+        let matches = List::from_iter(Vec::new());
+
+        let subtree = Tree::from_graph(&graph);
+
+        let mut view = View { title, graph, current, prevs, nexts, matches, trie, subtree };
 
         view.update_adjacent().expect("there is always a selected current node on initialization");
 
@@ -121,11 +120,13 @@ impl View {
     pub(crate) fn update_adjacent(&mut self) -> DotViewerResult<()> {
         let id = self.current_id();
 
-        let prevs = self.graph.froms(&id)?.iter().map(|n| n.to_string()).collect();
-        self.prevs = List::with_items(prevs);
+        let prevs = self.graph.froms(&id)?;
+        let prevs = prevs.iter().map(|n| n.to_string());
+        self.prevs = List::from_iter(prevs);
 
-        let nexts = self.graph.tos(&id)?.iter().map(|n| n.to_string()).collect();
-        self.nexts = List::with_items(nexts);
+        let nexts = self.graph.tos(&id)?;
+        let nexts = nexts.iter().map(|n| n.to_string());
+        self.nexts = List::from_iter(nexts);
 
         Ok(())
     }
@@ -135,24 +136,24 @@ impl View {
         let matches: Vec<(String, Vec<usize>)> =
             self.current.items.par_iter().filter_map(|id| matcher(id, key, &self.graph)).collect();
 
-        self.matches = List::with_items(matches);
+        self.matches = List::from_iter(matches);
     }
 
     /// Update matches in fuzzy search mode.
     /// Fuzzy matcher matches input against node ids.
-    pub(crate) fn update_fuzzy(&mut self, key: String) {
-        self.update_matches(match_fuzzy, &key);
+    pub(crate) fn update_fuzzy(&mut self, key: &str) {
+        self.update_matches(match_fuzzy, key);
     }
 
     /// Update matches in regex search mode.
     /// Regex matcher matches input against node represented in raw dot format string.
-    pub(crate) fn update_regex(&mut self, key: String) {
-        self.update_matches(match_regex, &key);
+    pub(crate) fn update_regex(&mut self, key: &str) {
+        self.update_matches(match_regex, key);
     }
 
     /// Update matches in prefix filter mode.
-    pub(crate) fn update_filter(&mut self, key: String) {
-        self.update_matches(match_prefix, &key);
+    pub(crate) fn update_filter(&mut self, key: &str) {
+        self.update_matches(match_prefix, key);
     }
 
     /// Update trie based on the current matches.

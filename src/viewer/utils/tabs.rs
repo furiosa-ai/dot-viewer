@@ -8,15 +8,16 @@ pub(crate) struct Tabs<T> {
     pub tabs: Vec<T>,
 }
 
-impl<T> Tabs<T> {
-    pub(crate) fn with_tabs(tabs: Vec<T>) -> Result<Tabs<T>> {
-        if tabs.is_empty() {
-            return Err(DotViewerError::TabError("no tab given to tabs constructor".to_string()));
-        }
+impl<T> std::iter::FromIterator<T> for Tabs<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let state = 0;
+        let tabs = Vec::from_iter(iter);
 
-        Ok(Tabs { state: 0, tabs })
+        Tabs { state, tabs }
     }
+}
 
+impl<T> Tabs<T> {
     pub(crate) fn next(&mut self) {
         let state = self.state;
         let len = self.tabs.len();
