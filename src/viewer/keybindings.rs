@@ -157,10 +157,7 @@ impl App {
 
     fn backspace(&mut self) -> DotViewerResult<()> {
         match &self.mode {
-            Mode::Command => {
-                self.input.delete();
-                Ok(())
-            }
+            Mode::Command => self.input.delete(),
             Mode::Search(smode) => {
                 self.input.delete();
 
@@ -171,12 +168,12 @@ impl App {
                     SearchMode::Fuzzy => view.update_fuzzy(key),
                     SearchMode::Regex => view.update_regex(key),
                 };
-                view.update_trie();
-
-                Ok(())
+                view.update_trie()
             }
-            _ => Err(DotViewerError::KeyError(KeyCode::Backspace)),
-        }
+            _ => Err(DotViewerError::KeyError(KeyCode::Backspace))?,
+        };
+
+        Ok(())
     }
 
     fn esc(&mut self) -> DotViewerResult<()> {
@@ -217,88 +214,64 @@ impl App {
         let view = self.tabs.selected();
 
         match &self.mode {
-            Mode::Normal => {
-                view.up()?;
-                Ok(())
-            }
+            Mode::Normal => view.up()?,
             Mode::Popup(pmode) => match pmode {
-                PopupMode::Tree => {
-                    view.subtree.up();
-                    Ok(())
-                }
-                PopupMode::Help => {
-                    self.help.previous();
-                    Ok(())
-                }
-            }
-            _ => Err(DotViewerError::KeyError(KeyCode::Up)),
-        }
+                PopupMode::Tree => view.subtree.up(),
+                PopupMode::Help => self.help.previous(),
+            },
+            _ => Err(DotViewerError::KeyError(KeyCode::Up))?,
+        };
+
+        Ok(())
     }
 
     fn down(&mut self) -> DotViewerResult<()> {
         let view = self.tabs.selected();
 
         match &self.mode {
-            Mode::Normal => {
-                view.down()?;
-                Ok(())
-            }
+            Mode::Normal => view.down()?,
             Mode::Popup(pmode) => match pmode {
-                PopupMode::Tree => {
-                    view.subtree.down();
-                    Ok(())
-                }
-                PopupMode::Help => {
-                    self.help.next();
-                    Ok(())
-                }
-            }
-            _ => Err(DotViewerError::KeyError(KeyCode::Down)),
-        }
+                PopupMode::Tree => view.subtree.down(),
+                PopupMode::Help => self.help.next(),
+            },
+            _ => Err(DotViewerError::KeyError(KeyCode::Down))?,
+        };
+
+        Ok(())
     }
 
     fn right(&mut self) -> DotViewerResult<()> {
         match &self.mode {
             Mode::Normal => {
                 let view = self.tabs.selected();
-                view.right();
-
-                Ok(())
+                view.right()
             }
-            Mode::Search(_) => {
-                self.input.front();
-                Ok(())
-            }
+            Mode::Search(_) => self.input.front(),
             Mode::Popup(PopupMode::Tree) => {
                 let view = self.tabs.selected();
-                view.subtree.right();
-
-                Ok(())
+                view.subtree.right()
             }
-            _ => Err(DotViewerError::KeyError(KeyCode::Right)),
-        }
+            _ => Err(DotViewerError::KeyError(KeyCode::Right))?,
+        };
+
+        Ok(())
     }
 
     fn left(&mut self) -> DotViewerResult<()> {
         match &self.mode {
             Mode::Normal => {
                 let view = self.tabs.selected();
-                view.left();
-
-                Ok(())
+                view.left()
             }
-            Mode::Search(_) => {
-                self.input.back();
-                Ok(())
-            }
+            Mode::Search(_) => self.input.back(),
             Mode::Popup(PopupMode::Tree) => {
                 let view = self.tabs.selected();
-                view.subtree.left();
-
-                Ok(())
+                view.subtree.left()
             }
-            _ => Err(DotViewerError::KeyError(KeyCode::Left)),
-        }
+            _ => Err(DotViewerError::KeyError(KeyCode::Left))?,
+        };
+
+        Ok(())
     }
 }
 

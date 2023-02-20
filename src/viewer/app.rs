@@ -231,7 +231,7 @@ fn valid_filename(filename: &str) -> bool {
 
 fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<SuccessState> {
     if !valid_filename(&filename) {
-        return Err(DotViewerError::CommandError(format!("invalid dot filename: {}", filename)));
+        return Err(DotViewerError::CommandError(format!("invalid dot filename: {filename}")));
     }
 
     std::fs::create_dir_all("./exports")?;

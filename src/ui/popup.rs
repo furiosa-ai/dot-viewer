@@ -16,7 +16,7 @@ pub(super) fn draw_popup<B: Backend>(
     pmode: &PopupMode,
     app: &mut App,
 ) {
-    let popup = centered_rect(70, 70, size);
+    let popup = centered_rect(90, 90, size);
 
     match pmode {
         PopupMode::Tree => draw_tree(f, popup, app),
@@ -25,7 +25,7 @@ pub(super) fn draw_popup<B: Backend>(
 }
 
 fn draw_tree<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let block = surrounding_block("Filter by Subgraph".to_string(), false);
+    let block = surrounding_block("Select a subgraph".to_string(), false);
 
     let view = app.tabs.selected();
     let subtree = &mut view.subtree;
@@ -53,19 +53,17 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
         Row::new(row).height(1).bottom_margin(1)
     });
 
-    let table =
-        Table::new(rows)
-            .header(header)
-            .block(Block::default()
-            .borders(Borders::ALL))
-            .highlight_style(Style::default().add_modifier(Modifier::REVERSED))
-            .highlight_symbol("> ")
-            .widths(&[
-                Constraint::Percentage(15),
-                Constraint::Percentage(10),
-                Constraint::Percentage(15),
-                Constraint::Percentage(60),
-            ]);
+    let table = Table::new(rows)
+        .header(header)
+        .block(Block::default().borders(Borders::ALL))
+        .highlight_style(Style::default().add_modifier(Modifier::REVERSED))
+        .highlight_symbol("> ")
+        .widths(&[
+            Constraint::Percentage(15),
+            Constraint::Percentage(10),
+            Constraint::Percentage(15),
+            Constraint::Percentage(60),
+        ]);
 
     f.render_stateful_widget(table, chunk, &mut app.help.state);
 }

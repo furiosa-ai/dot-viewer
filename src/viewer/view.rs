@@ -117,7 +117,8 @@ impl View {
         let graph = self.graph.filter(&node_ids);
 
         if graph.is_empty() {
-            return Err(DotViewerError::ViewerError(format!("no match for keyword {}", self.key)));
+            let key = &self.key;
+            return Err(DotViewerError::ViewerError(format!("no match for keyword {key}")));
         }
 
         Self::new(format!("{} - {}", self.title, self.key), graph)
@@ -152,7 +153,8 @@ impl View {
             return Err(DotViewerError::ViewerError("cannot define a neighbors graph".to_string()));
         }
 
-        Self::new(format!("{} - neighbors-{}-{}", self.title, id, depth), graph)
+        let title = &self.title;
+        Self::new(format!("{title} - neighbors-{id}-{depth}"), graph)
     }
 
     /// Autocomplete a given keyword, coming from `tab` keybinding.

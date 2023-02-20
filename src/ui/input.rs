@@ -9,9 +9,7 @@ use tui::{
     Frame,
 };
 
-// input block
 pub(super) fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    // surrounding block
     let title = match &app.mode {
         Mode::Normal => "Normal",
         Mode::Command => "Command",
@@ -29,7 +27,6 @@ pub(super) fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut Ap
 
     f.render_widget(block, chunk);
 
-    // inner blocks
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
@@ -40,7 +37,6 @@ pub(super) fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut Ap
     draw_form(f, chunks[1], app);
 }
 
-// error block
 fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let msg = match &app.result {
         Ok(succ) => succ.to_string(),
@@ -54,7 +50,6 @@ fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     }
 }
 
-// input block
 fn draw_form<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let input = Paragraph::new(app.input.key.clone()).style(match &app.mode {
         Mode::Normal => Style::default(),

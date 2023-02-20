@@ -165,7 +165,8 @@ fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
 fn pretty_metadata(node: &Node) -> String {
     let mut metadata = String::new();
 
-    writeln!(metadata, "[{}]", node.id()).unwrap();
+    let id = node.id();
+    writeln!(metadata, "[{id}]").unwrap();
     writeln!(metadata).unwrap();
 
     let empty = String::new();
@@ -175,7 +176,7 @@ fn pretty_metadata(node: &Node) -> String {
 
     if attrs.is_empty() {
         for (key, value) in attrs {
-            writeln!(metadata, "{} : {}", key, value).unwrap();
+            writeln!(metadata, "{key} : {value}").unwrap();
         }
     } else {
         for attr in attrs_label {
@@ -185,7 +186,7 @@ fn pretty_metadata(node: &Node) -> String {
 
             let vals = attr.split("\\l");
             for val in vals {
-                writeln!(metadata, "{}", val).unwrap();
+                writeln!(metadata, "{val}").unwrap();
             }
         }
     }

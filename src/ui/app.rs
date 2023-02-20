@@ -11,12 +11,12 @@ use tui::{
 pub(crate) fn draw_app<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let size = f.size();
 
-    // surrounding block
     let block = Block::default()
         .borders(Borders::ALL)
         .title("Dot Viewer (Dev)")
         .title_alignment(Alignment::Center)
         .border_type(BorderType::Rounded);
+
     f.render_widget(block, size);
 
     match &app.mode {
