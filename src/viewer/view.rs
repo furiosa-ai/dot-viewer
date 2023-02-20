@@ -53,8 +53,8 @@ pub(crate) enum Focus {
 impl View {
     /// Constructs a new `View`, given a `title` and a `graph`, which is a portion of the original
     /// graph.
-    pub(crate) fn new(title: String, graph: Graph) -> View {
-        let node_ids: Vec<String> = graph.topsort().iter().map(|&id| id.clone()).collect();
+    pub(crate) fn new(title: String, graph: Graph) -> DotViewerResult<View> {
+        let node_ids: Vec<String> = graph.topsort()?.par_iter().map(|&id| id.clone()).collect();
 
         let trie = Trie::new(&node_ids);
 
@@ -72,7 +72,7 @@ impl View {
 
         view.update_adjacent().expect("there is always a selected current node on initialization");
 
-        view
+        Ok(view)
     }
 
     /// Navigate to the selected adjacent node.
@@ -119,8 +119,7 @@ impl View {
             return Err(DotViewerError::ViewerError(format!("no match for keyword {}", self.key)));
         }
 
-        let view = Self::new(format!("{} - {}", self.title, self.key), graph);
-        Ok(view)
+        Self::new(format!("{} - {}", self.title, self.key), graph)
     }
 
     /// Extract a subgraph from the view.
@@ -139,9 +138,7 @@ impl View {
         }
 
         let title = &self.title;
-        let view = Self::new(format!("{title} - {key}"), subgraph);
-
-        Ok(view)
+        Self::new(format!("{title} - {key}"), subgraph)
     }
 
     /// Get neighbors graph from the selected id in the view.
@@ -154,8 +151,7 @@ impl View {
             return Err(DotViewerError::ViewerError("cannot define a neighbors graph".to_string()));
         }
 
-        let view = Self::new(format!("{} - neighbors-{}-{}", self.title, id, depth), graph);
-        Ok(view)
+        Self::new(format!("{} - neighbors-{}-{}", self.title, id, depth), graph)
     }
 
     /// Autocomplete a given keyword, coming from `tab` keybinding.

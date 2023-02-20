@@ -52,7 +52,8 @@ impl App {
         let result: DotViewerResult<SuccessState> = Ok(SuccessState::default());
 
         let graph = parser::parse(path)?;
-        let view = View::new(graph.id().clone(), graph);
+
+        let view = View::new(graph.id().clone(), graph)?;
         let tabs = Tabs::from_iter(vec![view]);
 
         let input = Input::default();
@@ -237,7 +238,7 @@ impl App {
 }
 
 fn valid_filename(filename: &str) -> bool {
-    (!filename.contains("/")) && filename.ends_with(".dot")
+    (!filename.contains('/')) && filename.ends_with(".dot")
 }
 
 fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<SuccessState> {
