@@ -1,5 +1,5 @@
 use crate::viewer::{
-    error::{DotViewerError, DotViewerResult as Result},
+    error::{DotViewerError, DotViewerResult},
     help::Help,
     modes::{InputMode, MainMode, Mode, NavMode, PopupMode},
     utils::{Input, List, Tabs},
@@ -19,7 +19,7 @@ pub(crate) struct App {
     pub(crate) mode: Mode,
 
     /// Result of the last command that was made
-    pub(crate) result: Result<Option<String>>,
+    pub(crate) result: DotViewerResult<Option<String>>,
 
     /// Tabs to be shown in the main screen
     pub(crate) tabs: Tabs<View>,
@@ -33,12 +33,12 @@ pub(crate) struct App {
 
 impl App {
     /// Constructs a new `App`, given a `path` to a dot format DAG.
-    pub(crate) fn new(path: &str) -> Result<App> {
+    pub(crate) fn new(path: &str) -> DotViewerResult<App> {
         let quit = false;
 
         let mode = Mode::Main(MainMode::Navigate(NavMode::Current));
 
-        let result: Result<Option<String>> = Ok(None);
+        let result: DotViewerResult<Option<String>> = Ok(None);
 
         let graph = parser::parse(path)?;
         let view = View::new(graph.id().clone(), graph);
@@ -54,7 +54,7 @@ impl App {
 
     /// Navigate to the currently selected node.
     /// The current node list will be focused on the selected node.
-    pub(crate) fn goto(&mut self) -> Result<Option<String>> {
+    pub(crate) fn goto(&mut self) -> DotViewerResult<Option<String>> {
         let id = self.selected_id();
 
         id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
@@ -66,7 +66,7 @@ impl App {
     /// Apply prefix filter on the current view.
     /// Based on the currently typed input, it applies a prefix filter on the current view,
     /// and opens a new tab with the filtered view.
-    pub(crate) fn filter(&mut self) -> Result<Option<String>> {
+    pub(crate) fn filter(&mut self) -> DotViewerResult<Option<String>> {
         let view_current = self.tabs.selected();
         let view_new = view_current.filter(&self.input.key())?;
         self.tabs.open(view_new);
@@ -77,7 +77,7 @@ impl App {
     /// Extract a subgraph from the current view.
     /// When a subgraph id is selected in the subgraph tree,
     /// it opens a new tab containing only the selected subgraph.
-    pub(crate) fn subgraph(&mut self) -> Result<Option<String>> {
+    pub(crate) fn subgraph(&mut self) -> DotViewerResult<Option<String>> {
         let view_current = self.tabs.selected();
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
@@ -87,7 +87,7 @@ impl App {
 
     /// Export a neigbor graph from the currently selected node to dot,
     /// given the neighbor depth by `0-9` keybindings.
-    pub(crate) fn neighbors(&mut self, depth: usize) -> Result<Option<String>> {
+    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<Option<String>> {
         let view = self.tabs.selected();
         let graph = &view.graph;
         let node = &view.current_id().unwrap();
@@ -107,7 +107,7 @@ impl App {
     }
 
     /// Export the current view to dot.
-    pub(crate) fn export(&mut self) -> Result<Option<String>> {
+    pub(crate) fn export(&mut self) -> DotViewerResult<Option<String>> {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
@@ -117,7 +117,7 @@ impl App {
     }
 
     /// Launch `xdot.py`, coming from `x` keybinding.
-    pub(crate) fn xdot(&mut self) -> Result<Option<String>> {
+    pub(crate) fn xdot(&mut self) -> DotViewerResult<Option<String>> {
         if !std::path::Path::new("./exports/current.dot").exists() {
             return Err(DotViewerError::XdotError);
         }
@@ -167,7 +167,7 @@ impl App {
     }
 }
 
-fn write_graph(filename: String, graph: &Graph) -> Result<Option<String>> {
+fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<Option<String>> {
     std::fs::create_dir_all("./exports")?;
     let mut file_export = std::fs::OpenOptions::new()
         .write(true)

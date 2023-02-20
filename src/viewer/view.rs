@@ -1,5 +1,5 @@
 use crate::viewer::{
-    error::{DotViewerError, DotViewerResult as Result},
+    error::{DotViewerError, DotViewerResult},
     utils::{List, Tree, Trie},
 };
 use dot_graph::Graph;
@@ -63,7 +63,7 @@ impl View {
 
     /// Navigate to the currently selected node with `id`.
     /// The current node list will be focused on the selected node.
-    pub(crate) fn goto(&mut self, id: &str) -> Result<Option<String>> {
+    pub(crate) fn goto(&mut self, id: &str) -> DotViewerResult<Option<String>> {
         let idx = self.current.find(id.to_string());
 
         idx.map_or(Err(DotViewerError::ViewerError(format!("no such node {:?}", id))), |idx| {
@@ -76,7 +76,7 @@ impl View {
 
     /// Apply prefix filter on the view given prefix `key`.
     /// Returns `Ok` with a new `View` if the prefix yields a valid subgraph.
-    pub(crate) fn filter(&mut self, prefix: &str) -> Result<View> {
+    pub(crate) fn filter(&mut self, prefix: &str) -> DotViewerResult<View> {
         let graph = self.graph.filter(prefix);
 
         if graph.is_empty() {
@@ -89,7 +89,7 @@ impl View {
 
     /// Extract a subgraph from the view.
     /// Returns `Ok` with a new `View` if the selected subgraph id is valid.
-    pub(crate) fn subgraph(&mut self) -> Result<View> {
+    pub(crate) fn subgraph(&mut self) -> DotViewerResult<View> {
         self.subtree.selected().map_or(
             Err(DotViewerError::ViewerError("no subgraph selected".to_string())),
             |key| {
@@ -114,7 +114,7 @@ impl View {
     }
 
     /// Update prevs and nexts lists based on the selected current node.
-    pub(crate) fn update_adjacent(&mut self) -> Result<()> {
+    pub(crate) fn update_adjacent(&mut self) -> DotViewerResult<()> {
         let id = self.current_id().unwrap();
 
         let prevs = self.graph.froms(&id)?.iter().map(|n| n.to_string()).collect();
