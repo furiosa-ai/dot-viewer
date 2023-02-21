@@ -1,5 +1,5 @@
 use crate::ui::{centered_rect, surrounding_block};
-use crate::viewer::{App, PopupMode};
+use crate::viewer::{App, Mode, PopupMode};
 
 use tui::{
     backend::Backend,
@@ -13,14 +13,16 @@ use tui_tree_widget::Tree as TUITree;
 pub(super) fn draw_popup<B: Backend>(
     f: &mut Frame<B>,
     size: Rect,
-    pmode: &PopupMode,
     app: &mut App,
 ) {
     let popup = centered_rect(90, 90, size);
 
-    match pmode {
-        PopupMode::Tree => draw_tree(f, popup, app),
-        PopupMode::Help => draw_help(f, popup, app),
+    match &app.mode {
+        Mode::Popup(pmode) => match pmode {
+            PopupMode::Tree => draw_tree(f, popup, app),
+            PopupMode::Help => draw_help(f, popup, app),
+        }
+        _ => unreachable!(),
     };
 }
 

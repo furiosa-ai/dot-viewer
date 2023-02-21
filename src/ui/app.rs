@@ -21,7 +21,7 @@ pub(crate) fn draw_app<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
     match &app.mode {
         Mode::Normal | Mode::Command | Mode::Search(_) => draw_main(f, size, app),
-        Mode::Popup(pmode) => draw_popup(f, size, &pmode.clone(), app),
+        Mode::Popup(_) => draw_popup(f, size, app),
     }
 }
 
