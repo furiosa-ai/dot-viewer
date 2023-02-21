@@ -3,7 +3,7 @@ use crate::viewer::{
     error::{DotViewerError, DotViewerResult},
     help,
     modes::{Mode, PopupMode, SearchMode},
-    success::SuccessState,
+    success::Success,
     utils::{Input, List, Table, Tabs},
     view::View,
 };
@@ -24,7 +24,7 @@ pub(crate) struct App {
     pub mode: Mode,
 
     /// Result of the last command that was made
-    pub result: DotViewerResult<SuccessState>,
+    pub result: DotViewerResult<Success>,
 
     /// Tabs to be shown in the main screen
     pub tabs: Tabs<View>,
@@ -49,7 +49,7 @@ impl App {
 
         let mode = Mode::Normal;
 
-        let result: DotViewerResult<SuccessState> = Ok(SuccessState::default());
+        let result: DotViewerResult<Success> = Ok(Success::default());
 
         let graph = parser::parse(path)?;
 
@@ -70,25 +70,25 @@ impl App {
     }
 
     /// Parse and execute dot-viewer command
-    pub(crate) fn exec(&mut self) -> DotViewerResult<SuccessState> {
+    pub(crate) fn exec(&mut self) -> DotViewerResult<Success> {
         let command = Command::parse(&self.input.key);
         self.set_normal_mode();
 
         match command {
             Command::Neighbors(neighbors) => neighbors.depth.map_or(
                 Err(DotViewerError::CommandError("No argument supplied for neighbors".to_string())),
-                |depth| self.neighbors(depth).map(|_| SuccessState::default()),
+                |depth| self.neighbors(depth).map(|_| Success::default()),
             ),
             Command::Export(export) => self.export(export.filename),
             Command::Xdot(xdot) => self.xdot(xdot.filename),
-            Command::Filter => self.filter().map(|_| SuccessState::default()),
+            Command::Filter => self.filter().map(|_| Success::default()),
             Command::Help => {
                 self.set_popup_mode(PopupMode::Help);
-                Ok(SuccessState::default())
+                Ok(Success::default())
             }
             Command::Subgraph => {
                 self.set_popup_mode(PopupMode::Tree);
-                Ok(SuccessState::default())
+                Ok(Success::default())
             }
             Command::NoMatch => {
                 let key = &self.input.key;
@@ -170,7 +170,7 @@ impl App {
     }
 
     /// Export the current view to dot.
-    pub(crate) fn export(&mut self, filename: Option<String>) -> DotViewerResult<SuccessState> {
+    pub(crate) fn export(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
@@ -181,7 +181,7 @@ impl App {
     }
 
     /// Launch `xdot.py`, coming from `x` keybinding.
-    pub(crate) fn xdot(&mut self, filename: Option<String>) -> DotViewerResult<SuccessState> {
+    pub(crate) fn xdot(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
         let filename = filename.unwrap_or_else(|| "current.dot".to_string());
         let path = format!("./exports/{filename}");
 
@@ -195,7 +195,7 @@ impl App {
             .arg(&path)
             .spawn();
 
-        xdot.map(|_| SuccessState::XdotSuccess).map_err(|_| DotViewerError::XdotError)
+        xdot.map(|_| Success::XdotSuccess).map_err(|_| DotViewerError::XdotError)
     }
 
     pub(crate) fn set_normal_mode(&mut self) {
@@ -229,7 +229,7 @@ fn valid_filename(filename: &str) -> bool {
     (!filename.contains('/')) && filename.ends_with(".dot")
 }
 
-fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<SuccessState> {
+fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<Success> {
     if !valid_filename(&filename) {
         return Err(DotViewerError::CommandError(format!("invalid dot filename: {filename}")));
     }
@@ -249,5 +249,5 @@ fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<SuccessState>
         .open("./exports/current.dot")?;
     graph.to_dot(&mut file_current)?;
 
-    Ok(SuccessState::ExportSuccess(filename))
+    Ok(Success::ExportSuccess(filename))
 }

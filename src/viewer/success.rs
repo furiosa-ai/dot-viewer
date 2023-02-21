@@ -1,24 +1,25 @@
 use std::fmt;
 
 #[derive(Debug)]
-pub(crate) enum SuccessState {
+#[allow(clippy::enum_variant_names)]
+pub(crate) enum Success {
     ExportSuccess(String),
     XdotSuccess,
     Silent,
 }
 
-impl Default for SuccessState {
-    fn default() -> Self {
-        Self::Silent
+impl Default for Success {
+    fn default() -> Success {
+        Success::Silent
     }
 }
 
-impl fmt::Display for SuccessState {
+impl fmt::Display for Success {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self {
-            Self::ExportSuccess(filename) => write!(f, "successfully exported to {filename}"),
-            Self::XdotSuccess => write!(f, "launched xdot"),
-            Self::Silent => Ok(()),
+            Success::ExportSuccess(filename) => write!(f, "successfully exported to {filename}"),
+            Success::XdotSuccess => write!(f, "launched xdot"),
+            Success::Silent => Ok(()),
         }
     }
 }

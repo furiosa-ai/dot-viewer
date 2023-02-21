@@ -2,7 +2,7 @@ use crate::viewer::{
     app::App,
     error::{DotViewerError, DotViewerResult},
     modes::{Mode, PopupMode, SearchMode},
-    success::SuccessState,
+    success::Success,
     view::{Focus, View},
 };
 
@@ -14,13 +14,13 @@ impl App {
         info!("{:?}", key.code);
 
         self.result = match key.code {
-            KeyCode::Char(c) => self.char(c).map(|_| SuccessState::default()),
+            KeyCode::Char(c) => self.char(c).map(|_| Success::default()),
             KeyCode::Enter => self.enter(),
-            KeyCode::Backspace => self.backspace().map(|_| SuccessState::default()),
-            KeyCode::Esc => self.esc().map(|_| SuccessState::default()),
-            KeyCode::Tab => self.tab().map(|_| SuccessState::default()),
-            KeyCode::BackTab => self.backtab().map(|_| SuccessState::default()),
-            _ => Ok(SuccessState::default()),
+            KeyCode::Backspace => self.backspace().map(|_| Success::default()),
+            KeyCode::Esc => self.esc().map(|_| Success::default()),
+            KeyCode::Tab => self.tab().map(|_| Success::default()),
+            KeyCode::BackTab => self.backtab().map(|_| Success::default()),
+            _ => Ok(Success::default()),
         };
 
         if let Err(err) = &self.result {
@@ -137,20 +137,20 @@ impl App {
         }
     }
 
-    fn enter(&mut self) -> DotViewerResult<SuccessState> {
+    fn enter(&mut self) -> DotViewerResult<Success> {
         match &self.mode {
             Mode::Normal => {
                 let view = self.tabs.selected();
-                view.enter().map(|_| SuccessState::default())
+                view.enter().map(|_| Success::default())
             }
             Mode::Command => self.exec(),
             Mode::Search(_) => {
                 self.set_normal_mode();
-                Ok(SuccessState::default())
+                Ok(Success::default())
             }
             Mode::Popup(pmode) => match pmode {
-                PopupMode::Tree => self.subgraph().map(|_| SuccessState::default()),
-                _ => Ok(SuccessState::default()),
+                PopupMode::Tree => self.subgraph().map(|_| Success::default()),
+                _ => Ok(Success::default()),
             },
         }
     }
