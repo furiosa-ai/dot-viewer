@@ -1,5 +1,5 @@
 use crate::ui::view::draw_view;
-use crate::viewer::{App, MainMode};
+use crate::viewer::App;
 
 use tui::{
     backend::Backend,
@@ -10,12 +10,7 @@ use tui::{
     Frame,
 };
 
-pub(super) fn draw_tabs<B: Backend>(
-    f: &mut Frame<B>,
-    chunk: Rect,
-    mmode: &MainMode,
-    app: &mut App,
-) {
+pub(super) fn draw_tabs<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
@@ -25,7 +20,7 @@ pub(super) fn draw_tabs<B: Backend>(
     draw_nav_bar(f, chunks[0], app);
 
     let view = app.tabs.selected();
-    draw_view(f, chunks[1], mmode, view);
+    draw_view(f, chunks[1], view);
 }
 
 fn draw_nav_bar<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {

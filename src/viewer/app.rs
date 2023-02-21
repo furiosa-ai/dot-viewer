@@ -1,13 +1,16 @@
 use crate::viewer::{
+    command::{Command, CommandTrie},
     error::{DotViewerError, DotViewerResult},
-    help::Help,
-    modes::{InputMode, MainMode, Mode, NavMode, PopupMode},
-    success::SuccessState,
-    utils::{Input, List, Tabs},
+    help,
+    modes::{Mode, PopupMode, SearchMode},
+    success::Success,
+    utils::{Input, List, Table, Tabs},
     view::View,
 };
 
 use dot_graph::{parser, Graph};
+
+use crossterm::event::KeyCode;
 
 /// `App` holds `dot-viewer` application states.
 ///
@@ -21,7 +24,7 @@ pub(crate) struct App {
     pub mode: Mode,
 
     /// Result of the last command that was made
-    pub result: DotViewerResult<SuccessState>,
+    pub result: DotViewerResult<Success>,
 
     /// Tabs to be shown in the main screen
     pub tabs: Tabs<View>,
@@ -29,8 +32,14 @@ pub(crate) struct App {
     /// Input form to be shown in the main screen
     pub input: Input,
 
+    /// Most recent key event
+    pub lookback: Option<KeyCode>,
+
+    /// Autocomplete support for commands
+    pub trie: CommandTrie,
+
     /// Keybinding helps
-    pub help: Help,
+    pub help: Table,
 }
 
 impl App {
@@ -38,46 +47,197 @@ impl App {
     pub(crate) fn new(path: &str) -> DotViewerResult<App> {
         let quit = false;
 
-        let mode = Mode::Main(MainMode::Navigate(NavMode::Current));
+        let mode = Mode::Normal;
 
-        let result: DotViewerResult<SuccessState> = Ok(SuccessState::default());
+        let result: DotViewerResult<Success> = Ok(Success::default());
 
         let graph = parser::parse(path)?;
-        let view = View::new(graph.id().clone(), graph);
+
+        let view = View::new(graph.id().clone(), graph)?;
         let tabs = Tabs::from_iter(vec![view]);
 
         let input = Input::default();
 
-        //let help = HELP.iter().map(|row| row.iter().map(|s| s.to_string()).collect()).collect();
-        let help = Help::new();
+        let lookback = None;
 
-        Ok(App { quit, mode, result, tabs, input, help })
+        let trie = CommandTrie::new();
+
+        let header = help::header();
+        let rows = help::rows();
+        let help = Table::new(header, rows);
+
+        Ok(App { quit, mode, result, tabs, input, lookback, trie, help })
     }
 
-    /// Navigate to the currently selected node.
-    /// The current node list will be focused on the selected node.
-    pub(crate) fn goto(&mut self) -> DotViewerResult<()> {
-        let id = self.selected_id();
+    /// Navigate to the next match.
+    pub(crate) fn goto_next_match(&mut self) -> DotViewerResult<()> {
+        let view = self.tabs.selected();
+        view.matches.next();
+        view.goto_match()
+    }
 
-        if matches!(self.mode, Mode::Main(MainMode::Input(_))) {
-            self.set_nav_mode();
+    /// Navigate to the previous match.
+    pub(crate) fn goto_prev_match(&mut self) -> DotViewerResult<()> {
+        let view = self.tabs.selected();
+        view.matches.previous();
+        view.goto_match()
+    }
+
+    /// Navigate to the first.
+    pub(crate) fn goto_first(&mut self) -> DotViewerResult<()> {
+        if let Some(KeyCode::Char('g')) = self.lookback {
+            let view = self.tabs.selected();
+            view.goto_first()?;
         }
 
-        id.map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
-            let view = self.tabs.selected();
-            view.goto(&id)
-        })
+        Ok(())
     }
 
-    /// Apply prefix filter on the current view.
-    /// Based on the currently typed input, it applies a prefix filter on the current view,
-    /// and opens a new tab with the filtered view.
-    pub(crate) fn filter(&mut self) -> DotViewerResult<()> {
+    /// Navigate to the last.
+    pub(crate) fn goto_last(&mut self) -> DotViewerResult<()> {
+        let view = self.tabs.selected();
+        view.goto_last()
+    }
+
+    /// Update search matches with trie.
+    pub(crate) fn update_search(&mut self) {
+        match &self.mode {
+            Mode::Search(smode) => {
+                let view = self.tabs.selected();
+                let key = &self.input.key;
+
+                match smode {
+                    SearchMode::Fuzzy => view.update_fuzzy(key),
+                    SearchMode::Regex => view.update_regex(key),
+                }
+                view.update_trie();
+
+                // ignore goto errors while updating search matches
+                let _ = view.goto_match();
+            }
+            _ => unreachable!(),
+        }
+    }
+
+    /// Autocomplete user input.
+    pub(crate) fn autocomplete_fuzzy(&mut self) {
+        let view = self.tabs.selected();
+
+        let key = &self.input.key;
+        if let Some(key) = view.autocomplete(key) {
+            view.update_fuzzy(&key);
+            view.update_trie();
+            self.input.set(key);
+        }
+    }
+
+    /// Autocomplete user input.
+    pub(crate) fn autocomplete_regex(&mut self) {
+        let view = self.tabs.selected();
+
+        let key = &self.input.key;
+        if let Some(key) = view.autocomplete(key) {
+            view.update_regex(&key);
+            view.update_trie();
+            self.input.set(key);
+        }
+    }
+
+    /// Autocomplete user input.
+    pub(crate) fn autocomplete_command(&mut self) {
+        let command = Command::parse(&self.input.key);
+
+        if command == Command::NoMatch {
+            self.autocomplete_cmd()
+        }
+    }
+
+    fn autocomplete_cmd(&mut self) {
+        let cmd = &self.input.key;
+        if let Some(cmd) = self.trie.trie_cmd.autocomplete(cmd) {
+            self.input.set(cmd);
+        }
+    }
+
+    /// Parse and execute dot-viewer command
+    pub(crate) fn exec(&mut self) -> DotViewerResult<Success> {
+        let command = Command::parse(&self.input.key);
+
+        match command {
+            Command::Neighbors(neighbors) => neighbors.depth.map_or(
+                Err(DotViewerError::CommandError("No argument supplied for neighbors".to_string())),
+                |depth| self.neighbors(depth).map(|_| Success::default()),
+            ),
+            Command::Export(export) => self.export(export.filename),
+            Command::Xdot(xdot) => self.xdot(xdot.filename),
+            Command::Filter => self.filter().map(|_| Success::default()),
+            Command::Help => {
+                self.set_popup_mode(PopupMode::Help);
+                Ok(Success::default())
+            }
+            Command::Subgraph => {
+                self.set_popup_mode(PopupMode::Tree);
+                Ok(Success::default())
+            }
+            Command::NoMatch => {
+                self.set_normal_mode();
+
+                let key = &self.input.key;
+                Err(DotViewerError::CommandError(format!("No such command {key}")))
+            }
+        }
+    }
+
+    /// Extract a subgraph which is a neighbor graph from the currently selected node,
+    /// with specified depth.
+    /// It opens a new tab with the neighbor graph view.
+    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
-        let view_new = view_current.filter(&self.input.key)?;
+        let view_new = view_current.neighbors(depth)?;
         self.tabs.open(view_new);
 
-        self.set_nav_mode();
+        self.set_normal_mode();
+
+        Ok(())
+    }
+
+    /// Export the current view to dot.
+    pub(crate) fn export(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
+        let viewer = self.tabs.selected();
+        let graph = &viewer.graph;
+
+        let default: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
+        let filename = filename.unwrap_or(format!("{default}.dot"));
+
+        write_graph(filename, graph)
+    }
+
+    /// Launch `xdot.py`.
+    pub(crate) fn xdot(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
+        let filename = filename.unwrap_or_else(|| "current.dot".to_string());
+        let path = format!("./exports/{filename}");
+
+        if !std::path::Path::new("./exports/current.dot").exists() {
+            return Err(DotViewerError::XdotError);
+        }
+
+        let xdot = std::process::Command::new("xdot")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .arg(&path)
+            .spawn();
+
+        xdot.map(|_| Success::XdotSuccess).map_err(|_| DotViewerError::XdotError)
+    }
+
+    /// Apply filter on the current view, based on the current matches.
+    /// Opens a new tab with the filtered view.
+    pub(crate) fn filter(&mut self) -> DotViewerResult<()> {
+        let view_current = self.tabs.selected();
+        let view_new = view_current.filter()?;
+        self.tabs.open(view_new);
+
+        self.set_normal_mode();
 
         Ok(())
     }
@@ -90,97 +250,53 @@ impl App {
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
 
-        self.set_nav_mode();
+        self.set_normal_mode();
 
         Ok(())
     }
 
-    /// Export a neigbor graph from the currently selected node to dot,
-    /// given the neighbor depth by `0-9` keybindings.
-    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<SuccessState> {
-        let view = self.tabs.selected();
-        let graph = &view.graph;
-        let node = &view.current_id();
-
-        let filename = format!("{node}-{depth}");
-
-        let neighbor_graph =
-            graph.neighbors(node, depth).map_err(|e| DotViewerError::ViewerError(e.to_string()))?;
-
-        if neighbor_graph.is_empty() {
-            return Err(DotViewerError::ViewerError("empty graph".to_string()));
-        }
-
-        write_graph(filename, &neighbor_graph)
+    pub(crate) fn set_normal_mode(&mut self) {
+        self.mode = Mode::Normal;
     }
 
-    /// Export the current view to dot.
-    pub(crate) fn export(&mut self) -> DotViewerResult<SuccessState> {
-        let viewer = self.tabs.selected();
-        let graph = &viewer.graph;
-
-        let filename: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
-
-        write_graph(filename, graph)
-    }
-
-    /// Launch `xdot.py`, coming from `x` keybinding.
-    pub(crate) fn xdot(&mut self) -> DotViewerResult<SuccessState> {
-        if !std::path::Path::new("./exports/current.dot").exists() {
-            return Err(DotViewerError::XdotError);
-        }
-
-        let xdot = std::process::Command::new("xdot")
-            .stdout(std::process::Stdio::null())
-            .stderr(std::process::Stdio::null())
-            .arg("./exports/current.dot")
-            .spawn();
-
-        xdot.map(|_| SuccessState::XdotSuccess).map_err(|_| DotViewerError::XdotError)
-    }
-
-    pub(crate) fn set_nav_mode(&mut self) {
-        self.mode = Mode::Main(MainMode::Navigate(NavMode::Current));
+    pub(crate) fn set_command_mode(&mut self) {
         self.input.clear();
+
+        self.mode = Mode::Command;
     }
 
-    pub(crate) fn set_input_mode(&mut self, imode: InputMode) {
-        self.mode = Mode::Main(MainMode::Input(imode));
+    pub(crate) fn set_search_mode(&mut self, smode: SearchMode) {
+        self.input.clear();
+
+        self.mode = Mode::Search(smode);
 
         let view = self.tabs.selected();
 
-        let init = view.current.items.iter().map(|id| (id.clone(), Vec::new()));
-        view.matches = List::from_iter(init);
+        view.matches = List::from_iter(Vec::new());
+        view.prevs = List::from_iter(Vec::new());
+        view.nexts = List::from_iter(Vec::new());
     }
 
     pub(crate) fn set_popup_mode(&mut self, pmode: PopupMode) {
         self.mode = Mode::Popup(pmode);
     }
-
-    pub(crate) fn selected_id(&mut self) -> Option<String> {
-        let viewer = self.tabs.selected();
-
-        match &self.mode {
-            Mode::Main(mmode) => match mmode {
-                MainMode::Navigate(nmode) => match nmode {
-                    NavMode::Current => viewer.current.selected(),
-                    NavMode::Prevs => viewer.prevs.selected(),
-                    NavMode::Nexts => viewer.nexts.selected(),
-                },
-                MainMode::Input(_) => viewer.matches.selected().map(|(id, _)| id),
-            },
-            Mode::Popup(_) => None,
-        }
-    }
 }
 
-fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<SuccessState> {
+fn valid_filename(filename: &str) -> bool {
+    (!filename.contains('/')) && filename.ends_with(".dot")
+}
+
+fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<Success> {
+    if !valid_filename(&filename) {
+        return Err(DotViewerError::CommandError(format!("invalid dot filename: {filename}")));
+    }
+
     std::fs::create_dir_all("./exports")?;
     let mut file_export = std::fs::OpenOptions::new()
         .write(true)
         .truncate(true)
         .create(true)
-        .open(format!("./exports/{filename}.dot"))?;
+        .open(format!("./exports/{filename}"))?;
     graph.to_dot(&mut file_export)?;
 
     let mut file_current = std::fs::OpenOptions::new()
@@ -190,5 +306,5 @@ fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<SuccessState>
         .open("./exports/current.dot")?;
     graph.to_dot(&mut file_current)?;
 
-    Ok(SuccessState::ExportSuccess(filename))
+    Ok(Success::ExportSuccess(filename))
 }

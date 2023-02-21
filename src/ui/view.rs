@@ -1,9 +1,9 @@
 use crate::{
     ui::{surrounding_block, utils::htmlparser},
-    viewer::{InputMode, MainMode, NavMode, SearchMode, View},
+    viewer::{Focus, View},
 };
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 
 use dot_graph::Node;
@@ -11,68 +11,79 @@ use dot_graph::Node;
 use rayon::prelude::*;
 use tui::{
     backend::Backend,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Span, Spans},
-    widgets::{List, ListItem, Paragraph, Wrap},
+    widgets::{Block, List, ListItem, Paragraph, Wrap},
     Frame,
 };
 
-pub(super) fn draw_view<B: Backend>(
-    f: &mut Frame<B>,
-    chunk: Rect,
-    mmode: &MainMode,
-    view: &mut View,
-) {
+pub(super) fn draw_view<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(35), Constraint::Percentage(65)].as_ref())
         .split(chunk);
 
-    draw_left(f, chunks[0], mmode, view);
-    draw_right(f, chunks[1], mmode, view);
+    draw_left(f, chunks[0], view);
+    draw_right(f, chunks[1], view);
 }
 
-fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
-    match &mmode {
-        MainMode::Navigate(_) => draw_current(f, chunk, mmode, view),
-        MainMode::Input(imode) => draw_matches(f, chunk, imode, view),
+fn draw_left<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
+    if view.matches.items.is_empty() {
+        draw_current(f, chunk, view);
+    } else {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Percentage(99), Constraint::Percentage(1)].as_ref())
+            .split(chunk);
+
+        draw_current(f, chunks[0], view);
+        draw_match(f, chunks[1], view);
     }
 }
 
-fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
-    match &mmode {
-        MainMode::Navigate(_) => {
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-                .split(chunk);
+fn draw_right<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .split(chunk);
 
-            draw_adjacent(f, chunks[0], mmode, view);
-            draw_metadata(f, chunks[1], mmode, view);
-        }
-        MainMode::Input(_) => draw_metadata(f, chunk, mmode, view),
-    }
+    draw_adjacent(f, chunks[0], view);
+    draw_metadata(f, chunks[1], view);
 }
 
-fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let progress = view.progress_current();
     let title = format!("Nodes {progress}");
-    let block = surrounding_block(title, *mmode == MainMode::Navigate(NavMode::Current));
+    let block = surrounding_block(title, view.focus == Focus::Current);
 
     let froms: HashSet<&String> = HashSet::from_iter(&view.prevs.items);
     let tos: HashSet<&String> = HashSet::from_iter(&view.nexts.items);
+    let mut matches = HashMap::new();
+    for (idx, highlight) in &view.matches.items {
+        matches.insert(*idx, highlight);
+    }
 
     let list: Vec<ListItem> = view
         .current
         .items
         .par_iter()
-        .map(|id| {
-            let mut item = ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]);
+        .enumerate()
+        .map(|(idx, id)| {
+            let mut spans: Vec<Span> = id.chars().map(|c| Span::raw(c.to_string())).collect();
+            if let Some(&highlight) = matches.get(&idx) {
+                for &idx in highlight {
+                    spans[idx].style =
+                        Style::default().bg(Color::Rgb(120, 120, 120)).add_modifier(Modifier::BOLD);
+                }
+            }
+
+            let mut item = ListItem::new(Spans(spans));
+
             if froms.contains(&id) {
-                item = item.style(Style::default().fg(Color::Red));
+                item = item.style(Style::default().fg(Color::Rgb(255, 150, 150)));
             } else if tos.contains(&id) {
-                item = item.style(Style::default().fg(Color::Blue));
+                item = item.style(Style::default().fg(Color::Rgb(150, 150, 255)));
             }
 
             item
@@ -87,19 +98,25 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, vie
     f.render_stateful_widget(list, chunk, &mut view.current.state);
 }
 
-fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+fn draw_match<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
+    let title = if view.matches.items.is_empty() { String::new() } else { view.progress_matches() };
+    let block = Block::default().title(title).title_alignment(Alignment::Right);
+
+    f.render_widget(block, chunk);
+}
+
+fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
 
-    draw_prevs(f, chunks[0], mmode, view);
-    draw_nexts(f, chunks[1], mmode, view);
+    draw_prevs(f, chunks[0], view);
+    draw_nexts(f, chunks[1], view);
 }
 
-fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
-    let block =
-        surrounding_block("Prev Nodes".to_string(), *mmode == MainMode::Navigate(NavMode::Prevs));
+fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
+    let block = surrounding_block("Prev Nodes".to_string(), view.focus == Focus::Prev);
 
     let list: Vec<ListItem> = view
         .prevs
@@ -116,9 +133,8 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view:
     f.render_stateful_widget(list, chunk, &mut view.prevs.state);
 }
 
-fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
-    let block =
-        surrounding_block("Next Nodes".to_string(), *mmode == MainMode::Navigate(NavMode::Nexts));
+fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
+    let block = surrounding_block("Next Nodes".to_string(), view.focus == Focus::Next);
 
     let list: Vec<ListItem> = view
         .nexts
@@ -135,77 +151,43 @@ fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view:
     f.render_stateful_widget(list, chunk, &mut view.nexts.state);
 }
 
-fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, mmode: &MainMode, view: &mut View) {
+fn draw_metadata<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let block = surrounding_block("Attrs".to_string(), false);
 
-    let id = match mmode {
-        MainMode::Navigate(_) => Some(view.current_id()),
-        MainMode::Input(_) => view.matched_id(),
-    };
+    let id = view.current_id();
+    let node = view.graph.search_node(&id).unwrap();
 
-    if let Some(id) = id {
-        let node = view.graph.search_node(&id).unwrap();
-        let paragraph =
-            Paragraph::new(pretty_metadata(node)).block(block).wrap(Wrap { trim: true });
+    let paragraph = Paragraph::new(pretty_metadata(node)).block(block).wrap(Wrap { trim: true });
 
-        f.render_widget(paragraph, chunk);
-    } else {
-        f.render_widget(block, chunk);
-    }
-}
-
-fn draw_matches<B: Backend>(f: &mut Frame<B>, chunk: Rect, input: &InputMode, view: &mut View) {
-    let title = match input {
-        InputMode::Search(smode) => match smode {
-            SearchMode::Fuzzy => "Fuzzy Searching...".to_string(),
-            SearchMode::Regex => "Regex Searching...".to_string(),
-        },
-        InputMode::Filter => "Filtering...".to_string(),
-    };
-    let progress = view.progress_matches();
-    let title = format!("{title} {progress}");
-    let block = surrounding_block(title, true);
-
-    let list: Vec<ListItem> = view
-        .matches
-        .items
-        .par_iter()
-        .map(|(id, highlight)| {
-            let mut spans: Vec<Span> = id.chars().map(|c| Span::raw(c.to_string())).collect();
-            for &idx in highlight {
-                spans[idx].style = Style::default().bg(Color::Black).add_modifier(Modifier::BOLD);
-            }
-
-            ListItem::new(Spans(spans))
-        })
-        .collect();
-
-    let list = List::new(list)
-        .block(block)
-        .highlight_style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
-        .highlight_symbol("> ");
-
-    f.render_stateful_widget(list, chunk, &mut view.matches.state);
+    f.render_widget(paragraph, chunk);
 }
 
 fn pretty_metadata(node: &Node) -> String {
     let mut metadata = String::new();
 
-    writeln!(metadata, "[{}]", node.id()).unwrap();
+    let id = node.id();
+    writeln!(metadata, "[{id}]").unwrap();
     writeln!(metadata).unwrap();
 
     let empty = String::new();
-    let attrs = node.attrs().get("label").unwrap_or(&empty);
-    let attrs = htmlparser::parse(attrs);
+    let attrs = node.attrs();
+    let attrs_label = attrs.get("label").unwrap_or(&empty);
+    let attrs_label = htmlparser::parse(attrs_label);
 
-    for attr in attrs {
-        if attr.starts_with("Input") {
-            continue;
+    if attrs.is_empty() {
+        for (key, value) in attrs {
+            writeln!(metadata, "{key} : {value}").unwrap();
         }
+    } else {
+        for attr in attrs_label {
+            if attr.starts_with("Input") {
+                continue;
+            }
 
-        let vals = attr.split("\\l");
-        for val in vals {
-            writeln!(metadata, "{}", val).unwrap();
+            let vals = attr.split("\\l");
+            for val in vals {
+                writeln!(metadata, "{val}").unwrap();
+            }
         }
     }
 

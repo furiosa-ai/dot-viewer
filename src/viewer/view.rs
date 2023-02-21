@@ -9,7 +9,7 @@ use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use rayon::prelude::*;
 use regex::Regex;
 
-type Matcher = fn(&str, &str, &Graph) -> Option<(String, Vec<usize>)>;
+type Matcher = fn(&str, &str, &Graph) -> Option<Vec<usize>>;
 
 /// `View` holds a "view" of the graph that `dot-viewer` is dealing with.
 ///
@@ -22,16 +22,19 @@ pub(crate) struct View {
     /// Graph that the view is representing (a portion of the original graph)
     pub graph: Graph,
 
+    /// Current focus
+    pub focus: Focus,
     /// Topologically sorted list of all nodes in the view
     pub current: List<String>,
-
     /// List of previous nodes of the currently selected node
     pub prevs: List<String>,
     /// List of next nodes of the currently selected node
     pub nexts: List<String>,
 
+    /// Keyword for match
+    pub key: String,
     /// List of matching nodes given some input, with highlight index
-    pub matches: List<(String, Vec<usize>)>,
+    pub matches: List<(usize, Vec<usize>)>,
 
     /// Trie for user input autocompletion
     pub trie: Trie,
@@ -40,26 +43,84 @@ pub(crate) struct View {
     pub subtree: Tree,
 }
 
+#[derive(PartialEq)]
+pub(crate) enum Focus {
+    Current,
+    Prev,
+    Next,
+}
+
 impl View {
     /// Constructs a new `View`, given a `title` and a `graph`, which is a portion of the original
     /// graph.
-    pub(crate) fn new(title: String, graph: Graph) -> View {
-        let node_ids: Vec<String> = graph.topsort().iter().map(|&id| id.clone()).collect();
+    pub(crate) fn new(title: String, graph: Graph) -> DotViewerResult<View> {
+        let node_ids: Vec<String> = graph.topsort()?.par_iter().map(|&id| id.clone()).collect();
 
         let trie = Trie::new(&node_ids);
 
+        let focus = Focus::Current;
         let current = List::from_iter(node_ids);
         let prevs = List::from_iter(Vec::new());
         let nexts = List::from_iter(Vec::new());
+
+        let key = String::new();
         let matches = List::from_iter(Vec::new());
 
         let subtree = Tree::from_graph(&graph);
 
-        let mut view = View { title, graph, current, prevs, nexts, matches, trie, subtree };
+        let mut view =
+            View { title, graph, focus, current, prevs, nexts, key, matches, trie, subtree };
 
         view.update_adjacent().expect("there is always a selected current node on initialization");
 
-        view
+        Ok(view)
+    }
+
+    /// Navigate to the first node in focused list.
+    pub(super) fn goto_first(&mut self) -> DotViewerResult<()> {
+        match &self.focus {
+            Focus::Current => {
+                self.current.first();
+                self.update_adjacent()?
+            }
+            Focus::Prev => self.prevs.first(),
+            Focus::Next => self.nexts.first(),
+        }
+
+        Ok(())
+    }
+
+    /// Navigate to the last node in focused list.
+    pub(super) fn goto_last(&mut self) -> DotViewerResult<()> {
+        match &self.focus {
+            Focus::Current => {
+                self.current.last();
+                self.update_adjacent()?
+            }
+            Focus::Prev => self.prevs.last(),
+            Focus::Next => self.nexts.last(),
+        }
+
+        Ok(())
+    }
+
+    /// Navigate to the selected adjacent node.
+    pub(crate) fn goto_adjacent(&mut self) -> DotViewerResult<()> {
+        let err = Err(DotViewerError::ViewerError("no node selected".to_string()));
+
+        match &self.focus {
+            Focus::Prev => self.prevs.selected().map_or(err, |id| self.goto(&id)),
+            Focus::Next => self.nexts.selected().map_or(err, |id| self.goto(&id)),
+            _ => err,
+        }
+    }
+
+    /// Navigate to the matched node.
+    pub(crate) fn goto_match(&mut self) -> DotViewerResult<()> {
+        self.matched_id()
+            .map_or(Err(DotViewerError::ViewerError("no node selected".to_string())), |id| {
+                self.goto(&id)
+            })
     }
 
     /// Navigate to the currently selected node with `id`.
@@ -78,16 +139,17 @@ impl View {
 
     /// Apply prefix filter on the view given prefix `key`.
     /// Returns `Ok` with a new `View` if the prefix yields a valid subgraph.
-    pub(crate) fn filter(&mut self, prefix: &str) -> DotViewerResult<View> {
-        let graph = self.graph.filter(prefix);
+    pub(crate) fn filter(&mut self) -> DotViewerResult<View> {
+        let node_ids: Vec<&String> =
+            self.matches.items.iter().map(|(idx, _)| &self.current.items[*idx]).collect();
+        let graph = self.graph.filter(&node_ids);
 
         if graph.is_empty() {
-            return Err(DotViewerError::ViewerError(format!("no match for prefix {prefix}")));
+            let key = &self.key;
+            return Err(DotViewerError::ViewerError(format!("no match for keyword {key}")));
         }
 
-        let title = &self.title;
-        let view = Self::new(format!("{title} - {prefix}"), graph);
-        Ok(view)
+        Self::new(format!("{} - {}", self.title, self.key), graph)
     }
 
     /// Extract a subgraph from the view.
@@ -106,9 +168,21 @@ impl View {
         }
 
         let title = &self.title;
-        let view = Self::new(format!("{title} - {key}"), subgraph);
+        Self::new(format!("{title} - {key}"), subgraph)
+    }
 
-        Ok(view)
+    /// Get neighbors graph from the selected id in the view.
+    /// Returns `Ok` with a new `View` if the depth is valid.
+    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<View> {
+        let id = self.current_id();
+        let graph = self.graph.neighbors(&id, depth)?;
+
+        if graph.is_empty() {
+            return Err(DotViewerError::ViewerError("cannot define a neighbors graph".to_string()));
+        }
+
+        let title = &self.title;
+        Self::new(format!("{title} - neighbors-{id}-{depth}"), graph)
     }
 
     /// Autocomplete a given keyword, coming from `tab` keybinding.
@@ -133,9 +207,15 @@ impl View {
 
     /// Update matches based on the given matching function `match` with input `key`.
     fn update_matches(&mut self, matcher: Matcher, key: &str) {
-        let matches: Vec<(String, Vec<usize>)> =
-            self.current.items.par_iter().filter_map(|id| matcher(id, key, &self.graph)).collect();
+        let matches: Vec<(usize, Vec<usize>)> = self
+            .current
+            .items
+            .par_iter()
+            .enumerate()
+            .filter_map(|(idx, id)| matcher(id, key, &self.graph).map(|highlight| (idx, highlight)))
+            .collect();
 
+        self.key = key.to_string();
         self.matches = List::from_iter(matches);
     }
 
@@ -151,14 +231,14 @@ impl View {
         self.update_matches(match_regex, key);
     }
 
-    /// Update matches in prefix filter mode.
-    pub(crate) fn update_filter(&mut self, key: &str) {
-        self.update_matches(match_prefix, key);
-    }
-
     /// Update trie based on the current matches.
     pub(crate) fn update_trie(&mut self) {
-        let nodes: Vec<String> = self.matches.items.par_iter().map(|(id, _)| id.clone()).collect();
+        let nodes: Vec<String> = self
+            .matches
+            .items
+            .par_iter()
+            .map(|(idx, _)| self.current.items[*idx].clone())
+            .collect();
         self.trie = Trie::new(&nodes);
     }
 
@@ -167,7 +247,7 @@ impl View {
     }
 
     pub(crate) fn matched_id(&self) -> Option<String> {
-        self.matches.selected().map(|(item, _)| item)
+        self.matches.selected().map(|(idx, _)| self.current.items[idx].clone())
     }
 
     pub(crate) fn progress_current(&self) -> String {
@@ -179,24 +259,21 @@ impl View {
     }
 
     pub(crate) fn progress_matches(&self) -> String {
-        if let Some(idx) = self.matches.state.selected() {
-            let len = self.matches.items.len();
-            let percentage = (idx as f32 / len as f32) * 100_f32;
+        let idx = self.matches.state.selected().unwrap();
+        let len = self.matches.items.len();
+        let percentage = (idx as f32 / len as f32) * 100_f32;
 
-            format!("[{} / {} ({:.3}%)]", idx + 1, len, percentage)
-        } else {
-            "No Match...".to_string()
-        }
+        format!("[{} / {} ({:.3}%)]", idx + 1, len, percentage)
     }
 }
 
-fn match_fuzzy(id: &str, key: &str, _graph: &Graph) -> Option<(String, Vec<usize>)> {
+fn match_fuzzy(id: &str, key: &str, _graph: &Graph) -> Option<Vec<usize>> {
     let matcher = SkimMatcherV2::default();
 
-    matcher.fuzzy_indices(id, key).map(|(_, idxs)| (id.to_string(), idxs))
+    matcher.fuzzy_indices(id, key).map(|(_, idxs)| idxs)
 }
 
-fn match_regex(id: &str, key: &str, graph: &Graph) -> Option<(String, Vec<usize>)> {
+fn match_regex(id: &str, key: &str, graph: &Graph) -> Option<Vec<usize>> {
     if let Ok(matcher) = Regex::new(key) {
         let node = graph.search_node(&id.to_string()).unwrap();
 
@@ -204,13 +281,9 @@ fn match_regex(id: &str, key: &str, graph: &Graph) -> Option<(String, Vec<usize>
         node.to_dot(0, &mut buffer).expect("to_dot should succeed");
         let raw = std::str::from_utf8(&buffer).unwrap();
 
-        matcher.is_match(raw).then_some((id.to_string(), Vec::new()))
+        let highlight: Vec<usize> = (0..id.len()).collect();
+        matcher.is_match(raw).then_some(highlight)
     } else {
         None
     }
-}
-
-fn match_prefix(id: &str, key: &str, _graph: &Graph) -> Option<(String, Vec<usize>)> {
-    let highlight: Vec<usize> = (0..key.len()).collect();
-    id.starts_with(key).then_some((id.to_string(), highlight))
 }

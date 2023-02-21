@@ -1,4 +1,5 @@
 mod app;
+mod command;
 mod error;
 mod help;
 mod keybindings;
@@ -9,6 +10,6 @@ mod view;
 
 pub(crate) use crate::viewer::{
     app::App,
-    modes::{InputMode, MainMode, Mode, NavMode, PopupMode, SearchMode},
-    view::View,
+    modes::{Mode, PopupMode, SearchMode},
+    view::{Focus, View},
 };

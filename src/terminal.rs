@@ -15,6 +15,7 @@ use tui::{
 };
 
 pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
+    // setup terminal
     let mut terminal = setup()?;
 
     // create and run app
@@ -25,6 +26,7 @@ pub fn launch(path: String) -> Result<(), Box<dyn Error>> {
     })?;
     let _ = run(&mut terminal, app);
 
+    // restore terminal
     cleanup()?;
 
     Ok(())
@@ -37,6 +39,7 @@ fn setup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> {
     let backend = CrosstermBackend::new(stdout);
     let terminal = Terminal::new(backend)?;
 
+    // setup panic hook to ensure that the terminal is restored even on panics
     setup_panic_hook();
 
     Ok(terminal)

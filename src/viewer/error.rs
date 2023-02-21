@@ -12,12 +12,12 @@ pub enum DotViewerError {
     DotGraphError(#[from] DotGraphError),
     #[error("Err: viewer failed with, `{0}`")]
     ViewerError(String),
+    #[error("Err: `{0}`")]
+    CommandError(String),
     #[error("Err: no keybinding for {0:?}")]
     KeyError(KeyCode),
     #[error(transparent)]
     IOError(#[from] std::io::Error),
     #[error("Err: failed to launch xdot.py")]
     XdotError,
-    #[error("Err: tab manipulation failed with, `{0}`")]
-    TabError(String),
 }

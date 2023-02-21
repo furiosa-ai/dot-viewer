@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::viewer::error::{DotViewerError, DotViewerResult as Result};
+use crate::viewer::error::{DotViewerError, DotViewerResult};
 
 // https://github.com/fdehau/tui-rs/blob/master/examples/tabs.rs
 pub(crate) struct Tabs<T> {
@@ -37,9 +37,9 @@ impl<T> Tabs<T> {
         self.state = self.tabs.len() - 1;
     }
 
-    pub(crate) fn close(&mut self) -> Result<()> {
+    pub(crate) fn close(&mut self) -> DotViewerResult<()> {
         if self.state == 0 {
-            return Err(DotViewerError::TabError("cannot close the first tab".to_string()));
+            return Err(DotViewerError::ViewerError("cannot close the first tab".to_string()));
         }
 
         self.tabs.remove(self.state);

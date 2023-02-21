@@ -1,22 +1,8 @@
 # dot-viewer
-dot debugger in TUI
 
-# 1. Motivations
+`dot-viewer` is a dot-format graph debugger in TUI, inspired by Vim.
 
-커다란 graph를 전부 다 visualize 할 수 없음
-
-- graphviz, xdot, netron와 같은 graph visualizer들이 있지만, node 개수가 수천 개가 넘어가면 rendering 시간이 오래 걸림
-- rendering에 성공한다 하더라도, graph 크기가 너무 커서 직관적으로 보기 어려움
-
-# 2. Overview
-
-커다란 graph를 효율적으로 다루고 디버깅할 수 있는 dot-viewer 툴 구현
-
-- dot format의 전체 graph를 input으로 받아서,
-- TUI로 전체 graph를 탐색하고,
-- (visualize 하기에 충분히 작은) 특정 subgraph만 선택하여 dot format으로 export
-
-# 3. Getting Started
+# 1. Getting Started
 
 ## a. Prerequisites
 
@@ -61,6 +47,14 @@ It is required that [xdot is executable in command-line](https://github.com/jrfo
 $ xdot *.dot
 ```
 
+### iii. Others
+
+Coming from Linux, the followings are necessary for `bindgen` to make bindings to Graphviz.
+```console
+$ sudo apt install build-essentials cmake
+$ sudo apt install clang
+```
+
 ## b. Installation
 
 ### i. Initialize
@@ -82,7 +76,7 @@ $ cargo run --release [path-to-dot-file]
 
 This will open a TUI screen on the terminal.
 
-# 4. Feature Demo
+# 2. Features
 
 With `dot-viewer`, users may
 
@@ -90,53 +84,74 @@ With `dot-viewer`, users may
 - goto next/prev node of the currently selected node
 - fuzzy search on node name
 - regex search on node name and attributes
-  
+ 
 
 **make and export subgraphs** using,
 - subgraph tree selection
-- prefix filtering on node names
+- applying filter on search matches
 - neighboring `n` nodes of the currently selected node
 
 ## Keybindings
 
 ### General
 
+Key | Command | Actions
+--- | --- | ---
+`q` | | quit `dot-viewer`
+. | `:help<CR>` | show help
+`esc` | . | go back to the main screen
+
+### Mode Switches
+
+Key | From | To
+--- | --- | ---
+`esc` | All | Normal
+`/` | Normal | Fuzzy Search
+`r` | Normal | Regex Search
+`:` | Normal | Command
+
+### Normal
+
 Key | Actions
 --- | ---
-`q` | quit
-`?` | show help
-`esc ` | go back to the main screen
-`c` | close the current tab (except for the root tab)
+`c` | close the current tab(view)
+`h/l` | move focus between current, prevs, nexts list
+`j/k` | traverse in focused list
+`n/N` | move between matched nodes
+`tab`/`backtab` | move between tabs
 
-### Navigation
+### Search
+Key | Actions
+--- | ---
+`tab` | autocomplete search keyword
+`enter` | apply search
 
-Key | Mode | Actions
+e.g., in fuzzy search mode, `/g1_s14_t100` and in regex search mode, `r\(H: ., D: .\)`
+
+### Command
+
+Key | Command | Actions
 --- | --- | ---
-`tab`/`backtab` | `Nav` | move between tabs
-`up` | `Nav`/`Search` | traverse the focused node list
-`down` | `Nav`/`Search` | traverse the focused node list
-`right` | `Nav` | move focus between lists (highlighted in yellow borders)
-`left` | `Nav` | move focus between lists (highlighted in yellow borders)
-
-### Mode Switch
-
-Key | Mode | Actions
---- | --- | ---
-`/` | `Nav` | switch to fuzzy `Search` mode (`/[node-id-pattern]`)
-`r` | `Nav` | switch to regex `Search` mode (`r[node-attr-regex]`)
-`f` | `Nav` | switch to prefix `Filter` mode (`f[node-id-prefix]`)
-`s` | `Nav` | switch to subgraph `Popup` mode
-`enter` | `Nav`/`Search` | go to the selected node
---- | `Filter` | apply entered prefix (opens a new tab)
---- | `Subgraph` | extract selected subgraph (opens a new tab)
-
-### Exporting
-
-Key | Mode | Actions
---- | --- | ---
-`e` | `Nav` | export the current tab to dot
-`0-9` | `Nav` | export the subgraph containing neighbors of the current node with given depth
-`x` | `Nav` | launch xdot, showing `./exports/current.dot`
+. | `filter` | apply filter on current matches, opening a new tab(view)
+. | `neighbors [depth]` | get up to `depth` neighbors of the current node in a new tab(view)
+. | `export [(opt) filename]` | export the current tab(view) to dot
+. | `xdot [(opt) filename]` | launch `xdot` with the filename or `exports/current.dot` by default
+. | `subgraph` | open a popup showing subgraph tree
+`enter` | . | execute command
 
 All exported files are saved in `exports` directory in the project root.
+
 Most recently exported file is copied in `exports/current.dot`.
+
+### Subgraph Popup
+
+Key | Actions
+--- | ---
+`h/j/k/l` | traverse the tree
+`enter` | change root to the selected subgraph, opening a new tab(view)
+
+### Help Popup
+
+Key | Actions
+--- | ---
+`h/j/k/l` | traverse help messages
