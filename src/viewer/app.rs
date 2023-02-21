@@ -69,21 +69,21 @@ impl App {
         Ok(App { quit, mode, result, tabs, input, lookback, trie, help })
     }
 
-    /// Navigate to the next match
+    /// Navigate to the next match.
     pub(crate) fn goto_next_match(&mut self) -> DotViewerResult<()> {
         let view = self.tabs.selected();
         view.matches.next();
         view.goto_match()
     }
 
-    /// Navigate to the previous match
+    /// Navigate to the previous match.
     pub(crate) fn goto_prev_match(&mut self) -> DotViewerResult<()> {
         let view = self.tabs.selected();
         view.matches.previous();
         view.goto_match()
     }
 
-    /// Navigate to the first
+    /// Navigate to the first.
     pub(crate) fn goto_first(&mut self) -> DotViewerResult<()> {
         if let Some(KeyCode::Char('g')) = self.lookback {
             let view = self.tabs.selected();
@@ -93,7 +93,7 @@ impl App {
         Ok(())
     }
 
-    /// Navigate to the last
+    /// Navigate to the last.
     pub(crate) fn goto_last(&mut self) -> DotViewerResult<()> {
         let view = self.tabs.selected();
         view.goto_last()
@@ -119,7 +119,7 @@ impl App {
         }
     }
 
-    /// Autocomplete user input
+    /// Autocomplete user input.
     pub(crate) fn autocomplete_fuzzy(&mut self) {
         let view = self.tabs.selected();
 
@@ -131,7 +131,7 @@ impl App {
         }
     }
 
-    /// Autocomplete user input
+    /// Autocomplete user input.
     pub(crate) fn autocomplete_regex(&mut self) {
         let view = self.tabs.selected();
 
@@ -143,7 +143,7 @@ impl App {
         }
     }
 
-    /// Autocomplete user input
+    /// Autocomplete user input.
     pub(crate) fn autocomplete_command(&mut self) {
         let command = Command::parse(&self.input.key);
 
@@ -162,7 +162,6 @@ impl App {
     /// Parse and execute dot-viewer command
     pub(crate) fn exec(&mut self) -> DotViewerResult<Success> {
         let command = Command::parse(&self.input.key);
-        self.set_normal_mode();
 
         match command {
             Command::Neighbors(neighbors) => neighbors.depth.map_or(
