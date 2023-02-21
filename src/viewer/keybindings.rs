@@ -32,11 +32,13 @@ impl App {
 
     fn char(&mut self, c: char) -> DotViewerResult<()> {
         match &self.mode {
-            Mode::Normal => self.char_normal(c),
-            Mode::Command => self.char_command(c),
+            Mode::Normal => self.char_normal(c)?,
+            Mode::Command => self.char_command(c)?,
             Mode::Search(_) => self.char_search(c),
-            Mode::Popup(_) => self.char_popup(c),
-        }
+            Mode::Popup(_) => self.char_popup(c)?,
+        };
+
+        Ok(())
     }
 
     fn char_normal(&mut self, c: char) -> DotViewerResult<()> {
@@ -65,9 +67,9 @@ impl App {
         Ok(())
     }
 
-    fn char_search(&mut self, c: char) -> DotViewerResult<()> {
+    fn char_search(&mut self, c: char) {
         self.input.insert(c);
-        self.update_search()
+        self.update_search();
     }
 
     fn char_popup(&mut self, c: char) -> DotViewerResult<()> {
@@ -129,7 +131,7 @@ impl App {
             Mode::Command => self.input.delete(),
             Mode::Search(_) => {
                 self.input.delete();
-                self.update_search()?
+                self.update_search();
             }
             _ => Err(DotViewerError::KeyError(KeyCode::Backspace))?,
         };

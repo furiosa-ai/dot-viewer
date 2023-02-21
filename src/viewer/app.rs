@@ -100,7 +100,7 @@ impl App {
     }
 
     /// Update search matches with trie.
-    pub(crate) fn update_search(&mut self) -> DotViewerResult<()> {
+    pub(crate) fn update_search(&mut self) {
         match &self.mode {
             Mode::Search(smode) => {
                 let view = self.tabs.selected();
@@ -112,7 +112,8 @@ impl App {
                 }
                 view.update_trie();
 
-                view.goto_match()
+                // ignore goto errors while updating search matches
+                let _ = view.goto_match();
             }
             _ => unreachable!(),
         }
