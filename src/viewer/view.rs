@@ -76,6 +76,34 @@ impl View {
         Ok(view)
     }
 
+    /// Navigate to the first node in focused list.
+    pub(super) fn goto_first(&mut self) -> DotViewerResult<()> {
+        match &self.focus {
+            Focus::Current => {
+                self.current.first();
+                self.update_adjacent()?
+            }
+            Focus::Prev => self.prevs.first(),
+            Focus::Next => self.nexts.first(),
+        }
+
+        Ok(())
+    }
+
+    /// Navigate to the last node in focused list.
+    pub(super) fn goto_last(&mut self) -> DotViewerResult<()> {
+        match &self.focus {
+            Focus::Current => {
+                self.current.last();
+                self.update_adjacent()?
+            }
+            Focus::Prev => self.prevs.last(),
+            Focus::Next => self.nexts.last(),
+        }
+
+        Ok(())
+    }
+
     /// Navigate to the selected adjacent node.
     pub(crate) fn goto_adjacent(&mut self) -> DotViewerResult<()> {
         let err = Err(DotViewerError::ViewerError("no node selected".to_string()));

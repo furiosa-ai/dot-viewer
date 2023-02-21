@@ -24,7 +24,7 @@ impl App {
         };
 
         if let Err(err) = &self.result {
-            warn!("{}", err);
+            warn!("{err}");
         }
 
         self.lookback = Some(key.code);
@@ -46,30 +46,14 @@ impl App {
             'r' => self.set_search_mode(SearchMode::Regex),
             ':' => self.set_command_mode(),
             'c' => self.tabs.close()?,
-            'n' => {
-                let view = self.tabs.selected();
-                view.matches.next();
-                view.goto_match()?
-            }
-            'N' => {
-                let view = self.tabs.selected();
-                view.matches.previous();
-                view.goto_match()?
-            }
             'h' => self.left()?,
             'j' => self.down()?,
             'k' => self.up()?,
             'l' => self.right()?,
-            'g' => {
-                if let Some(KeyCode::Char('g')) = self.lookback {
-                    let view = self.tabs.selected();
-                    view.first()?;
-                }
-            }
-            'G' => {
-                let view = self.tabs.selected();
-                view.last()?;
-            }
+            'n' => self.goto_next_match()?,
+            'N' => self.goto_prev_match()?,
+            'g' => self.goto_first()?,
+            'G' => self.goto_last()?,
             _ => Err(DotViewerError::KeyError(KeyCode::Char(c)))?,
         };
 
@@ -83,22 +67,7 @@ impl App {
 
     fn char_search(&mut self, c: char) -> DotViewerResult<()> {
         self.input.insert(c);
-
-        match &self.mode {
-            Mode::Search(smode) => {
-                let view = self.tabs.selected();
-                let key = &self.input.key;
-
-                match smode {
-                    SearchMode::Fuzzy => view.update_fuzzy(key),
-                    SearchMode::Regex => view.update_regex(key),
-                }
-                view.update_trie();
-
-                view.goto_match()
-            }
-            _ => unreachable!(),
-        }
+        self.update_search()
     }
 
     fn char_popup(&mut self, c: char) -> DotViewerResult<()> {
@@ -158,17 +127,9 @@ impl App {
     fn backspace(&mut self) -> DotViewerResult<()> {
         match &self.mode {
             Mode::Command => self.input.delete(),
-            Mode::Search(smode) => {
+            Mode::Search(_) => {
                 self.input.delete();
-
-                let view = self.tabs.selected();
-                let key = &self.input.key;
-
-                match smode {
-                    SearchMode::Fuzzy => view.update_fuzzy(key),
-                    SearchMode::Regex => view.update_regex(key),
-                };
-                view.update_trie()
+                self.update_search()?
             }
             _ => Err(DotViewerError::KeyError(KeyCode::Backspace))?,
         };
@@ -323,31 +284,5 @@ impl View {
             Focus::Prev => Focus::Current,
             Focus::Next => Focus::Prev,
         };
-    }
-
-    pub(super) fn first(&mut self) -> DotViewerResult<()> {
-        match &self.focus {
-            Focus::Current => {
-                self.current.first();
-                self.update_adjacent()?
-            }
-            Focus::Prev => self.prevs.first(),
-            Focus::Next => self.nexts.first(),
-        }
-
-        Ok(())
-    }
-
-    pub(super) fn last(&mut self) -> DotViewerResult<()> {
-        match &self.focus {
-            Focus::Current => {
-                self.current.last();
-                self.update_adjacent()?
-            }
-            Focus::Prev => self.prevs.last(),
-            Focus::Next => self.nexts.last(),
-        }
-
-        Ok(())
     }
 }

@@ -32,20 +32,24 @@ pub(crate) struct CommandTrie {
     pub(crate) _trie_arg: Trie,
 }
 
+fn subcommands() -> [ClapCommand; 6] {
+    [
+        ClapCommand::new("neighbors")
+            .arg(Arg::new("depth").value_parser(clap::value_parser!(usize))),
+        ClapCommand::new("export").arg(Arg::new("filename")),
+        ClapCommand::new("xdot").arg(Arg::new("filename")),
+        ClapCommand::new("filter"),
+        ClapCommand::new("help"),
+        ClapCommand::new("subgraph"),
+    ]
+}
+
 fn commands() -> ClapCommand {
     ClapCommand::new("dot-viewer")
         .multicall(true)
         .disable_help_subcommand(true)
         .subcommand_required(true)
-        .subcommand(
-            ClapCommand::new("neighbors")
-                .arg(Arg::new("depth").value_parser(clap::value_parser!(usize))),
-        )
-        .subcommand(ClapCommand::new("export").arg(Arg::new("filename")))
-        .subcommand(ClapCommand::new("xdot").arg(Arg::new("filename")))
-        .subcommand(ClapCommand::new("filter"))
-        .subcommand(ClapCommand::new("help"))
-        .subcommand(ClapCommand::new("subgraph"))
+        .subcommands(subcommands())
 }
 
 impl Command {
@@ -84,9 +88,7 @@ impl Command {
 
 impl CommandTrie {
     pub(crate) fn new() -> CommandTrie {
-        let cmds = ["neighbors", "export", "xdot", "filter", "help", "subgraph"]
-            .map(String::from)
-            .to_vec();
+        let cmds: Vec<String> = subcommands().iter().map(|c| c.get_name().to_string()).collect();
         let trie_cmd = Trie::new(&cmds);
 
         let empty = Vec::new();

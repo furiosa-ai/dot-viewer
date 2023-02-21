@@ -69,31 +69,52 @@ impl App {
         Ok(App { quit, mode, result, tabs, input, lookback, trie, help })
     }
 
-    /// Parse and execute dot-viewer command
-    pub(crate) fn exec(&mut self) -> DotViewerResult<Success> {
-        let command = Command::parse(&self.input.key);
-        self.set_normal_mode();
+    /// Navigate to the next match
+    pub(crate) fn goto_next_match(&mut self) -> DotViewerResult<()> {
+        let view = self.tabs.selected();
+        view.matches.next();
+        view.goto_match()
+    }
 
-        match command {
-            Command::Neighbors(neighbors) => neighbors.depth.map_or(
-                Err(DotViewerError::CommandError("No argument supplied for neighbors".to_string())),
-                |depth| self.neighbors(depth).map(|_| Success::default()),
-            ),
-            Command::Export(export) => self.export(export.filename),
-            Command::Xdot(xdot) => self.xdot(xdot.filename),
-            Command::Filter => self.filter().map(|_| Success::default()),
-            Command::Help => {
-                self.set_popup_mode(PopupMode::Help);
-                Ok(Success::default())
-            }
-            Command::Subgraph => {
-                self.set_popup_mode(PopupMode::Tree);
-                Ok(Success::default())
-            }
-            Command::NoMatch => {
+    /// Navigate to the previous match
+    pub(crate) fn goto_prev_match(&mut self) -> DotViewerResult<()> {
+        let view = self.tabs.selected();
+        view.matches.previous();
+        view.goto_match()
+    }
+
+    /// Navigate to the first
+    pub(crate) fn goto_first(&mut self) -> DotViewerResult<()> {
+        if let Some(KeyCode::Char('g')) = self.lookback {
+            let view = self.tabs.selected();
+            view.goto_first()?;
+        }
+
+        Ok(())
+    }
+
+    /// Navigate to the last
+    pub(crate) fn goto_last(&mut self) -> DotViewerResult<()> {
+        let view = self.tabs.selected();
+        view.goto_last()
+    }
+
+    /// Update search matches with trie.
+    pub(crate) fn update_search(&mut self) -> DotViewerResult<()> {
+        match &self.mode {
+            Mode::Search(smode) => {
+                let view = self.tabs.selected();
                 let key = &self.input.key;
-                Err(DotViewerError::CommandError(format!("No such command {key}")))
+
+                match smode {
+                    SearchMode::Fuzzy => view.update_fuzzy(key),
+                    SearchMode::Regex => view.update_regex(key),
+                }
+                view.update_trie();
+
+                view.goto_match()
             }
+            _ => unreachable!(),
         }
     }
 
@@ -137,9 +158,36 @@ impl App {
         }
     }
 
-    /// Apply prefix filter on the current view.
-    /// Based on the currently typed input, it applies a prefix filter on the current view,
-    /// and opens a new tab with the filtered view.
+    /// Parse and execute dot-viewer command
+    pub(crate) fn exec(&mut self) -> DotViewerResult<Success> {
+        let command = Command::parse(&self.input.key);
+        self.set_normal_mode();
+
+        match command {
+            Command::Neighbors(neighbors) => neighbors.depth.map_or(
+                Err(DotViewerError::CommandError("No argument supplied for neighbors".to_string())),
+                |depth| self.neighbors(depth).map(|_| Success::default()),
+            ),
+            Command::Export(export) => self.export(export.filename),
+            Command::Xdot(xdot) => self.xdot(xdot.filename),
+            Command::Filter => self.filter().map(|_| Success::default()),
+            Command::Help => {
+                self.set_popup_mode(PopupMode::Help);
+                Ok(Success::default())
+            }
+            Command::Subgraph => {
+                self.set_popup_mode(PopupMode::Tree);
+                Ok(Success::default())
+            }
+            Command::NoMatch => {
+                let key = &self.input.key;
+                Err(DotViewerError::CommandError(format!("No such command {key}")))
+            }
+        }
+    }
+
+    /// Apply filter on the current view, based on the current matches.
+    /// Opens a new tab with the filtered view.
     pub(crate) fn filter(&mut self) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
         let view_new = view_current.filter()?;
@@ -159,8 +207,9 @@ impl App {
         Ok(())
     }
 
-    /// Export a neigbor graph from the currently selected node to dot,
-    /// given the neighbor depth by `0-9` keybindings.
+    /// Extract a subgraph which is a neighbor graph from the currently selected node,
+    /// with specified depth.
+    /// It opens a new tab with the neighbor graph view.
     pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
         let view_new = view_current.neighbors(depth)?;
@@ -175,12 +224,12 @@ impl App {
         let graph = &viewer.graph;
 
         let default: String = viewer.title.chars().filter(|c| !c.is_whitespace()).collect();
-        let filename = filename.unwrap_or(format!("{}.dot", default));
+        let filename = filename.unwrap_or(format!("{default}.dot"));
 
         write_graph(filename, graph)
     }
 
-    /// Launch `xdot.py`, coming from `x` keybinding.
+    /// Launch `xdot.py`.
     pub(crate) fn xdot(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
         let filename = filename.unwrap_or_else(|| "current.dot".to_string());
         let path = format!("./exports/{filename}");
