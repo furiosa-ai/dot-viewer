@@ -194,11 +194,13 @@ impl View {
     pub fn update_adjacent(&mut self) -> DotViewerResult<()> {
         let id = self.current_id();
 
-        let prevs = self.graph.froms(&id)?;
+        let mut prevs = Vec::from_iter(self.graph.froms(&id)?);
+        prevs.sort_unstable();
         let prevs = prevs.iter().map(|n| n.to_string());
         self.prevs = List::from_iter(prevs);
 
-        let nexts = self.graph.tos(&id)?;
+        let mut nexts = Vec::from_iter(self.graph.tos(&id)?);
+        nexts.sort_unstable();
         let nexts = nexts.iter().map(|n| n.to_string());
         self.nexts = List::from_iter(nexts);
 
