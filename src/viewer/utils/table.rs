@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use tui::widgets::TableState;
 
 pub(crate) struct Table {
@@ -7,12 +8,17 @@ pub(crate) struct Table {
 }
 
 impl Table {
-    pub fn new(header: Vec<String>, rows: Vec<Vec<String>>) -> Table {
+    pub fn new(header: &[&str], rows: &[&[&str]]) -> Table {
         let mut state = TableState::default();
 
         if !rows.is_empty() {
             state.select(Some(0));
         }
+
+        let header: Vec<String> = header.par_iter().map(|s| s.to_string()).collect();
+
+        let rows: Vec<Vec<String>> =
+            rows.par_iter().map(|row| row.par_iter().map(|s| s.to_string()).collect()).collect();
 
         Table { state, header, rows }
     }

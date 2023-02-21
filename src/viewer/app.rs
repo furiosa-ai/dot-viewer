@@ -62,9 +62,7 @@ impl App {
 
         let trie = CommandTrie::new();
 
-        let header = help::header();
-        let rows = help::rows();
-        let help = Table::new(header, rows);
+        let help = Table::new(help::HEADER, help::ROWS);
 
         Ok(App { quit, mode, result, tabs, input, lookback, trie, help })
     }
