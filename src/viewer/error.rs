@@ -20,6 +20,4 @@ pub enum DotViewerError {
     IOError(#[from] std::io::Error),
     #[error("Err: failed to launch xdot.py")]
     XdotError,
-    #[error("Err: tab manipulation failed with, `{0}`")]
-    TabError(String),
 }

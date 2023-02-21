@@ -254,7 +254,7 @@ impl App {
         self.set_normal_mode();
 
         Ok(())
-    } 
+    }
 
     pub(crate) fn set_normal_mode(&mut self) {
         self.mode = Mode::Normal;
