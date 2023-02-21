@@ -10,18 +10,14 @@ use tui::{
 };
 use tui_tree_widget::Tree as TUITree;
 
-pub(super) fn draw_popup<B: Backend>(
-    f: &mut Frame<B>,
-    size: Rect,
-    app: &mut App,
-) {
+pub(super) fn draw_popup<B: Backend>(f: &mut Frame<B>, size: Rect, app: &mut App) {
     let popup = centered_rect(90, 90, size);
 
     match &app.mode {
         Mode::Popup(pmode) => match pmode {
             PopupMode::Tree => draw_tree(f, popup, app),
             PopupMode::Help => draw_help(f, popup, app),
-        }
+        },
         _ => unreachable!(),
     };
 }
