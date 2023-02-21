@@ -47,6 +47,14 @@ It is required that [xdot is executable in command-line](https://github.com/jrfo
 $ xdot *.dot
 ```
 
+### iii. Others
+
+Coming from Linux, the followings are necessary for `bindgen` to make bindings to Graphviz.
+```console
+$ sudo apt install build-essentials cmake
+$ sudo apt install clang
+```
+
 ## b. Installation
 
 ### i. Initialize
@@ -91,7 +99,7 @@ Key | Command | Actions
 --- | --- | ---
 `q` | | quit `dot-viewer`
 . | `:help<CR>` | show help
-`esc` | | go back to the main screen
+`esc` | . | go back to the main screen
 
 ### Mode Switches
 
@@ -109,6 +117,7 @@ Key | Actions
 `c` | close the current tab(view)
 `h/l` | move focus between current, prevs, nexts list
 `j/k` | traverse in focused list
+`n/N` | move between matched nodes
 `tab`/`backtab` | move between tabs
 
 ### Search
@@ -130,6 +139,10 @@ Key | Command | Actions
 . | `subgraph` | open a popup showing subgraph tree
 `enter` | . | execute command
 
+All exported files are saved in `exports` directory in the project root.
+
+Most recently exported file is copied in `exports/current.dot`.
+
 ### Subgraph Popup
 
 Key | Actions
@@ -137,5 +150,8 @@ Key | Actions
 `h/j/k/l` | traverse the tree
 `enter` | change root to the selected subgraph, opening a new tab(view)
 
-All exported files are saved in `exports` directory in the project root.
-Most recently exported file is copied in `exports/current.dot`.
+### Help Popup
+
+Key | Actions
+--- | ---
+`h/j/k/l` | traverse help messages
