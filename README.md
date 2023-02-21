@@ -24,6 +24,12 @@ Coming from Linux,
 $ sudo apt install graphviz-dev
 ```
 
+And coming from vanilla Ubuntu, you may want to install these too.
+```console
+$ sudo apt install build-essentials cmake
+$ sudo apt install clang
+```
+
 Coming from Mac,
 ```console
 $ brew install graphviz
@@ -45,14 +51,6 @@ Or, try building from the source code following the [guide](https://graphviz.org
 It is required that [xdot is executable in command-line](https://github.com/jrfonseca/xdot.py) beforehand such that the following works.
 ```console
 $ xdot *.dot
-```
-
-### iii. Others
-
-Coming from Linux, the followings are necessary for `bindgen` to make bindings to Graphviz.
-```console
-$ sudo apt install build-essentials cmake
-$ sudo apt install clang
 ```
 
 ## b. Installation
