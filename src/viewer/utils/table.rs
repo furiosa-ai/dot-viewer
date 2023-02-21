@@ -8,7 +8,11 @@ pub(crate) struct Table {
 
 impl Table {
     pub(crate) fn new(header: Vec<String>, rows: Vec<Vec<String>>) -> Table {
-        let state = TableState::default();
+        let mut state = TableState::default();
+
+        if !rows.is_empty() {
+            state.select(Some(0));
+        }
 
         Table { state, header, rows }
     }

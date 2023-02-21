@@ -181,31 +181,12 @@ impl App {
                 Ok(Success::default())
             }
             Command::NoMatch => {
+                self.set_normal_mode();
+
                 let key = &self.input.key;
                 Err(DotViewerError::CommandError(format!("No such command {key}")))
             }
         }
-    }
-
-    /// Apply filter on the current view, based on the current matches.
-    /// Opens a new tab with the filtered view.
-    pub(crate) fn filter(&mut self) -> DotViewerResult<()> {
-        let view_current = self.tabs.selected();
-        let view_new = view_current.filter()?;
-        self.tabs.open(view_new);
-
-        Ok(())
-    }
-
-    /// Extract a subgraph from the current view.
-    /// When a subgraph id is selected in the subgraph tree,
-    /// it opens a new tab containing only the selected subgraph.
-    pub(crate) fn subgraph(&mut self) -> DotViewerResult<()> {
-        let view_current = self.tabs.selected();
-        let view_new = view_current.subgraph()?;
-        self.tabs.open(view_new);
-
-        Ok(())
     }
 
     /// Extract a subgraph which is a neighbor graph from the currently selected node,
@@ -215,6 +196,8 @@ impl App {
         let view_current = self.tabs.selected();
         let view_new = view_current.neighbors(depth)?;
         self.tabs.open(view_new);
+
+        self.set_normal_mode();
 
         Ok(())
     }
@@ -247,6 +230,31 @@ impl App {
 
         xdot.map(|_| Success::XdotSuccess).map_err(|_| DotViewerError::XdotError)
     }
+
+    /// Apply filter on the current view, based on the current matches.
+    /// Opens a new tab with the filtered view.
+    pub(crate) fn filter(&mut self) -> DotViewerResult<()> {
+        let view_current = self.tabs.selected();
+        let view_new = view_current.filter()?;
+        self.tabs.open(view_new);
+
+        self.set_normal_mode();
+
+        Ok(())
+    }
+
+    /// Extract a subgraph from the current view.
+    /// When a subgraph id is selected in the subgraph tree,
+    /// it opens a new tab containing only the selected subgraph.
+    pub(crate) fn subgraph(&mut self) -> DotViewerResult<()> {
+        let view_current = self.tabs.selected();
+        let view_new = view_current.subgraph()?;
+        self.tabs.open(view_new);
+
+        self.set_normal_mode();
+
+        Ok(())
+    } 
 
     pub(crate) fn set_normal_mode(&mut self) {
         self.mode = Mode::Normal;
