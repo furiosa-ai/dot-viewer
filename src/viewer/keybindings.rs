@@ -241,14 +241,14 @@ impl App {
 }
 
 impl View {
-    pub(super) fn enter(&mut self) -> DotViewerResult<()> {
+    pub fn enter(&mut self) -> DotViewerResult<()> {
         match &self.focus {
             Focus::Prev | Focus::Next => self.goto_adjacent(),
             Focus::Current => Ok(()),
         }
     }
 
-    pub(super) fn up(&mut self) -> DotViewerResult<()> {
+    pub fn up(&mut self) -> DotViewerResult<()> {
         match &self.focus {
             Focus::Current => {
                 self.current.previous();
@@ -261,7 +261,7 @@ impl View {
         Ok(())
     }
 
-    pub(super) fn down(&mut self) -> DotViewerResult<()> {
+    pub fn down(&mut self) -> DotViewerResult<()> {
         match &self.focus {
             Focus::Current => {
                 self.current.next();
@@ -274,7 +274,7 @@ impl View {
         Ok(())
     }
 
-    pub(super) fn right(&mut self) {
+    pub fn right(&mut self) {
         self.focus = match &self.focus {
             Focus::Current => Focus::Prev,
             Focus::Prev => Focus::Next,
@@ -282,7 +282,7 @@ impl View {
         };
     }
 
-    pub(super) fn left(&mut self) {
+    pub fn left(&mut self) {
         self.focus = match &self.focus {
             Focus::Current => Focus::Next,
             Focus::Prev => Focus::Current,

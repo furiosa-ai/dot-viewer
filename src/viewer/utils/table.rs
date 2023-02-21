@@ -7,7 +7,7 @@ pub(crate) struct Table {
 }
 
 impl Table {
-    pub(crate) fn new(header: Vec<String>, rows: Vec<Vec<String>>) -> Table {
+    pub fn new(header: Vec<String>, rows: Vec<Vec<String>>) -> Table {
         let mut state = TableState::default();
 
         if !rows.is_empty() {
@@ -17,7 +17,7 @@ impl Table {
         Table { state, header, rows }
     }
 
-    pub(crate) fn next(&mut self) {
+    pub fn next(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
                 if i >= self.rows.len() - 1 {
@@ -31,7 +31,7 @@ impl Table {
         self.state.select(Some(i));
     }
 
-    pub(crate) fn previous(&mut self) {
+    pub fn previous(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {

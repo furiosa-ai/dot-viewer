@@ -44,7 +44,7 @@ pub(crate) struct App {
 
 impl App {
     /// Constructs a new `App`, given a `path` to a dot format DAG.
-    pub(crate) fn new(path: &str) -> DotViewerResult<App> {
+    pub fn new(path: &str) -> DotViewerResult<App> {
         let quit = false;
 
         let mode = Mode::Normal;
@@ -70,21 +70,21 @@ impl App {
     }
 
     /// Navigate to the next match.
-    pub(crate) fn goto_next_match(&mut self) -> DotViewerResult<()> {
+    pub fn goto_next_match(&mut self) -> DotViewerResult<()> {
         let view = self.tabs.selected();
         view.matches.next();
         view.goto_match()
     }
 
     /// Navigate to the previous match.
-    pub(crate) fn goto_prev_match(&mut self) -> DotViewerResult<()> {
+    pub fn goto_prev_match(&mut self) -> DotViewerResult<()> {
         let view = self.tabs.selected();
         view.matches.previous();
         view.goto_match()
     }
 
     /// Navigate to the first.
-    pub(crate) fn goto_first(&mut self) -> DotViewerResult<()> {
+    pub fn goto_first(&mut self) -> DotViewerResult<()> {
         if let Some(KeyCode::Char('g')) = self.lookback {
             let view = self.tabs.selected();
             view.goto_first()?;
@@ -94,13 +94,13 @@ impl App {
     }
 
     /// Navigate to the last.
-    pub(crate) fn goto_last(&mut self) -> DotViewerResult<()> {
+    pub fn goto_last(&mut self) -> DotViewerResult<()> {
         let view = self.tabs.selected();
         view.goto_last()
     }
 
     /// Update search matches with trie.
-    pub(crate) fn update_search(&mut self) {
+    pub fn update_search(&mut self) {
         match &self.mode {
             Mode::Search(smode) => {
                 let view = self.tabs.selected();
@@ -120,7 +120,7 @@ impl App {
     }
 
     /// Autocomplete user input.
-    pub(crate) fn autocomplete_fuzzy(&mut self) {
+    pub fn autocomplete_fuzzy(&mut self) {
         let view = self.tabs.selected();
 
         let key = &self.input.key;
@@ -132,7 +132,7 @@ impl App {
     }
 
     /// Autocomplete user input.
-    pub(crate) fn autocomplete_regex(&mut self) {
+    pub fn autocomplete_regex(&mut self) {
         let view = self.tabs.selected();
 
         let key = &self.input.key;
@@ -144,7 +144,7 @@ impl App {
     }
 
     /// Autocomplete user input.
-    pub(crate) fn autocomplete_command(&mut self) {
+    pub fn autocomplete_command(&mut self) {
         let command = Command::parse(&self.input.key);
 
         if command == Command::NoMatch {
@@ -160,7 +160,7 @@ impl App {
     }
 
     /// Parse and execute dot-viewer command
-    pub(crate) fn exec(&mut self) -> DotViewerResult<Success> {
+    pub fn exec(&mut self) -> DotViewerResult<Success> {
         let command = Command::parse(&self.input.key);
 
         match command {
@@ -191,7 +191,7 @@ impl App {
     /// Extract a subgraph which is a neighbor graph from the currently selected node,
     /// with specified depth.
     /// It opens a new tab with the neighbor graph view.
-    pub(crate) fn neighbors(&mut self, depth: usize) -> DotViewerResult<()> {
+    pub fn neighbors(&mut self, depth: usize) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
         let view_new = view_current.neighbors(depth)?;
         self.tabs.open(view_new);
@@ -202,7 +202,7 @@ impl App {
     }
 
     /// Export the current view to dot.
-    pub(crate) fn export(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
+    pub fn export(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
@@ -213,7 +213,7 @@ impl App {
     }
 
     /// Launch `xdot.py`.
-    pub(crate) fn xdot(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
+    pub fn xdot(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
         let filename = filename.unwrap_or_else(|| "current.dot".to_string());
         let path = format!("./exports/{filename}");
 
@@ -232,7 +232,7 @@ impl App {
 
     /// Apply filter on the current view, based on the current matches.
     /// Opens a new tab with the filtered view.
-    pub(crate) fn filter(&mut self) -> DotViewerResult<()> {
+    pub fn filter(&mut self) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
         let view_new = view_current.filter()?;
         self.tabs.open(view_new);
@@ -245,7 +245,7 @@ impl App {
     /// Extract a subgraph from the current view.
     /// When a subgraph id is selected in the subgraph tree,
     /// it opens a new tab containing only the selected subgraph.
-    pub(crate) fn subgraph(&mut self) -> DotViewerResult<()> {
+    pub fn subgraph(&mut self) -> DotViewerResult<()> {
         let view_current = self.tabs.selected();
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
@@ -255,17 +255,17 @@ impl App {
         Ok(())
     }
 
-    pub(crate) fn set_normal_mode(&mut self) {
+    pub fn set_normal_mode(&mut self) {
         self.mode = Mode::Normal;
     }
 
-    pub(crate) fn set_command_mode(&mut self) {
+    pub fn set_command_mode(&mut self) {
         self.input.clear();
 
         self.mode = Mode::Command;
     }
 
-    pub(crate) fn set_search_mode(&mut self, smode: SearchMode) {
+    pub fn set_search_mode(&mut self, smode: SearchMode) {
         self.input.clear();
 
         self.mode = Mode::Search(smode);
@@ -277,7 +277,7 @@ impl App {
         view.nexts = List::from_iter(Vec::new());
     }
 
-    pub(crate) fn set_popup_mode(&mut self, pmode: PopupMode) {
+    pub fn set_popup_mode(&mut self, pmode: PopupMode) {
         self.mode = Mode::Popup(pmode);
     }
 }

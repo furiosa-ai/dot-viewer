@@ -24,7 +24,7 @@ impl<T: Clone + Eq> std::iter::FromIterator<T> for List<T> {
 }
 
 impl<T: Clone + Eq> List<T> {
-    pub(crate) fn next(&mut self) {
+    pub fn next(&mut self) {
         if !self.items.is_empty() {
             let i = match self.state.selected() {
                 Some(i) => {
@@ -40,7 +40,7 @@ impl<T: Clone + Eq> List<T> {
         }
     }
 
-    pub(crate) fn previous(&mut self) {
+    pub fn previous(&mut self) {
         if !self.items.is_empty() {
             let i = match self.state.selected() {
                 Some(i) => {
@@ -56,29 +56,29 @@ impl<T: Clone + Eq> List<T> {
         }
     }
 
-    pub(crate) fn first(&mut self) {
+    pub fn first(&mut self) {
         if !self.items.is_empty() {
             self.state.select(Some(0));
         }
     }
 
-    pub(crate) fn last(&mut self) {
+    pub fn last(&mut self) {
         if !self.items.is_empty() {
             self.state.select(Some(self.items.len() - 1));
         }
     }
 
-    pub(crate) fn select(&mut self, idx: usize) {
+    pub fn select(&mut self, idx: usize) {
         if idx < self.items.len() {
             self.state.select(Some(idx));
         }
     }
 
-    pub(crate) fn selected(&self) -> Option<T> {
+    pub fn selected(&self) -> Option<T> {
         self.state.selected().map(|i| self.items[i].clone())
     }
 
-    pub(crate) fn find(&self, key: T) -> Option<usize> {
+    pub fn find(&self, key: T) -> Option<usize> {
         self.items.iter().position(|item| *item == key)
     }
 }

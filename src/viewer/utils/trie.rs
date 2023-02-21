@@ -10,7 +10,7 @@ pub(crate) struct Trie {
 }
 
 impl Trie {
-    pub(crate) fn new(ids: &[String]) -> Trie {
+    pub fn new(ids: &[String]) -> Trie {
         let items = ids.to_vec();
 
         let mut builder = TrieBuilder::new();
@@ -22,7 +22,7 @@ impl Trie {
         Trie { items, trie }
     }
 
-    pub(crate) fn autocomplete(&self, key: &str) -> Option<String> {
+    pub fn autocomplete(&self, key: &str) -> Option<String> {
         let predictions = if key.is_empty() { self.items.clone() } else { self.predict(key) };
 
         Self::longest_common_prefix(&predictions)

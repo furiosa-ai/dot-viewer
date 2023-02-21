@@ -19,7 +19,7 @@ pub(crate) struct Tree {
 }
 
 impl Tree {
-    pub(crate) fn from_graph(graph: &Graph) -> Self {
+    pub fn from_graph(graph: &Graph) -> Self {
         let root = graph.search_subgraph(graph.id()).unwrap().id();
 
         let item = to_item(root, graph);
@@ -38,7 +38,7 @@ impl Tree {
         tree
     }
 
-    pub(crate) fn selected(&self) -> Option<String> {
+    pub fn selected(&self) -> Option<String> {
         let mut idxs = self.state.selected();
 
         if idxs.is_empty() {
@@ -54,31 +54,31 @@ impl Tree {
         Some(node.id.clone())
     }
 
-    pub(crate) fn first(&mut self) {
+    pub fn first(&mut self) {
         self.state.select_first();
     }
 
-    pub(crate) fn last(&mut self) {
+    pub fn last(&mut self) {
         self.state.select_last(&self.tree);
     }
 
-    pub(crate) fn down(&mut self) {
+    pub fn down(&mut self) {
         self.state.key_down(&self.tree);
     }
 
-    pub(crate) fn up(&mut self) {
+    pub fn up(&mut self) {
         self.state.key_up(&self.tree);
     }
 
-    pub(crate) fn left(&mut self) {
+    pub fn left(&mut self) {
         self.state.key_left();
     }
 
-    pub(crate) fn right(&mut self) {
+    pub fn right(&mut self) {
         self.state.key_right();
     }
 
-    pub(crate) fn toggle(&mut self) {
+    pub fn toggle(&mut self) {
         self.state.toggle_selected();
     }
 }

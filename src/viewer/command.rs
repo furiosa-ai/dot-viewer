@@ -53,7 +53,7 @@ fn commands() -> ClapCommand {
 }
 
 impl Command {
-    pub(crate) fn parse(input: &str) -> Command {
+    pub fn parse(input: &str) -> Command {
         let inputs: Vec<&str> = input.split_whitespace().collect();
 
         match commands().try_get_matches_from(inputs) {
@@ -87,7 +87,7 @@ impl Command {
 }
 
 impl CommandTrie {
-    pub(crate) fn new() -> CommandTrie {
+    pub fn new() -> CommandTrie {
         let cmds: Vec<String> = subcommands().iter().map(|c| c.get_name().to_string()).collect();
         let trie_cmd = Trie::new(&cmds);
 
