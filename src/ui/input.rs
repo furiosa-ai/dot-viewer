@@ -33,19 +33,19 @@ pub(super) fn draw_input<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut Ap
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(chunk);
 
-    draw_error(f, chunks[0], app);
+    draw_result(f, chunks[0], app);
     draw_form(f, chunks[1], app);
 }
 
-fn draw_error<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
-    let msg = match &app.result {
-        Ok(succ) => succ.to_string(),
-        Err(err) => err.to_string(),
+fn draw_result<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
+    let (msg, color) = match &app.result {
+        Ok(succ) => (succ.to_string(), Color::Green),
+        Err(err) => (err.to_string(), Color::Red),
     };
 
     if !msg.is_empty() {
         let msg =
-            Paragraph::new(msg).style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD));
+            Paragraph::new(msg).style(Style::default().fg(color).add_modifier(Modifier::BOLD));
         f.render_widget(msg, chunk);
     }
 }
