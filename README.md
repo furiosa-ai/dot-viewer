@@ -96,8 +96,8 @@ With `dot-viewer`, users may
 Key | Command | Actions
 --- | --- | ---
 `q` | | quit `dot-viewer`
-. | `:help<CR>` | show help
-`esc` | . | go back to the main screen
+ &nbsp; | `:help<CR>` | show help
+`esc` | &nbsp; | go back to the main screen
 
 ### Mode Switches
 
@@ -116,6 +116,8 @@ Key | Actions
 `h/l` | move focus between current, prevs, nexts list
 `j/k` | traverse in focused list
 `n/N` | move between matched nodes
+`gg` | move to the topmost node in focused list
+`G` | move to the bottom node in focused list
 `tab`/`backtab` | move between tabs
 
 ### Search
@@ -130,12 +132,13 @@ e.g., in fuzzy search mode, `/g1_s14_t100` and in regex search mode, `r\(H: ., D
 
 Key | Command | Actions
 --- | --- | ---
-. | `filter` | apply filter on current matches, opening a new tab(view)
-. | `neighbors [depth]` | get up to `depth` neighbors of the current node in a new tab(view)
-. | `export [(opt) filename]` | export the current tab(view) to dot
-. | `xdot [(opt) filename]` | launch `xdot` with the filename or `exports/current.dot` by default
-. | `subgraph` | open a popup showing subgraph tree
-`enter` | . | execute command
+&nbsp; | `filter` | apply filter on current matches, opening a new tab(view)
+&nbsp; | `neighbors [depth]` | get up to `depth` neighbors of the current node in a new tab(view)
+&nbsp; | `export [(opt) filename]` | export the current tab(view) to dot
+&nbsp; | `xdot [(opt) filename]` | launch `xdot` with the filename or `exports/current.dot` by default
+&nbsp; | `subgraph` | open a popup showing subgraph tree
+`tab` | &nbsp; | autocomplete command
+`enter` | &nbsp; | execute command
 
 All exported files are saved in `exports` directory in the project root.
 
