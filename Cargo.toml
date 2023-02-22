@@ -1,6 +1,12 @@
 [package]
 name = "dot-viewer"
 version = "0.1.0"
+authors = ["Jaehyun Lee <jaehyun.lee@furiosa.ai>"]
+description = "A viewer/debugger for large DAGs in Vim-like TUI"
+readme = "README.md"
+keywords = ["graph", "dag", "dot", "visualize", "tui"]
+license = "MIT"
+repository = "https://github.com/furiosa-ai/dot-viewer"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

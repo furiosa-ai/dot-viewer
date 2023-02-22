@@ -13,7 +13,7 @@ pub(crate) fn draw_app<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
     let block = Block::default()
         .borders(Borders::ALL)
-        .title("Dot Viewer (Dev)")
+        .title("Dot-Viewer (v0.1.0)")
         .title_alignment(Alignment::Center)
         .border_type(BorderType::Rounded);
 
