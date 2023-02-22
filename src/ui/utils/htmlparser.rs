@@ -3,10 +3,7 @@ use html_parser::{Dom, Element, Node};
 pub fn parse(html: &str) -> Vec<String> {
     let dom = Dom::parse(html);
 
-    match dom {
-        Ok(dom) => parse_dom(dom),
-        Err(_) => Vec::new(),
-    }
+    dom.map(parse_dom).unwrap_or_default()
 }
 
 fn parse_dom(dom: Dom) -> Vec<String> {
