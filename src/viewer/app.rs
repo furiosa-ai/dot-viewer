@@ -8,6 +8,8 @@ use crate::viewer::{
     view::View,
 };
 
+use std::fs;
+
 use dot_graph::{parser, Graph};
 
 use crossterm::event::KeyCode;
@@ -293,19 +295,18 @@ fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<Success> {
         return Err(DotViewerError::CommandError(format!("invalid dot filename: {filename}")));
     }
 
-    std::fs::create_dir_all("./exports")?;
-    let mut file_export = std::fs::OpenOptions::new()
+    let mut open_options = fs::OpenOptions::new();
+    let open_options = open_options 
         .write(true)
         .truncate(true)
-        .create(true)
-        .open(format!("./exports/{filename}"))?;
+        .create(true);
+
+    fs::create_dir_all("./exports")?;
+
+    let mut file_export = open_options.open(format!("./exports/{filename}"))?;
     graph.to_dot(&mut file_export)?;
 
-    let mut file_current = std::fs::OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .create(true)
-        .open("./exports/current.dot")?;
+    let mut file_current = open_options.open("./exports/current.dot")?;
     graph.to_dot(&mut file_current)?;
 
     Ok(Success::ExportSuccess(filename))
