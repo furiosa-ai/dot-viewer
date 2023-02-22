@@ -28,14 +28,11 @@ impl Tree {
         let items = vec![item];
         let tree = vec![tree];
 
-        let mut tree = Self { state: TreeState::default(), items, tree };
+        let mut state = TreeState::default();
+        state.select_first();
+        state.toggle_selected();
 
-        if !tree.tree.is_empty() {
-            tree.first();
-            tree.toggle();
-        }
-
-        tree
+        Self { state, items, tree }
     }
 
     pub fn selected(&self) -> Option<String> {

@@ -18,7 +18,7 @@ impl Table {
         let header: Vec<String> = header.par_iter().map(|s| s.to_string()).collect();
 
         let rows: Vec<Vec<String>> =
-            rows.par_iter().map(|row| row.par_iter().map(|s| s.to_string()).collect()).collect();
+            rows.par_iter().map(|row| row.iter().map(|s| s.to_string()).collect()).collect();
 
         Table { state, header, rows }
     }

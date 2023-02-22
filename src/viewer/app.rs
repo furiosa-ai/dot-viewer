@@ -296,10 +296,7 @@ fn write_graph(filename: String, graph: &Graph) -> DotViewerResult<Success> {
     }
 
     let mut open_options = fs::OpenOptions::new();
-    let open_options = open_options 
-        .write(true)
-        .truncate(true)
-        .create(true);
+    let open_options = open_options.write(true).truncate(true).create(true);
 
     fs::create_dir_all("./exports")?;
 
