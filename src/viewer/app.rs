@@ -46,7 +46,7 @@ pub(crate) struct App {
 
 impl App {
     /// Constructs a new `App`, given a `path` to a dot format DAG.
-    pub fn new(path: &str) -> DotViewerResult<App> {
+    pub fn new(path: &str) -> DotViewerResult<Self> {
         let quit = false;
 
         let mode = Mode::Normal;
@@ -66,7 +66,7 @@ impl App {
 
         let help = Table::new(help::HEADER, help::ROWS);
 
-        Ok(App { quit, mode, result, tabs, input, lookback, trie, help })
+        Ok(Self { quit, mode, result, tabs, input, lookback, trie, help })
     }
 
     /// Navigate to the next match.

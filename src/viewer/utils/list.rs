@@ -11,12 +11,13 @@ pub(crate) struct List<T> {
 impl<T: Clone + Eq> std::iter::FromIterator<T> for List<T> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         let state = ListState::default();
+
         let items = Vec::from_iter(iter);
 
-        let mut list = List { state, items };
+        let mut list = Self { state, items };
 
         if !list.items.is_empty() {
-            list.state.select(Some(0))
+            list.state.select(Some(0));
         }
 
         list

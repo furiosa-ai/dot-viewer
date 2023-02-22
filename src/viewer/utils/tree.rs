@@ -43,12 +43,12 @@ impl Tree {
         }
 
         let idx = idxs.remove(0);
-        let mut node = &self.items[idx];
+        let mut item = &self.items[idx];
         for idx in idxs {
-            node = &node.children[idx];
+            item = &item.children[idx];
         }
 
-        Some(node.id.clone())
+        Some(item.id.clone())
     }
 
     pub fn first(&mut self) {

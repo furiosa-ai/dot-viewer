@@ -53,7 +53,7 @@ pub(crate) enum Focus {
 impl View {
     /// Constructs a new `View`, given a `title` and a `graph`, which is a portion of the original
     /// graph.
-    pub fn new(title: String, graph: Graph) -> DotViewerResult<View> {
+    pub fn new(title: String, graph: Graph) -> DotViewerResult<Self> {
         let node_ids = graph.topsort()?;
         let node_ids = node_ids.iter().map(|&id| id.clone());
 
@@ -70,7 +70,7 @@ impl View {
         let subtree = Tree::from_graph(&graph);
 
         let mut view =
-            View { title, graph, focus, current, prevs, nexts, key, matches, trie, subtree };
+            Self { title, graph, focus, current, prevs, nexts, key, matches, trie, subtree };
 
         view.update_adjacent().expect("there is always a selected current node on initialization");
 

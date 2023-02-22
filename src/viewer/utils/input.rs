@@ -8,8 +8,8 @@ pub(crate) struct Input {
 }
 
 impl Input {
-    pub fn new() -> Input {
-        Input::default()
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn set(&mut self, key: String) {

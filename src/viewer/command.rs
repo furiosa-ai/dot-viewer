@@ -53,7 +53,7 @@ fn commands() -> ClapCommand {
 }
 
 impl Command {
-    pub fn parse(input: &str) -> Command {
+    pub fn parse(input: &str) -> Self {
         let inputs: Vec<&str> = input.split_whitespace().collect();
 
         match commands().try_get_matches_from(inputs) {
@@ -62,26 +62,26 @@ impl Command {
                     let depth = matches.get_one::<usize>("depth").copied();
                     let neigbors = Neighbors { depth };
 
-                    Command::Neighbors(neigbors)
+                    Self::Neighbors(neigbors)
                 }
                 Some(("export", matches)) => {
                     let filename = matches.get_one::<String>("filename").cloned();
                     let export = Export { filename };
 
-                    Command::Export(export)
+                    Self::Export(export)
                 }
                 Some(("xdot", matches)) => {
                     let filename = matches.get_one::<String>("filename").cloned();
                     let xdot = Xdot { filename };
 
-                    Command::Xdot(xdot)
+                    Self::Xdot(xdot)
                 }
-                Some(("filter", _)) => Command::Filter,
-                Some(("help", _)) => Command::Help,
-                Some(("subgraph", _)) => Command::Subgraph,
+                Some(("filter", _)) => Self::Filter,
+                Some(("help", _)) => Self::Help,
+                Some(("subgraph", _)) => Self::Subgraph,
                 _ => unreachable!(),
             },
-            Err(_) => Command::NoMatch,
+            Err(_) => Self::NoMatch,
         }
     }
 }
@@ -92,6 +92,6 @@ impl CommandTrie {
 
         let _trie_arg = Trie::from_iter([]);
 
-        CommandTrie { trie_cmd, _trie_arg }
+        Self { trie_cmd, _trie_arg }
     }
 }

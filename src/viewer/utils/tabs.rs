@@ -13,7 +13,7 @@ impl<T> std::iter::FromIterator<T> for Tabs<T> {
         let state = 0;
         let tabs = Vec::from_iter(iter);
 
-        Tabs { state, tabs }
+        Self { state, tabs }
     }
 }
 

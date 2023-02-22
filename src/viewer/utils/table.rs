@@ -8,7 +8,7 @@ pub(crate) struct Table {
 }
 
 impl Table {
-    pub fn new(header: &[&str], rows: &[&[&str]]) -> Table {
+    pub fn new(header: &[&str], rows: &[&[&str]]) -> Self {
         let mut state = TableState::default();
 
         if !rows.is_empty() {
@@ -20,7 +20,7 @@ impl Table {
         let rows: Vec<Vec<String>> =
             rows.par_iter().map(|row| row.iter().map(|s| s.to_string()).collect()).collect();
 
-        Table { state, header, rows }
+        Self { state, header, rows }
     }
 
     pub fn next(&mut self) {
