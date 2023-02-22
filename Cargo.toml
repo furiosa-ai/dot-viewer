@@ -1,7 +1,7 @@
 [package]
 name = "dot-viewer"
 version = "0.1.0"
-authors = ["Jaehyun Lee <jaehyun.lee@furiosa.ai>"]
+authors = ["FuriosaAI, Inc."]
 description = "A viewer/debugger for large DAGs in Vim-like TUI"
 readme = "README.md"
 keywords = ["graph", "dag", "dot", "visualize", "tui"]
