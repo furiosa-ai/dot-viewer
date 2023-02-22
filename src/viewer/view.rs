@@ -54,9 +54,10 @@ impl View {
     /// Constructs a new `View`, given a `title` and a `graph`, which is a portion of the original
     /// graph.
     pub fn new(title: String, graph: Graph) -> DotViewerResult<View> {
-        let node_ids: Vec<String> = graph.topsort()?.par_iter().map(|&id| id.clone()).collect();
+        let node_ids = graph.topsort()?;
+        let node_ids = node_ids.iter().map(|&id| id.clone());
 
-        let trie = Trie::new(&node_ids);
+        let trie = Trie::from_iter(node_ids.clone());
 
         let focus = Focus::Current;
         let current = List::from_iter(node_ids);
@@ -235,13 +236,8 @@ impl View {
 
     /// Update trie based on the current matches.
     pub fn update_trie(&mut self) {
-        let nodes: Vec<String> = self
-            .matches
-            .items
-            .par_iter()
-            .map(|(idx, _)| self.current.items[*idx].clone())
-            .collect();
-        self.trie = Trie::new(&nodes);
+        let nodes = self.matches.items.iter().map(|(idx, _)| self.current.items[*idx].clone());
+        self.trie = Trie::from_iter(nodes);
     }
 
     pub fn current_id(&self) -> String {

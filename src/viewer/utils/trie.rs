@@ -9,19 +9,22 @@ pub(crate) struct Trie {
     trie: trie_rs::Trie<u8>,
 }
 
-impl Trie {
-    pub fn new(ids: &[String]) -> Trie {
-        let items = ids.to_vec();
-
+impl FromIterator<String> for Trie {
+    fn from_iter<T: IntoIterator<Item = String>>(iter: T) -> Self {
         let mut builder = TrieBuilder::new();
-        for id in ids {
-            builder.push(id.clone());
+
+        let mut items = Vec::new();
+        for id in iter {
+            items.push(id.clone());
+            builder.push(id);
         }
         let trie = builder.build();
 
         Trie { items, trie }
     }
+}
 
+impl Trie {
     pub fn autocomplete(&self, key: &str) -> Option<String> {
         let predictions = if key.is_empty() { self.items.clone() } else { self.predict(key) };
 

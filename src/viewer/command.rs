@@ -88,11 +88,9 @@ impl Command {
 
 impl CommandTrie {
     pub fn new() -> CommandTrie {
-        let cmds: Vec<String> = subcommands().iter().map(|c| c.get_name().to_string()).collect();
-        let trie_cmd = Trie::new(&cmds);
+        let trie_cmd = Trie::from_iter(subcommands().iter().map(|c| c.get_name().to_string()));
 
-        let empty = Vec::new();
-        let _trie_arg = Trie::new(&empty);
+        let _trie_arg = Trie::from_iter([]);
 
         CommandTrie { trie_cmd, _trie_arg }
     }
