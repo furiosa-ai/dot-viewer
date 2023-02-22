@@ -190,17 +190,19 @@ impl App {
     /// with specified depth.
     /// It opens a new tab with the neighbor graph view.
     pub fn neighbors(&mut self, depth: usize) -> DotViewerResult<()> {
+        self.set_normal_mode();
+
         let view_current = self.tabs.selected();
         let view_new = view_current.neighbors(depth)?;
         self.tabs.open(view_new);
-
-        self.set_normal_mode();
 
         Ok(())
     }
 
     /// Export the current view to dot.
     pub fn export(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
+        self.set_normal_mode();
+
         let viewer = self.tabs.selected();
         let graph = &viewer.graph;
 
@@ -212,6 +214,8 @@ impl App {
 
     /// Launch `xdot.py`.
     pub fn xdot(&mut self, filename: Option<String>) -> DotViewerResult<Success> {
+        self.set_normal_mode();
+
         let filename = filename.unwrap_or_else(|| "current.dot".to_string());
         let path = format!("./exports/{filename}");
 
@@ -231,11 +235,11 @@ impl App {
     /// Apply filter on the current view, based on the current matches.
     /// Opens a new tab with the filtered view.
     pub fn filter(&mut self) -> DotViewerResult<()> {
+        self.set_normal_mode();
+
         let view_current = self.tabs.selected();
         let view_new = view_current.filter()?;
         self.tabs.open(view_new);
-
-        self.set_normal_mode();
 
         Ok(())
     }
@@ -244,11 +248,11 @@ impl App {
     /// When a subgraph id is selected in the subgraph tree,
     /// it opens a new tab containing only the selected subgraph.
     pub fn subgraph(&mut self) -> DotViewerResult<()> {
+        self.set_normal_mode();
+
         let view_current = self.tabs.selected();
         let view_new = view_current.subgraph()?;
         self.tabs.open(view_new);
-
-        self.set_normal_mode();
 
         Ok(())
     }
