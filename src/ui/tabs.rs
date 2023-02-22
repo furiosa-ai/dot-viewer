@@ -27,8 +27,7 @@ fn draw_nav_bar<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     let block = Block::default().borders(Borders::ALL).title("Views");
 
     let titles: Vec<String> = app.tabs.tabs.iter().map(|view| view.title.clone()).collect();
-    let titles = titles
-        .iter()
+    let titles = (titles.iter())
         .map(|title| Spans::from(vec![Span::styled(title, Style::default().fg(Color::Yellow))]))
         .collect();
 

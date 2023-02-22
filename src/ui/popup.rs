@@ -46,7 +46,7 @@ fn draw_help<B: Backend>(f: &mut Frame<B>, chunk: Rect, app: &mut App) {
     });
     let header = Row::new(header).height(1).bottom_margin(1);
 
-    let rows = app.help.rows.iter().map(|row| {
+    let rows = (app.help.rows.iter()).map(|row| {
         let row = row.iter().map(|s| Cell::from(s.as_str()));
         Row::new(row).height(1).bottom_margin(1)
     });

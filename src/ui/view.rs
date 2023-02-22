@@ -64,10 +64,7 @@ fn draw_current<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
         matches.insert(*idx, highlight);
     }
 
-    let list: Vec<ListItem> = view
-        .current
-        .items
-        .par_iter()
+    let list: Vec<ListItem> = (view.current.items.par_iter())
         .enumerate()
         .map(|(idx, id)| {
             let mut spans: Vec<Span> = id.chars().map(|c| Span::raw(c.to_string())).collect();
@@ -118,10 +115,7 @@ fn draw_adjacent<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
 fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let block = surrounding_block("Prev Nodes".to_string(), view.focus == Focus::Prev);
 
-    let list: Vec<ListItem> = view
-        .prevs
-        .items
-        .par_iter()
+    let list: Vec<ListItem> = (view.prevs.items.par_iter())
         .map(|id| ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]))
         .collect();
 
@@ -136,10 +130,7 @@ fn draw_prevs<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
 fn draw_nexts<B: Backend>(f: &mut Frame<B>, chunk: Rect, view: &mut View) {
     let block = surrounding_block("Next Nodes".to_string(), view.focus == Focus::Next);
 
-    let list: Vec<ListItem> = view
-        .nexts
-        .items
-        .par_iter()
+    let list: Vec<ListItem> = (view.nexts.items.par_iter())
         .map(|id| ListItem::new(vec![Spans::from(Span::raw(id.as_str()))]))
         .collect();
 

@@ -127,8 +127,7 @@ impl View {
     /// Navigate to the currently selected node with `id`.
     /// The current node list will be focused on the selected node.
     pub fn goto(&mut self, id: &str) -> DotViewerResult<()> {
-        let idx = self
-            .current
+        let idx = (self.current)
             .find(id.to_string())
             .ok_or(DotViewerError::ViewerError(format!("no such node {id:?}")))?;
 
@@ -142,7 +141,7 @@ impl View {
     /// Returns `Ok` with a new `View` if the prefix yields a valid subgraph.
     pub fn filter(&mut self) -> DotViewerResult<View> {
         let node_ids: Vec<&String> =
-            self.matches.items.iter().map(|(idx, _)| &self.current.items[*idx]).collect();
+            (self.matches.items.iter()).map(|(idx, _)| &self.current.items[*idx]).collect();
         let graph = self.graph.filter(&node_ids);
 
         if graph.is_empty() {
@@ -156,8 +155,7 @@ impl View {
     /// Extract a subgraph from the view.
     /// Returns `Ok` with a new `View` if the selected subgraph id is valid.
     pub fn subgraph(&mut self) -> DotViewerResult<View> {
-        let key = self
-            .subtree
+        let key = (self.subtree)
             .selected()
             .ok_or(DotViewerError::ViewerError("no subgraph selected".to_string()))?;
 
@@ -210,10 +208,7 @@ impl View {
 
     /// Update matches based on the given matching function `match` with input `key`.
     fn update_matches(&mut self, matcher: Matcher, key: &str) {
-        let matches: Vec<(usize, Vec<usize>)> = self
-            .current
-            .items
-            .par_iter()
+        let matches: Vec<(usize, Vec<usize>)> = (self.current.items.par_iter())
             .enumerate()
             .filter_map(|(idx, id)| matcher(id, key, &self.graph).map(|highlight| (idx, highlight)))
             .collect();
