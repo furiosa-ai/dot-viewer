@@ -20,6 +20,8 @@ impl App {
             KeyCode::Esc => self.esc().map(|_| Success::default()),
             KeyCode::Tab => self.tab().map(|_| Success::default()),
             KeyCode::BackTab => self.backtab().map(|_| Success::default()),
+            KeyCode::Up => self.up().map(|_| Success::default()),
+            KeyCode::Down => self.down().map(|_| Success::default()),
             KeyCode::Right => self.right().map(|_| Success::default()),
             KeyCode::Left => self.left().map(|_| Success::default()),
             _ => Ok(Success::default()),
