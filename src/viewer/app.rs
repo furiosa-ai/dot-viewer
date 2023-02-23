@@ -10,7 +10,7 @@ use crate::viewer::{
 
 use std::fs;
 
-use dot_graph::{parser, Graph};
+use dot_graph::prelude::*;
 
 use crossterm::event::KeyCode;
 
@@ -53,7 +53,7 @@ impl App {
 
         let result: DotViewerResult<Success> = Ok(Success::default());
 
-        let graph = parser::parse(path)?;
+        let graph = parser::parse_from_file(path)?;
 
         let view = View::new(graph.id().clone(), graph)?;
         let tabs = Tabs::from_iter(vec![view]);

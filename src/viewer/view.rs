@@ -3,7 +3,7 @@ use crate::viewer::{
     utils::{List, Tree, Trie},
 };
 
-use dot_graph::Graph;
+use dot_graph::prelude::*;
 
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use rayon::prelude::*;
