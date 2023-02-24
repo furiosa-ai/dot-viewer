@@ -20,6 +20,8 @@ impl App {
             KeyCode::Esc => self.esc().map(|_| Success::default()),
             KeyCode::Tab => self.tab().map(|_| Success::default()),
             KeyCode::BackTab => self.backtab().map(|_| Success::default()),
+            KeyCode::Up => self.up().map(|_| Success::default()),
+            KeyCode::Down => self.down().map(|_| Success::default()),
             KeyCode::Right => self.right().map(|_| Success::default()),
             KeyCode::Left => self.left().map(|_| Success::default()),
             _ => Ok(Success::default()),
@@ -45,7 +47,6 @@ impl App {
 
     fn char_normal(&mut self, c: char) -> DotViewerResult<()> {
         match c {
-            'q' => self.quit = true,
             '/' => self.set_search_mode(SearchMode::Fuzzy),
             'r' => self.set_search_mode(SearchMode::Regex),
             ':' => self.set_command_mode(),
@@ -86,10 +87,6 @@ impl App {
 
     fn char_tree(&mut self, c: char) -> DotViewerResult<()> {
         match c {
-            'q' => {
-                self.quit = true;
-                Ok(())
-            }
             'h' => self.left(),
             'j' => self.down(),
             'k' => self.up(),
@@ -100,10 +97,6 @@ impl App {
 
     fn char_help(&mut self, c: char) -> DotViewerResult<()> {
         match c {
-            'q' => {
-                self.quit = true;
-                Ok(())
-            }
             'j' => self.down(),
             'k' => self.up(),
             _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),

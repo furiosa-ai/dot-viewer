@@ -6,7 +6,7 @@ use crate::{
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 
-use dot_graph::Node;
+use dot_graph::prelude::*;
 
 use rayon::prelude::*;
 use tui::{
@@ -160,25 +160,34 @@ fn pretty_metadata(node: &Node) -> String {
     writeln!(metadata, "[{id}]").unwrap();
     writeln!(metadata).unwrap();
 
-    let empty = String::new();
     let attrs = node.attrs();
-    let attrs_label = attrs.get("label").unwrap_or(&empty);
-    let attrs_label = htmlparser::parse(attrs_label);
 
-    if attrs.is_empty() {
-        for (key, value) in attrs {
-            writeln!(metadata, "{key} : {value}").unwrap();
+    if let Some(label) = attrs.get("label") {
+        if label.is_html() {
+            let label = htmlparser::parse(label.value());
+
+            for data in label {
+                if data.starts_with("Input") {
+                    continue;
+                }
+
+                let values = data.split("\\l");
+                for value in values {
+                    writeln!(metadata, "{value}").unwrap();
+                }
+            }
+        } else {
+            let values = label.value().split("\\l");
+            for value in values {
+                writeln!(metadata, "{value}").unwrap();
+            }
         }
     } else {
-        for attr in attrs_label {
-            if attr.starts_with("Input") {
-                continue;
-            }
+        for attr in attrs {
+            let key = attr.key();
+            let value = attr.value();
 
-            let vals = attr.split("\\l");
-            for val in vals {
-                writeln!(metadata, "{val}").unwrap();
-            }
+            writeln!(metadata, "{key} : {value}").unwrap();
         }
     }
 

@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use dot_graph::Graph;
+use dot_graph::prelude::*;
 
 use tui_tree_widget::{TreeItem, TreeState};
 

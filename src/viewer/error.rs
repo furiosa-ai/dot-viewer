@@ -1,4 +1,4 @@
-use dot_graph::DotGraphError;
+use dot_graph::prelude::*;
 
 use crossterm::event::KeyCode;
 use thiserror::Error;

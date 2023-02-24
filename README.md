@@ -95,9 +95,11 @@ With `dot-viewer`, users may
 
 Key | Command | Actions
 --- | --- | ---
-`q` | | quit `dot-viewer`
- &nbsp; | `:help<CR>` | show help
+&nbsp; | `:q<C-R>` | quit `dot-viewer`
+&nbsp; | `:help<CR>` | show help
 `esc` | &nbsp; | go back to the main screen
+
+**Hit `esc` to go back to Normal mode whenever you are unsure of what you are doing...**
 
 ### Mode Switches
 
