@@ -179,6 +179,10 @@ impl App {
                 self.set_popup_mode(PopupMode::Tree);
                 Ok(Success::default())
             }
+            Command::Quit => {
+                self.quit = true;
+                Ok(Success::default())
+            }
             Command::NoMatch => {
                 self.set_normal_mode();
 

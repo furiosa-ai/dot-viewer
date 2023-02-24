@@ -47,7 +47,6 @@ impl App {
 
     fn char_normal(&mut self, c: char) -> DotViewerResult<()> {
         match c {
-            'q' => self.quit = true,
             '/' => self.set_search_mode(SearchMode::Fuzzy),
             'r' => self.set_search_mode(SearchMode::Regex),
             ':' => self.set_command_mode(),
@@ -88,10 +87,6 @@ impl App {
 
     fn char_tree(&mut self, c: char) -> DotViewerResult<()> {
         match c {
-            'q' => {
-                self.quit = true;
-                Ok(())
-            }
             'h' => self.left(),
             'j' => self.down(),
             'k' => self.up(),
@@ -102,10 +97,6 @@ impl App {
 
     fn char_help(&mut self, c: char) -> DotViewerResult<()> {
         match c {
-            'q' => {
-                self.quit = true;
-                Ok(())
-            }
             'j' => self.down(),
             'k' => self.up(),
             _ => Err(DotViewerError::KeyError(KeyCode::Char(c))),

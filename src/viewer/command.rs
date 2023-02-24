@@ -9,6 +9,7 @@ pub(crate) enum Command {
     Filter,
     Help,
     Subgraph,
+    Quit,
     NoMatch,
 }
 
@@ -32,7 +33,7 @@ pub(crate) struct CommandTrie {
     pub(crate) _trie_arg: Trie,
 }
 
-fn subcommands() -> [ClapCommand; 6] {
+fn subcommands() -> [ClapCommand; 7] {
     [
         ClapCommand::new("neighbors")
             .arg(Arg::new("depth").value_parser(clap::value_parser!(usize))),
@@ -41,6 +42,7 @@ fn subcommands() -> [ClapCommand; 6] {
         ClapCommand::new("filter"),
         ClapCommand::new("help"),
         ClapCommand::new("subgraph"),
+        ClapCommand::new("q"),
     ]
 }
 
@@ -79,6 +81,7 @@ impl Command {
                 Some(("filter", _)) => Self::Filter,
                 Some(("help", _)) => Self::Help,
                 Some(("subgraph", _)) => Self::Subgraph,
+                Some(("q", _)) => Self::Quit,
                 _ => unreachable!(),
             },
             Err(_) => Self::NoMatch,
