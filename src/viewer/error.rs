@@ -1,4 +1,4 @@
-use dot_graph::prelude::*;
+use graphviz_rs::prelude::*;
 
 use crossterm::event::KeyCode;
 use thiserror::Error;

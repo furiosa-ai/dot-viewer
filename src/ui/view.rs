@@ -6,7 +6,7 @@ use crate::{
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 
-use dot_graph::prelude::*;
+use graphviz_rs::prelude::*;
 
 use rayon::prelude::*;
 use tui::{
